@@ -1,3 +1,5 @@
+'use strict';
+
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
@@ -46,7 +48,8 @@ connection.onInitialize((params: InitializeParams) => {
 			textDocumentSync: documents.syncKind,
 			// Tell the client that the server supports code completion
 			completionProvider: {
-				resolveProvider: true
+				resolveProvider: true,
+				triggerCharacters: [' ']
 			}
 		}
 	};
@@ -115,6 +118,15 @@ documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
 });
 
+
+import {schema} from '../src/junos';
+import {Node, Parser} from './parser';
+
+const ast = new Node('configuration', null, schema.configuration());
+const parser = new Parser(ast);
+const prefixPattern = /^\s*(set|delete|activate|deactivate)/;
+
+
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
@@ -179,18 +191,21 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
-			}
-		];
+		const doc = documents.get(_textDocumentPosition.textDocument.uri);
+		let line = doc.getText().split("\n")[_textDocumentPosition.position.line].trim();
+
+		if(!line.match(prefixPattern)) {
+			return [];
+		}
+
+		line = line.replace(prefixPattern, '');
+		const keywords = parser.keywords(line);
+
+		return keywords.map((keyword, i) => ({
+			label: keyword,
+			kind: keyword === 'word' ? CompletionItemKind.Value : CompletionItemKind.Text,
+			data: `${line} ${keyword}`
+		}));
 	}
 );
 
@@ -198,13 +213,7 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			(item.detail = 'TypeScript details'),
-				(item.documentation = 'TypeScript documentation');
-		} else if (item.data === 2) {
-			(item.detail = 'JavaScript details'),
-				(item.documentation = 'JavaScript documentation');
-		}
+		item.detail = parser.description(item.data);
 		return item;
 	}
 );
