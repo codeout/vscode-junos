@@ -27,7 +27,11 @@ export class Node {
 	load(raw_children) {
 		switch (typeof raw_children) {
 			case 'object':
-				this.load_object(raw_children);
+				if (Array.isArray(raw_children)) {
+					this.load_array(raw_children);
+				} else {
+					this.load_object(raw_children);
+				}
 				break;
 			case 'string':
 				this.load_string(raw_children);
@@ -53,6 +57,12 @@ export class Node {
 			} else {
 				throw new Error('Not implemented');
 			}
+		});
+	}
+
+	private load_array(raw_children: string[]) {
+		raw_children.forEach((child: string | null) => {
+			this.add(this.string_node(child, null));
 		});
 	}
 
