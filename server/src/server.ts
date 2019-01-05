@@ -64,10 +64,10 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	let problems = 0;
 	let diagnostics: Diagnostic[] = [];
 	while ((m = pattern.exec(text)) && problems < maxNumberOfProblems) {
-		problems++;
-
 		let invalidPosition = validateLine(m[2]);
 		if (typeof invalidPosition !== 'undefined') {
+			problems++;
+
 			let diagnosic: Diagnostic = {
 				severity: DiagnosticSeverity.Error,
 				range: {
