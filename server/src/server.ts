@@ -124,7 +124,7 @@ import {Node, Parser} from './parser';
 
 const ast = new Node('configuration', null, schema.configuration());
 const parser = new Parser(ast);
-const prefixPattern = /^\s*(set|delete|activate|deactivate)/;
+const prefixPattern = /^[\t ]*(?:set|delete|activate|deactivate)/;
 
 
 // The content of a text document has changed. This event is emitted
@@ -139,46 +139,76 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
 	// The validator creates diagnostics for all uppercase words length 2 and more
 	let text = textDocument.getText();
-	let pattern = /\b[A-Z]{2,}\b/g;
+	let pattern = new RegExp(`(${prefixPattern.source}\\s+)(.*)`, 'gm');
 	let m: RegExpExecArray | null;
 
 	let problems = 0;
 	let diagnostics: Diagnostic[] = [];
 	while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
 		problems++;
-		let diagnosic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: textDocument.positionAt(m.index),
-				end: textDocument.positionAt(m.index + m[0].length)
-			},
-			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
-		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnosic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnosic.range)
-					},
-					message: 'Spelling matters'
+
+		let invalidPosition = validateLine(m[2]);
+		if (typeof invalidPosition !== 'undefined') {
+			let diagnosic: Diagnostic = {
+				severity: DiagnosticSeverity.Warning,
+				range: {
+					start: textDocument.positionAt(m.index + m[1].length + invalidPosition),
+					end: textDocument.positionAt(m.index + m[0].length)
 				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnosic.range)
-					},
-					message: 'Particularly for names'
-				}
-			];
+				message: `"${m[2].slice(invalidPosition)}" is invalid`
+			};
+			diagnostics.push(diagnosic);
 		}
-		diagnostics.push(diagnosic);
 	}
 
 	// Send the computed diagnostics to VSCode.
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
+
+/**
+ * Return null when validation is succeeded, or position where invalid statement starts
+ *
+ * @param line String to validate
+ */
+function validateLine(line: string): number | null {
+	const match: string[] = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
+	const keywords = parser.keywords(match[1]);
+
+	if (keywords.includes('word') ||  // 'word' means wildcard
+		keywords.includes(match[2])) {
+		return;
+	}
+
+	// There is an invalid keyword in the beginning like "set foo"
+	if (!match[1]) {
+		return 0;
+	}
+
+	const short = validateLine(match[1]);
+	return typeof short === 'undefined' ? match[1].length + 1 : short;
+}
+
+/**
+ * Replace quoted ' ' with '_' for easy tokenization
+ *
+ * @param string
+ */
+function squashQuotedSpaces(string: string): string {
+	const pattern = /"[^"]*"/g;
+	let match: RegExpExecArray | null;
+	let cursor = 0;
+	let buffer = '';
+
+	while (match = pattern.exec(string)) {
+		buffer += string.slice(cursor, match.index);
+		buffer += match[0].replace(/ /g, '_');
+		cursor += match.index + match[0].length;
+	}
+	buffer += string.slice(cursor);
+
+	return buffer;
+}
+
 
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
