@@ -150,7 +150,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 		let invalidPosition = validateLine(m[2]);
 		if (typeof invalidPosition !== 'undefined') {
 			let diagnosic: Diagnostic = {
-				severity: DiagnosticSeverity.Warning,
+				severity: DiagnosticSeverity.Error,
 				range: {
 					start: textDocument.positionAt(m.index + m[1].length + invalidPosition),
 					end: textDocument.positionAt(m.index + m[0].length)
