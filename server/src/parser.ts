@@ -61,6 +61,11 @@ export class Node {
 			case 'arg':
 				this.add(new Node('arg', this, null, null, 'arg'));
 				break;
+			case 'any':
+				// NOTE: This is only for "set groups", and all are done by another hack
+				break;
+			default:
+				throw new Error('Not implemented');
 		}
 	}
 
@@ -144,12 +149,21 @@ export class Parser {
 	keywords(string: string): string[] {
 		let ast = this.ast;
 
+		// NOTE: Hack for "groups" statement
+		if (string) {
+			if (string.match(/^\s*groups\s*$|\s*apply-groups\s*$/)) {
+				return ['word'];
+			}
+			string = string.replace(/^\s*groups\s+\S+/, '');
+			string = string.replace(/\s*apply-groups\s+\S+$/, '');
+		}
+
 		if (string) {
 			ast = this.parse(string);
 		}
 
 		// replace "arg" with "word"
-		return ast ? ast.keywords().map((k) =>  k === 'arg' ? 'word' : k) : [];
+		return ast ? ast.keywords().map((k) =>  k === 'arg' ? 'word' : k).concat(['apply-groups']) : [];
 	}
 
 	description(string: string): string {
