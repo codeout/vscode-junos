@@ -47,7 +47,7 @@ export class Node {
 	}
 
 	private load_object(raw_children: Object) {
-		Object.keys(raw_children).forEach((key) => {
+		Object.keys(raw_children).forEach((key: string) => {
 			if (key.startsWith('arg')) {
 				this.add(this.arg_node(key, raw_children[key]));
 			} else if (key.startsWith('null_')) {
@@ -173,7 +173,7 @@ export class Parser {
 		}
 
 		// replace "arg" with "word"
-		return ast ? ast.keywords().map((k) =>  k === 'arg' ? 'word' : k).concat(['apply-groups']) : [];
+		return ast ? ast.keywords().map((k) => k === 'arg' ? 'word' : k).concat(['apply-groups']) : [];
 	}
 
 	description(string: string): string {
