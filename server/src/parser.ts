@@ -53,7 +53,7 @@ export class Node {
 			} else if (key.startsWith('null_')) {
 				this.add_null_node(raw_children[key]);
 			} else if (typeof key === 'string') {
-				this.add(this.string_node(key, raw_children[key]));
+				this.add_string_node(key, raw_children[key]);
 			} else {
 				throw new Error('Not implemented');
 			}
@@ -62,7 +62,7 @@ export class Node {
 
 	private load_array(raw_children: string[]) {
 		raw_children.forEach((child: string | null) => {
-			this.add(this.string_node(child, null));
+			this.add_string_node(child, null);
 		});
 	}
 
@@ -83,6 +83,14 @@ export class Node {
 		this.children.push(child);
 	}
 
+	add_array_string(args: string, description: string, raw_children) {
+		args.split(/\s*\|\s*/)
+			.filter((arg) => !arg.startsWith('$'))
+			.forEach((arg) => {
+				this.load({[arg]: raw_children});
+			});
+	}
+
 	/*
 	 * This is a bit hacky, but migrates null node, which is originally nested choice element,
 	 * will be migrated to the parent.
@@ -91,32 +99,28 @@ export class Node {
 		this.load(children);
 	}
 
+	private add_string_node(key: string, raw_children) {
+		const [name, description] = this.extract_key(key);
+		const match = name.match(/(\S*)\((.*)\)/);
+
+		if (!match) {
+			this.add(new Node(name, this, raw_children, description));
+		} else if (match[1]) {  // eg: unit($junos-underlying-interface-unit|$junos-interface-unit|arg)
+			this.add(this.argument_string_node(match[1], match[2], description, raw_children));
+		} else {  // eg: (any-unicast|any-ipv4|any-ipv6|arg)
+			this.add_array_string(match[2], description, raw_children);
+		}
+	}
+
 	private arg_node(key: string, raw_children): Node {
 		const [name, description] = this.extract_key(key);
 		return new Node(name, this, raw_children, description, 'arg');
 	}
 
-	private string_node(key: string, raw_children): Node {
-		const [name, description] = this.extract_key(key);
-		const match = name.match(/(\S+)\((.*)\)/);
-
-		if (match) {
-			// eg: unit($junos-underlying-interface-unit|$junos-interface-unit|arg)
-			return this.argument_string_node(match[1], match[2], description, raw_children);
-		} else {
-			return new Node(name, this, raw_children, description);
-		}
-	}
-
 	private argument_string_node(name: string, args: string, description: string, raw_children): Node {
 		const node = new Node(name, this, null, description);
 
-		args.split(/\s*\|\s*/)
-			.filter((arg) => !arg.startsWith('$'))
-			.forEach((arg) => {
-				node.load({[arg]: raw_children});
-			});
-
+		node.add_array_string(args, description, raw_children);
 		return node;
 	}
 
