@@ -185,6 +185,9 @@ export class Parser {
 			return;
 		}
 
-		return this.parse(string).description;
+		const node = this.parse(string);
+		if (node) {
+			return node.description;
+		}
 	}
 }
