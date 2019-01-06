@@ -46,22 +46,22 @@ export class Node {
 		}
 	}
 
-	private load_object(raw_children: Object) {
-		Object.keys(raw_children).forEach((key: string) => {
+	private load_object(obj: Object) {
+		Object.keys(obj).forEach((key: string) => {
 			if (key.startsWith('arg')) {
-				this.add(this.arg_node(key, raw_children[key]));
+				this.add(this.arg_node(key, obj[key]));
 			} else if (key.startsWith('null_')) {
-				this.add_null_node(raw_children[key]);
+				this.add_null_node(obj[key]);
 			} else if (typeof key === 'string') {
-				this.add_string_node(key, raw_children[key]);
+				this.add_string_node(key, obj[key]);
 			} else {
 				throw new Error('Not implemented');
 			}
 		});
 	}
 
-	private load_array(raw_children: string[]) {
-		raw_children.forEach((child: string | null) => {
+	private load_array(array: string[]) {
+		array.forEach((child: string | null) => {
 			this.add_string_node(child, null);
 		});
 	}
