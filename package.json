@@ -1,15 +1,19 @@
 {
-	"name": "lsp-sample",
-	"description": "A language server example",
-	"author": "Microsoft Corporation",
+	"name": "vscode-junos",
+	"displayName": "Junos",
+	"description": "Junos for Visual Studio Code",
+	"author": "Shintaro Kojima",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
+		"url": "https://github.com/codeout/vscode-junos"
 	},
-	"publisher": "vscode-samples",
-	"categories": [],
+	"publisher": "codeout",
+	"categories": [
+		"Languages",
+		"Formatters"
+	],
 	"keywords": [
 		"junos",
 		"juniper"

@@ -11,3 +11,9 @@ client/node_modules/**
 !client/node_modules/vscode-languageclient/**
 !client/node_modules/vscode-languageserver-protocol/**
 !client/node_modules/vscode-languageserver-types/**
+
+.gitmodules
+.idea/**
+vscode-junos-syntax/**
+!vscode-junos-syntax/language-configuration.json
+!vscode-junos-syntax/syntaxes/Junos.tmLanguage
