@@ -133,12 +133,12 @@ export class Node {
 	}
 
 	find(string: string): Node {
-		const arg_child = this.children.find((node) => node.type === 'arg');
-		if (arg_child) {
-			return arg_child;
+		const child = this.children.find((node) => node.name === string);
+		if (child) {
+			return child;
 		}
 
-		return this.children.find((node) => node.name === string);
+		return this.children.find((node) => node.type === 'arg');
 	}
 }
 
