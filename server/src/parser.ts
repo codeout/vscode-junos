@@ -1,7 +1,8 @@
 'use strict';
 
 import {
-	Repeatable
+	Repeatable,
+	Sequence
 } from '../src/junos';
 
 export class Node {
@@ -29,6 +30,8 @@ export class Node {
 			case 'object':
 				if (Array.isArray(raw_children)) {
 					this.load_array(raw_children);
+				} else if (raw_children instanceof Sequence) {
+					this.load_sequence(raw_children, 0);
 				} else {
 					this.load_object(raw_children);
 				}
@@ -64,6 +67,18 @@ export class Node {
 		array.forEach((child: string | null) => {
 			this.add_string_node(child, null);
 		});
+	}
+
+	load_sequence(sequence: Sequence, depth: number) {
+		const raw = sequence.get(depth);
+		this.load(raw);
+
+		// NOTE: Repleatable is repeatable, so it shouldn't have children
+		if (!(this.children instanceof Repeatable)) {
+			this.children.forEach(child => {
+				child.load_sequence(sequence, depth + 1);
+			});
+		}
 	}
 
 	private load_string(string: string) {
