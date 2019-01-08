@@ -1,7 +1,7 @@
 'use strict';
 
 import {
-	Repeatable,
+	Enumeration,
 	Sequence
 } from '../src/junos';
 
@@ -18,7 +18,7 @@ export class Node {
 		this.description = description;
 		this.type = type;
 
-		if (raw_children instanceof Repeatable) {
+		if (raw_children instanceof Enumeration) {
 			this.children = raw_children;
 		} else if (raw_children !== null) {
 			this.load(raw_children);
@@ -73,8 +73,10 @@ export class Node {
 		const raw = sequence.get(depth);
 		this.load(raw);
 
-		// NOTE: Repleatable is repeatable, so it shouldn't have children
-		if (!(this.children instanceof Repeatable)) {
+		// NOTE: Enumeration is repeatable, so it shouldn't have children
+		if (this.children instanceof Enumeration) {
+
+		} else {
 			this.children.forEach(child => {
 				child.load_sequence(sequence, depth + 1);
 			});
