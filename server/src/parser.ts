@@ -28,7 +28,7 @@ export class Node {
     load(raw_children) {
         switch (typeof raw_children) {
             case 'object':
-                if (Array.isArray(raw_children)) {
+                if (Array.isArray(raw_children) || raw_children instanceof Enumeration) {
                     this.load_array(raw_children);
                 } else if (raw_children instanceof Sequence) {
                     this.load_sequence(raw_children, 0);
@@ -71,14 +71,19 @@ export class Node {
 
     load_sequence(sequence: Sequence, depth: number) {
         const raw = sequence.get(depth);
-        this.load(raw);
 
-        // NOTE: Enumeration is repeatable, so it shouldn't have children
-        if (this.children instanceof Enumeration) {
-
-        } else {
+        // NOTE: This is actually complicated, might be buggy
+        if (this.children.length === 0) {
+            this.load(raw);
             this.children.forEach(child => {
                 child.load_sequence(sequence, depth + 1);
+            });
+        } else {
+            this.children.forEach(child => {
+                child.load(raw);
+                child.children.forEach(grandChild => {
+                    grandChild.load_sequence(sequence, depth + 1);
+                });
             });
         }
     }
@@ -131,7 +136,8 @@ export class Node {
 
     private arg_node(key: string, raw_children): Node {
         const [name, description] = this.extract_key(key);
-        return new Node(name, this, raw_children, description, 'arg');
+        // name may be "arg_1"
+        return new Node('arg', this, raw_children, description, 'arg');
     }
 
     private argument_string_node(name: string, args: string, description: string, raw_children): Node {
