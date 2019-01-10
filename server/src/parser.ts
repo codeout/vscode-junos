@@ -2,8 +2,12 @@
 
 import {
     Enumeration,
+    JunosSchema,
     Sequence
 } from '../src/junos';
+
+export const prefixPattern = /^[\t ]*(?:set|delete|activate|deactivate)/;
+
 
 export class Node {
     name: string;
@@ -213,4 +217,10 @@ export class Parser {
             return node.description;
         }
     }
+}
+
+export function createParser() {
+    const schema = new JunosSchema();
+    const ast = new Node('configuration', null, schema.configuration());
+    return new Parser(ast);
 }
