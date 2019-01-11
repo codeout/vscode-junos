@@ -44,13 +44,11 @@ export async function validateTextDocument(session: Session, textDocument: TextD
  *
  * @param session
  * @param line String to validate
+ * @return number or null
  */
 function validateLine(session: Session, line: string): number | null {
     const match: string[] = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
-    const keywords = session.parser.keywords(match[1]);
-
-    if (keywords.includes('word') ||  // 'word' means wildcard
-        keywords.includes(match[2])) {
+    if (!match) {
         return;
     }
 
@@ -59,14 +57,22 @@ function validateLine(session: Session, line: string): number | null {
         return 0;
     }
 
-    const short = validateLine(session, match[1]);
-    return typeof short === 'undefined' ? match[1].length + 1 : short;
+    const keywords = session.parser.keywords(match[1]);
+
+    if (keywords.includes('word') ||  // 'word' means wildcard
+        keywords.includes(match[2])) {
+        return;
+    }
+
+    const shorter = validateLine(session, match[1]);
+    return typeof shorter === 'undefined' ? match[1].length + 1 : shorter;
 }
 
 /**
  * Replace quoted ' ' with '_' for easy tokenization
  *
  * @param string
+ * @return string
  */
 function squashQuotedSpaces(string: string): string {
     const pattern = /"[^"]*"/g;
