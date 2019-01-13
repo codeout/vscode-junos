@@ -17,11 +17,13 @@ export class Session {
     public readonly connection: IConnection;
     public readonly documents: TextDocuments;
     public readonly parser: Parser;
+    public readonly definitions: Object;
 
     constructor() {
         this.connection = createConnection(ProposedFeatures.all);
         this.documents = new TextDocuments();
         this.parser = createParser();
+        this.definitions = {};
     }
 
     listen() {

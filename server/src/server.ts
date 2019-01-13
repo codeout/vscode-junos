@@ -7,6 +7,10 @@ import {
 	completion,
 	completionResolve,
 } from './completion';
+import {
+	definition,
+	updateDefinitions,
+} from './definion'
 import {validateTextDocument} from './validation';
 
 
@@ -16,20 +20,22 @@ session.connection.onInitialize((params: InitializeParams) => {
 	return {
 		capabilities: {
 			textDocumentSync: session.documents.syncKind,
-			// Tell the client that the server supports code completion
 			completionProvider: {
 				resolveProvider: true,
 				triggerCharacters: [' ']
-			}
+			},
+			definitionProvider: true,
 		}
 	};
 });
 
 session.connection.onCompletion(completion(session));
 session.connection.onCompletionResolve(completionResolve(session));
+session.connection.onDefinition(definition(session));
 
 session.documents.onDidChangeContent(change => {
 	validateTextDocument(session, change.document);
+	updateDefinitions(session, change.document);
 });
 
 session.listen();

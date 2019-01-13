@@ -17,7 +17,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
         // which code complete got requested. For the example we ignore this
         // info and always provide the same completion items.
         const doc = session.documents.get(textDocumentPosition.textDocument.uri);
-        let line = doc.getText().split("\n")[textDocumentPosition.position.line].trim();
+        let line = doc.getText().split("\n")[textDocumentPosition.position.line];
 
         if (!line.match(prefixPattern)) {
             return [];
