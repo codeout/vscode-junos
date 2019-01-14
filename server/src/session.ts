@@ -30,4 +30,8 @@ export class Session {
         this.documents.listen(this.connection);
         this.connection.listen();
     }
+
+    log(...obj: any[]) {
+        this.connection.console.log(JSON.stringify(obj));
+    }
 }
