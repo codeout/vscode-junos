@@ -26,9 +26,21 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
         line = line.replace(prefixPattern, '');
         const keywords = session.parser.keywords(line);
 
-        // List interface definitions
+        // List defined symbold
         if (line.match(/\s+interface\s+$/)) {
-            addInterfaceReferences(session, session.definitions['interface'], keywords);
+            addReferences(session, session.definitions['interface'], keywords);
+        } else if (line.match(/\s+from\s+(?:source-|destination-)?prefix-list\s+$/)) {
+            addReferences(session, session.definitions['prefix-list'], keywords);
+        } else if (line.match(/\s+(?:import|export)\s+$/)) {
+            addReferences(session, session.definitions['policy-statement'], keywords);
+        } else if (line.match(/\s+(?:from\s+community|then\s+community\s+(?:add|delete|set))\s+$/)) {
+            addReferences(session, session.definitions['community'], keywords);
+        } else if (line.match(/\s+from\s+as-path\s+$/)) {
+            addReferences(session, session.definitions['as-path'], keywords);
+        } else if (line.match(/\s+from\s+as-path-group\s+$/)) {
+            addReferences(session, session.definitions['as-path-group'], keywords);
+        } else if (line.match(/\s+filter\s+(?:input|output|input-list|output-list)\s+$/)) {
+            addReferences(session, session.definitions['firewall-filter'], keywords);
         }
 
         return keywords.map(keyword => ({
@@ -39,7 +51,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
     };
 }
 
-function addInterfaceReferences(session: Session, definitions: Object, keywords) {
+function addReferences(session: Session, definitions: Object, keywords) {
     const index = keywords.indexOf('word');
     if (index < 0) {
         return;
