@@ -26,12 +26,27 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
         line = line.replace(prefixPattern, '');
         const keywords = session.parser.keywords(line);
 
+        // List interface definitions
+        if (line.match(/\s+interface\s+$/)) {
+            addInterfaceReferences(session, session.definitions['interface'], keywords);
+        }
+
         return keywords.map((keyword, i) => ({
             label: keyword,
             kind: keyword === 'word' ? CompletionItemKind.Value : CompletionItemKind.Text,
             data: `${line} ${keyword}`
         }));
     };
+}
+
+function addInterfaceReferences(session: Session, definitions: Object, keywords) {
+    const index = keywords.indexOf('word');
+    if (index < 0) {
+        return;
+    }
+
+    keywords.splice(index, 1);
+    keywords.unshift(...Object.keys(definitions));
 }
 
 export function completionResolve(session: Session): RequestHandler<CompletionItem, CompletionItem, void> {
