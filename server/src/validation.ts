@@ -30,6 +30,18 @@ export async function validateTextDocument(session: Session, textDocument: TextD
                 `"${m[2].slice(invalidPosition)}" is invalid`,
             ));
         }
+
+        // Validate interface reference
+        const invalidRange = validateInterfaceReference(session, m[2]);
+        if (typeof invalidRange !== 'undefined') {
+            problems++;
+
+            diagnostics.push(createDiagnostic(session, textDocument,
+                m.index + m[1].length + invalidRange[0],
+                m.index + m[1].length + invalidRange[1],
+                `"${m[2].slice(...invalidRange)}" is invalid`,
+            ));
+        }
     }
 
     session.connection.sendDiagnostics({uri: textDocument.uri, diagnostics});
@@ -73,6 +85,24 @@ function validateLine(session: Session, line: string): number | undefined {
 
     const shorter = validateLine(session, match[1]);
     return typeof shorter === 'undefined' ? match[1].length + 1 : shorter;
+}
+
+/**
+ * Return undefined when validation is succeeded, or position range of invalid statement
+ *
+ * @param session
+ * @param line String to validate
+ * @return number[] or undefined [startPosition, endPosition]
+ */
+function validateInterfaceReference(session: Session, line: string): number[] | undefined {
+    const match: RegExpMatchArray = line.match(/(\sinterface\s+)(\S+)/);
+    if (!match) {
+        return;
+    }
+
+    if (!(match[2] in session.definitions['interface'])) {
+        return [match.index + match[1].length, match.index + match[1].length + match[2].length];
+    }
 }
 
 /**

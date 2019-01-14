@@ -34,8 +34,8 @@ session.connection.onCompletionResolve(completionResolve(session));
 session.connection.onDefinition(definition(session));
 
 session.documents.onDidChangeContent(change => {
-	validateTextDocument(session, change.document);
 	updateDefinitions(session, change.document);
+	validateTextDocument(session, change.document);
 });
 
 session.listen();
