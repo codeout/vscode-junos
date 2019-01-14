@@ -127,7 +127,7 @@ export class Node {
 
     private add_string_node(key: string, raw_children) {
         const [name, description] = this.extract_key(key);
-        const match = name.match(/(\S*)\((.*)\)/);
+        const match: RegExpMatchArray = name.match(/(\S*)\((.*)\)/);
 
         if (!match) {
             this.add(new Node(name, this, raw_children, description));

@@ -20,34 +20,41 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     let problems = 0;
     let diagnostics: Diagnostic[] = [];
     while ((m = pattern.exec(text)) && problems < maxNumberOfProblems) {
-        let invalidPosition = validateLine(session, m[2]);
+        const invalidPosition = validateLine(session, m[2]);
         if (typeof invalidPosition !== 'undefined') {
             problems++;
 
-            let diagnosic: Diagnostic = {
-                severity: DiagnosticSeverity.Error,
-                range: {
-                    start: textDocument.positionAt(m.index + m[1].length + invalidPosition),
-                    end: textDocument.positionAt(m.index + m[0].length)
-                },
-                message: `"${m[2].slice(invalidPosition)}" is invalid`
-            };
-            diagnostics.push(diagnosic);
+            diagnostics.push(createDiagnostic(session, textDocument,
+                m.index + m[1].length + invalidPosition,
+                m.index + m[0].length,
+                `"${m[2].slice(invalidPosition)}" is invalid`,
+            ));
         }
     }
 
     session.connection.sendDiagnostics({uri: textDocument.uri, diagnostics});
 }
 
+function createDiagnostic(session: Session, textDocument: TextDocument, start: number, end: number, message: string): Diagnostic {
+    return {
+        severity: DiagnosticSeverity.Error,
+        range: {
+            start: textDocument.positionAt(start),
+            end: textDocument.positionAt(end)
+        },
+        message: message,
+    };
+}
+
 /**
- * Return null when validation is succeeded, or position where invalid statement starts
+ * Return undefined when validation is succeeded, or position where invalid statement starts
  *
  * @param session
  * @param line String to validate
- * @return number or null
+ * @return number or undefined
  */
-function validateLine(session: Session, line: string): number | null {
-    const match: string[] = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
+function validateLine(session: Session, line: string): number | undefined {
+    const match: RegExpMatchArray = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
     if (!match) {
         return;
     }
