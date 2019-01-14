@@ -14,7 +14,7 @@ The language server has the following language features:
 
 ### Experimental Features
 
-:warning: These features may work, but still under development. The behavior might be changed :warning:
+⚠️ These features may work, but still under development. The behavior might be changed ⚠️
 
 * Go To Definition
   * `interface`
