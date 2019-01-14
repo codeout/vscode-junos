@@ -4,3 +4,6 @@ client/server
 .vscode-test
 
 .idea
+
+/others
+/pkgs
