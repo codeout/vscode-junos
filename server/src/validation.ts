@@ -31,17 +31,28 @@ export async function validateTextDocument(session: Session, textDocument: TextD
             ));
         }
 
-        // Validate interface reference
-        const invalidRange = validateInterfaceReference(session, m[2]);
-        if (typeof invalidRange !== 'undefined') {
-            problems++;
+        // Validate symbol reference
+        [
+            ['interface', 'interface'],
+            ['prefix-list', 'from\\s+(?:source-|destination-)?prefix-list'],
+            ['policy-statement', '(?:import|export)'],
+            ['community', '(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))'],
+            ['as-path', 'from\\s+as-path'],
+            ['as-path-group', 'from\\s+as-path-group'],
+            ['firewall-filter', 'filter\\s+(?:input|output|input-list|output-list)']
+        ].forEach(([symbolType, pattern]) => {
+            const invalidRange = validateReference(session, m[2], symbolType, pattern);
+            if (typeof invalidRange !== 'undefined') {
+                problems++;
 
-            diagnostics.push(createDiagnostic(session, textDocument,
-                m.index + m[1].length + invalidRange[0],
-                m.index + m[1].length + invalidRange[1],
-                `"${m[2].slice(...invalidRange)}" is invalid`,
-            ));
-        }
+                diagnostics.push(createDiagnostic(session, textDocument,
+                    m.index + m[1].length + invalidRange[0],
+                    m.index + m[1].length + invalidRange[1],
+                    `"${m[2].slice(...invalidRange)}" is not defined`,
+                ));
+            }
+        });
+
     }
 
     session.connection.sendDiagnostics({uri: textDocument.uri, diagnostics});
@@ -92,15 +103,17 @@ function validateLine(session: Session, line: string): number | undefined {
  *
  * @param session
  * @param line String to validate
+ * @symbolType string A key of session.definitions (eg: 'interface')
+ * @pattern string A line pattern to kick the validation
  * @return number[] or undefined [startPosition, endPosition]
  */
-function validateInterfaceReference(session: Session, line: string): number[] | undefined {
-    const match: RegExpMatchArray = line.match(/(\sinterface\s+)(\S+)/);
+function validateReference(session: Session, line: string, symbolType: string, pattern: string): number[] | undefined {
+    const match: RegExpMatchArray = line.match(`(\\s${pattern}\\s+)(\\S+)`);
     if (!match) {
         return;
     }
 
-    if (!(match[2] in session.definitions['interface'])) {
+    if (!(match[2] in session.definitions[symbolType])) {
         return [match.index + match[1].length, match.index + match[1].length + match[2].length];
     }
 }
