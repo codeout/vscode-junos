@@ -1,3 +1,19 @@
+## [0.1.2] - 2019-01-15
+
+### Added
+
+* Experimentally implemented
+  * Go To Definition
+    * `interface`
+    * `prefix-list`
+    * `policy-statement`
+    * `community`
+    * `as-path`
+    * `as-path-group`
+    * `firewall-filter`
+  * Completion and validation based on defined symbols
+
+
 ## [0.1.1] - 2019-01-10
 
 ### Added
