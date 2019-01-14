@@ -31,7 +31,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
             addInterfaceReferences(session, session.definitions['interface'], keywords);
         }
 
-        return keywords.map((keyword, i) => ({
+        return keywords.map(keyword => ({
             label: keyword,
             kind: keyword === 'word' ? CompletionItemKind.Value : CompletionItemKind.Text,
             data: `${line} ${keyword}`
