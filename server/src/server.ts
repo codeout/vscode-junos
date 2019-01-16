@@ -10,7 +10,7 @@ import {
 import {
 	definition,
 	updateDefinitions,
-} from './definion'
+} from './definition'
 import {validateTextDocument} from './validation';
 
 
