@@ -189,14 +189,15 @@ export class Parser {
 
     keywords(string: string): string[] {
         let ast = this.ast;
+        string = string.trim();
 
         // NOTE: Hack for "groups" statement
         if (string) {
-            if (string.match(/^\s*groups\s*$|\s*apply-groups\s*$/)) {
+            if (string.match(/^groups\s*$|\s*apply-groups$/)) {
                 return ['word'];
             }
-            string = string.replace(/^\s*groups\s+\S+/, '');
-            string = string.replace(/\s*apply-groups\s+\S+$/, '');
+            string = string.replace(/^groups\s+\S+/, '');
+            string = string.replace(/apply-groups\s+\S+$/, '');
         }
 
         if (string) {
