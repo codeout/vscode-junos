@@ -13,18 +13,62 @@ import {prefixPattern} from './parser';
 import {Session} from './session';
 
 
+export class DefinitionStore {
+    private readonly store: Object;
+
+    constructor() {
+        this.store = {};
+    }
+
+    set(uri: string, symbolType: string, symbol: string, definition: Range): void {
+        // initialize
+        this.store[uri] = this.store[uri] || {};
+        this.store[uri][symbolType] = this.store[uri][symbolType] || {};
+        this.store[uri][symbolType][symbol] = this.store[uri][symbolType][symbol] || [];
+
+        this.store[uri][symbolType][symbol].push(definition);
+    }
+
+    /**
+     * Return definition, [] when a given symbol is not defined, undefined when the symbol is undefined.
+     * NOTE: It's important to return undefined in the last case to chain findings.
+     *
+     * @param uri
+     * @param symbolType
+     * @param symbol
+     */
+    get(uri: string, symbolType: string, symbol: string | undefined): Range[] | undefined {
+        if (!symbol) {
+            return;
+        }
+
+        if (!this.store[uri] || !this.store[uri][symbolType]) {
+            return [];
+        } else {
+            return this.store[uri][symbolType][symbol] || [];
+        }
+    }
+
+    clear(uri: string, symbolType: string): void {
+        if (this.store[uri]) {
+            this.store[uri][symbolType] = {};
+        }
+    }
+}
+
+
 export function definition(session: Session): RequestHandler<TextDocumentPositionParams, Definition, void> {
     return (textDocumentPosition: TextDocumentPositionParams): Definition => {
         const doc: TextDocument = session.documents.get(textDocumentPosition.textDocument.uri);
         const line = doc.getText().split("\n")[textDocumentPosition.position.line];
 
-        const definition = getInterfaceDefinition(session, line, textDocumentPosition.position.character, session.definitions['interface']) ||
-            getPrefixListDefinition(session, line, textDocumentPosition.position.character, session.definitions['prefix-list']) ||
-            getPolicyStatementDefinition(session, line, textDocumentPosition.position.character, session.definitions['policy-statement']) ||
-            getCommunityDefinition(session, line, textDocumentPosition.position.character, session.definitions['community']) ||
-            getAsPathDefinition(session, line, textDocumentPosition.position.character, session.definitions['as-path']) ||
-            getAsPathGroupDefinition(session, line, textDocumentPosition.position.character, session.definitions['as-path-group']) ||
-            getFirewallFilterDefinition(session, line, textDocumentPosition.position.character, session.definitions['firewall-filter']) ||
+        const definition = getInterfaceDefinition(session, line, textDocumentPosition) ||
+            getPrefixListDefinition(session, line, textDocumentPosition) ||
+            getPolicyStatementDefinition(session, line, textDocumentPosition) ||
+            getCommunityDefinition(session, line, textDocumentPosition) ||
+            getAsPathDefinition(session, line, textDocumentPosition) ||
+            getAsPathGroupDefinition(session, line, textDocumentPosition) ||
+            getFirewallFilterDefinition(session, line, textDocumentPosition) ||
             [];
 
         return definition.map(d => Location.create(textDocumentPosition.textDocument.uri, d));
@@ -32,14 +76,14 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
 }
 
 /**
- * Return string if it's defined, Or return undefined.
+ * Return if the cursor is pointing the symbol which matches a given pattern, or undefined.
  *
  * @param session
  * @param line
  * @param position
  * @param pattern
  */
-function getDefinedSymbol(session: Session, line: string, position: number, pattern: string): string | undefined {
+function getPointedSymbol(session: Session, line: string, position: number, pattern: string): string | undefined {
     const m: RegExpMatchArray = line.match(`(${prefixPattern.source}(?:\\s+.*)?\\s+${pattern}\\s+)(\\S+)`);
 
     // Return nothing when the cursor doesn't point at the keyword
@@ -50,61 +94,54 @@ function getDefinedSymbol(session: Session, line: string, position: number, patt
     }
 }
 
-function getInterfaceDefinition(session: Session, line: string, position: number, definitions: Object): Range[] | undefined{
-    const symbol = getDefinedSymbol(session, line, position, 'interface');
-    // Return Range[] when the cursor is pointing to the keyword, or return undefined to chain
-    return symbol ? definitions[symbol] || [] : undefined;
+function getInterfaceDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams): Range[] | undefined {
+    const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, 'interface');
+    return session.definitions.get(textDocumentPosition.textDocument.uri, 'interface', symbol);
 }
 
-function getPrefixListDefinition(session: Session, line: string, position: number, definitions: Object): Range[] | undefined{
-    const symbol = getDefinedSymbol(session, line, position, 'from\\s+(?:source-|destination-)?prefix-list');
-    // Return Range[] when the cursor is pointing to the keyword, or return undefined to chain
-    return symbol ? definitions[symbol] || [] : undefined;
+function getPrefixListDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams): Range[] | undefined {
+    const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, 'from\\s+(?:source-|destination-)?prefix-list');
+    return session.definitions.get(textDocumentPosition.textDocument.uri, 'prefix-list', symbol);
 }
 
-function getPolicyStatementDefinition(session: Session, line: string, position: number, definitions: Object): Range[] | undefined{
-    const symbol = getDefinedSymbol(session, line, position, '(?:import|export)');
-    // Return Range[] when the cursor is pointing to the keyword, or return undefined to chain
-    return symbol ? definitions[symbol] || [] : undefined;
+function getPolicyStatementDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams): Range[] | undefined {
+    const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, '(?:import|export)');
+    return session.definitions.get(textDocumentPosition.textDocument.uri, 'policy-statement', symbol);
 }
 
-function getCommunityDefinition(session: Session, line: string, position: number, definitions: Object): Range[] | undefined{
-    const symbol = getDefinedSymbol(session, line, position, '(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))');
-    // Return Range[] when the cursor is pointing to the keyword, or return undefined to chain
-    return symbol ? definitions[symbol] || [] : undefined;
+function getCommunityDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams): Range[] | undefined {
+    const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, '(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))');
+    return session.definitions.get(textDocumentPosition.textDocument.uri, 'community', symbol);
 }
 
-function getAsPathDefinition(session: Session, line: string, position: number, definitions: Object): Range[] | undefined{
-    const symbol = getDefinedSymbol(session, line, position, 'from\\s+as-path');
-    // Return Range[] when the cursor is pointing to the keyword, or return undefined to chain
-    return symbol ? definitions[symbol] || [] : undefined;
+function getAsPathDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams): Range[] | undefined {
+    const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, 'from\\s+as-path');
+    return session.definitions.get(textDocumentPosition.textDocument.uri, 'as-path', symbol);
 }
 
-function getAsPathGroupDefinition(session: Session, line: string, position: number, definitions: Object): Range[] | undefined{
-    const symbol = getDefinedSymbol(session, line, position, 'from\\s+as-path-group');
-    // Return Range[] when the cursor is pointing to the keyword, or return undefined to chain
-    return symbol ? definitions[symbol] || [] : undefined;
+function getAsPathGroupDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams): Range[] | undefined {
+    const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, 'from\\s+as-path-group');
+    return session.definitions.get(textDocumentPosition.textDocument.uri, 'as-path-group', symbol);
 }
 
-function getFirewallFilterDefinition(session: Session, line: string, position: number, definitions: Object): Range[] | undefined{
-    const symbol = getDefinedSymbol(session, line, position, 'filter\\s+(?:input|output|input-list|output-list)');
-    // Return Range[] when the cursor is pointing to the keyword, or return undefined to chain
-    return symbol ? definitions[symbol] || [] : undefined;
+function getFirewallFilterDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams): Range[] | undefined {
+    const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, 'filter\\s+(?:input|output|input-list|output-list)');
+    return session.definitions.get(textDocumentPosition.textDocument.uri, 'firewall-filter', symbol);
 }
 
 
 export function updateDefinitions(session: Session, textDocument: TextDocument): void {
-    session.definitions['interface'] = interfaceDefinitions(session, textDocument);
-    session.definitions['prefix-list'] = prefixListDefinitions(session, textDocument);
-    session.definitions['policy-statement'] = policyStatementDefinitions(session, textDocument);
-    session.definitions['community'] = communityDefinitions(session, textDocument);
-    session.definitions['as-path'] = asPathDefinitions(session, textDocument);
-    session.definitions['as-path-group'] = asPathGroupDefinitions(session, textDocument);
-    session.definitions['firewall-filter'] = firewallFilterDefinitions(session, textDocument);
+    updateInterfaceDefinitions(session, textDocument);
+    updatePrefixListDefinitions(session, textDocument);
+    updatePolicyStatementDefinitions(session, textDocument);
+    updateCommunityDefinitions(session, textDocument);
+    updateAsPathDefinitions(session, textDocument);
+    updateAsPathGroupDefinitions(session, textDocument);
+    updateFirewallFilterDefinitions(session, textDocument);
 }
 
-function findDefinitions(session: Session, textDocument: TextDocument, pattern: string, definitions: Object,
-                         modifyFunction: (arg: RegExpExecArray) => string): void {
+function insertDefinitions(session: Session, textDocument: TextDocument, symbolType: string,
+                           pattern: string, modifyFunction: (arg: RegExpExecArray) => string): void {
     const text = textDocument.getText();
 
     // FIXME: We should have implemented with named captures, but avoid them due to performance consideration
@@ -113,54 +150,54 @@ function findDefinitions(session: Session, textDocument: TextDocument, pattern: 
 
     while (m = fullPattern.exec(text)) {
         const symbol = modifyFunction(m);
-        definitions[symbol] = definitions[symbol] || [];
-        definitions[symbol].push({
+        session.definitions.set(textDocument.uri, symbolType, symbol, {
             start: textDocument.positionAt(m.index + m[1].length),
             end: textDocument.positionAt(m.index + m[0].length),
         });
     }
 }
 
-function interfaceDefinitions(session: Session, textDocument: TextDocument): Object {
-    const definitions = {};
-    findDefinitions(session, textDocument, 'interfaces\\s+)(\\S+)', definitions, m => m[2]);
-    findDefinitions(session, textDocument, 'interfaces\\s+)(\\S+)\\s+unit\\s+([0-9]+)', definitions,
-        m => `${m[2]}.${m[3]}`); // "xe-0/0/0 unit 0" is referred as "xe-0/0/0.0"
-    return definitions;
+function updateInterfaceDefinitions(session: Session, textDocument: TextDocument): void {
+    const type = 'interface';
+    session.definitions.clear(textDocument.uri, type);
+    insertDefinitions(session, textDocument, type, 'interfaces\\s+)(\\S+)', m => m[2]);
+    insertDefinitions(session, textDocument, type, 'interfaces\\s+)(\\S+)\\s+unit\\s+([0-9]+)',
+        m => `${m[2]}.${m[3]}`  // "xe-0/0/0 unit 0" is referred as "xe-0/0/0.0"
+    );
 }
 
-function prefixListDefinitions(session: Session, textDocument: TextDocument): Object {
-    const definitions = {};
-    findDefinitions(session, textDocument, 'policy-options\\s+prefix-list\\s+)(\\S+)', definitions, m => m[2]);
-    return definitions;
+function updatePrefixListDefinitions(session: Session, textDocument: TextDocument): void {
+    const type = 'prefix-list';
+    session.definitions.clear(textDocument.uri, type);
+    insertDefinitions(session, textDocument, type, 'policy-options\\s+prefix-list\\s+)(\\S+)', m => m[2]);
 }
 
-function policyStatementDefinitions(session: Session, textDocument: TextDocument): Object {
-    const definitions = {};
-    findDefinitions(session, textDocument, 'policy-options\\s+policy-statement\\s+)(\\S+)', definitions, m => m[2]);
-    return definitions;
+function updatePolicyStatementDefinitions(session: Session, textDocument: TextDocument): void {
+    const type = 'policy-statement';
+    session.definitions.clear(textDocument.uri, type);
+    insertDefinitions(session, textDocument, type, 'policy-options\\s+policy-statement\\s+)(\\S+)', m => m[2]);
 }
 
-function communityDefinitions(session: Session, textDocument: TextDocument): Object {
-    const definitions = {};
-    findDefinitions(session, textDocument, 'policy-options\\s+community\\s+)(\\S+)', definitions, m => m[2]);
-    return definitions;
+function updateCommunityDefinitions(session: Session, textDocument: TextDocument): void {
+    const type = 'community';
+    session.definitions.clear(textDocument.uri, type);
+    insertDefinitions(session, textDocument, type, 'policy-options\\s+community\\s+)(\\S+)', m => m[2]);
 }
 
-function asPathDefinitions(session: Session, textDocument: TextDocument): Object {
-    const definitions = {};
-    findDefinitions(session, textDocument, 'policy-options\\s+as-path\\s+)(\\S+)', definitions, m => m[2]);
-    return definitions;
+function updateAsPathDefinitions(session: Session, textDocument: TextDocument): void {
+    const type = 'as-path';
+    session.definitions.clear(textDocument.uri, type);
+    insertDefinitions(session, textDocument, type, 'policy-options\\s+as-path\\s+)(\\S+)', m => m[2]);
 }
 
-function asPathGroupDefinitions(session: Session, textDocument: TextDocument): Object {
-    const definitions = {};
-    findDefinitions(session, textDocument, 'policy-options\\s+as-path-group\\s+)(\\S+)', definitions, m => m[2]);
-    return definitions;
+function updateAsPathGroupDefinitions(session: Session, textDocument: TextDocument): void {
+    const type = 'as-path-group';
+    session.definitions.clear(textDocument.uri, type);
+    insertDefinitions(session, textDocument, type, 'policy-options\\s+as-path-group\\s+)(\\S+)', m => m[2]);
 }
 
-function firewallFilterDefinitions(session: Session, textDocument: TextDocument): Object {
-    const definitions = {};
-    findDefinitions(session, textDocument, 'firewall(?:\\s+family\\s+\\S+)?\\s+filter\\s+)(\\S+)', definitions, m => m[2]);
-    return definitions;
+function updateFirewallFilterDefinitions(session: Session, textDocument: TextDocument): void {
+    const type = 'firewall-filter';
+    session.definitions.clear(textDocument.uri, type);
+    insertDefinitions(session, textDocument, type, 'firewall(?:\\s+family\\s+\\S+)?\\s+filter\\s+)(\\S+)', m => m[2]);
 }

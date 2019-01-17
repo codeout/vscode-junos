@@ -12,18 +12,20 @@ import {
     createParser,
 } from './parser';
 
+import {DefinitionStore} from './definition';
+
 
 export class Session {
     public readonly connection: IConnection;
     public readonly documents: TextDocuments;
     public readonly parser: Parser;
-    public readonly definitions: Object;
+    public readonly definitions: DefinitionStore;
 
     constructor() {
         this.connection = createConnection(ProposedFeatures.all);
         this.documents = new TextDocuments();
         this.parser = createParser();
-        this.definitions = {};
+        this.definitions = new DefinitionStore();
     }
 
     listen() {
