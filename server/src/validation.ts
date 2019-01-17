@@ -20,6 +20,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     let problems = 0;
     let diagnostics: Diagnostic[] = [];
     while ((m = pattern.exec(text)) && problems < maxNumberOfProblems) {
+        // Validate with AST based syntax
         const invalidPosition = validateLine(session, m[2]);
         if (typeof invalidPosition !== 'undefined') {
             problems++;
@@ -41,7 +42,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
             ['as-path-group', 'from\\s+as-path-group'],
             ['firewall-filter', 'filter\\s+(?:input|output|input-list|output-list)']
         ].forEach(([symbolType, pattern]) => {
-            const invalidRange = validateReference(session, m[2], symbolType, pattern);
+            const invalidRange = validateReference(session, m[2], textDocument.uri, symbolType, pattern);
             if (typeof invalidRange !== 'undefined') {
                 problems++;
 
@@ -103,17 +104,18 @@ function validateLine(session: Session, line: string): number | undefined {
  *
  * @param session
  * @param line String to validate
- * @symbolType string A key of session.definitions (eg: 'interface')
- * @pattern string A line pattern to kick the validation
+ * @param uri TextDocument's URI
+ * @param symbolType string A key of session.definitions (eg: 'interface')
+ * @param pattern string A line pattern to kick the validation
  * @return number[] or undefined [startPosition, endPosition]
  */
-function validateReference(session: Session, line: string, symbolType: string, pattern: string): number[] | undefined {
+function validateReference(session: Session, line: string, uri: string, symbolType: string, pattern: string): number[] | undefined {
     const match: RegExpMatchArray = line.match(`(\\s${pattern}\\s+)(\\S+)`);
     if (!match) {
         return;
     }
 
-    if (!(match[2] in session.definitions[symbolType])) {
+    if (!(match[2] in session.definitions.getDefinitions(uri, symbolType))) {
         return [match.index + match[1].length, match.index + match[1].length + match[2].length];
     }
 }

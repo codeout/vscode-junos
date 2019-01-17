@@ -49,6 +49,16 @@ export class DefinitionStore {
         }
     }
 
+    /**
+     * Return all symbol definitions for the given symbolType.
+     *
+     * @param uri
+     * @param symbolType
+     */
+    getDefinitions(uri: string, symbolType: string): Object {
+        return this.store[uri] ? this.store[uri][symbolType] : {};
+    }
+
     clear(uri: string, symbolType: string): void {
         if (this.store[uri]) {
             this.store[uri][symbolType] = {};
