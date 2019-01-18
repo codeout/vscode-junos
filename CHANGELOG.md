@@ -1,3 +1,16 @@
+## [0.1.3] - 2019-01-18
+
+### Added
+
+* Tests of:
+  * Completion
+  * Validation
+
+### Fixed
+
+* Symbol definitions were flushed when another file is newly opened or edited
+
+
 ## [0.1.2] - 2019-01-15
 
 ### Added
