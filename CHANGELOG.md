@@ -1,3 +1,10 @@
+## [0.1.4] - 2019-03-03
+
+### Fixed
+
+* Unexpected vscode freeze due to URL pattern matching for syntax highlight
+
+
 ## [0.1.3] - 2019-01-18
 
 ### Added
