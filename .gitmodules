@@ -1,3 +1,3 @@
 [submodule "vscode-junos-syntax"]
 	path = vscode-junos-syntax
-	url = https://github.com/woodjme/vscode-junos-syntax
+	url = https://github.com/codeout/vscode-junos-syntax.git
