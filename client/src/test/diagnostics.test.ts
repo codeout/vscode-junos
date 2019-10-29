@@ -67,6 +67,12 @@ describe('Should get diagnostics', () => {
                 severity: vscode.DiagnosticSeverity.Error,
                 source: 'ex'
             },
+            {
+                message: '"foo-pool_" is not defined',
+                range: toRange(41, 68, 41, 77),
+                severity: vscode.DiagnosticSeverity.Error,
+                source: 'ex'
+            },
         ])
     })
 });

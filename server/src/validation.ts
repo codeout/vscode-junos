@@ -40,7 +40,8 @@ export async function validateTextDocument(session: Session, textDocument: TextD
             ['community', '(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))'],
             ['as-path', 'from\\s+as-path'],
             ['as-path-group', 'from\\s+as-path-group'],
-            ['firewall-filter', 'filter\\s+(?:input|output|input-list|output-list)']
+            ['firewall-filter', 'filter\\s+(?:input|output|input-list|output-list)'],
+            ['nat-pool', 'then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)']
         ].forEach(([symbolType, pattern]) => {
             const invalidRange = validateReference(session, m[2], textDocument.uri, symbolType, pattern);
             if (typeof invalidRange !== 'undefined') {

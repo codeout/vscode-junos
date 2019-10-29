@@ -39,6 +39,8 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
             addReferences(session, session.definitions.getDefinitions(uri, 'as-path-group'), keywords);
         } else if (line.match(/\s+filter\s+(?:input|output|input-list|output-list)\s+$/)) {
             addReferences(session, session.definitions.getDefinitions(uri, 'firewall-filter'), keywords);
+        } else if (line.match(/\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/)) {
+            addReferences(session, session.definitions.getDefinitions(uri, 'nat-pool'), keywords);
         }
 
         return keywords.map(keyword => ({
