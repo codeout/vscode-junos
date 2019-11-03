@@ -220,6 +220,14 @@ describe('Should do completion', () => {
         });
     });
 
+    it('Completes defined nat pool', async () => {
+        await testCompletion(docUri, new vscode.Position(39, 68), {
+            items: [
+                {label: 'apply-groups', kind: vscode.CompletionItemKind.Text},
+                {label: 'foo-pool', kind: vscode.CompletionItemKind.Text},
+            ]
+        });
+    });
 });
 
 async function testCompletion(

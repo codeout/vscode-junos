@@ -79,6 +79,7 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
             getAsPathDefinition(session, line, textDocumentPosition) ||
             getAsPathGroupDefinition(session, line, textDocumentPosition) ||
             getFirewallFilterDefinition(session, line, textDocumentPosition) ||
+            getNatPoolDefinition(session, line, textDocumentPosition) ||
             [];
 
         return definition.map(d => Location.create(textDocumentPosition.textDocument.uri, d));
@@ -139,6 +140,10 @@ function getFirewallFilterDefinition(session: Session, line: string, textDocumen
     return session.definitions.get(textDocumentPosition.textDocument.uri, 'firewall-filter', symbol);
 }
 
+function getNatPoolDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams): Range[] | undefined {
+    const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, 'then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)');
+    return session.definitions.get(textDocumentPosition.textDocument.uri, 'nat-pool', symbol);
+}
 
 export function updateDefinitions(session: Session, textDocument: TextDocument): void {
     updateInterfaceDefinitions(session, textDocument);
@@ -148,6 +153,7 @@ export function updateDefinitions(session: Session, textDocument: TextDocument):
     updateAsPathDefinitions(session, textDocument);
     updateAsPathGroupDefinitions(session, textDocument);
     updateFirewallFilterDefinitions(session, textDocument);
+    updateNatPoolDefinitions(session, textDocument);
 }
 
 function insertDefinitions(session: Session, textDocument: TextDocument, symbolType: string,
@@ -210,4 +216,10 @@ function updateFirewallFilterDefinitions(session: Session, textDocument: TextDoc
     const type = 'firewall-filter';
     session.definitions.clear(textDocument.uri, type);
     insertDefinitions(session, textDocument, type, 'firewall(?:\\s+family\\s+\\S+)?\\s+filter\\s+)(\\S+)', m => m[2]);
+}
+
+function updateNatPoolDefinitions(session: Session, textDocument: TextDocument): void {
+    const type = 'nat-pool';
+    session.definitions.clear(textDocument.uri, type);
+    insertDefinitions(session, textDocument, type, 'services\\s+nat\\s+pool\\s+)(\\S+)', m => m[2]);
 }
