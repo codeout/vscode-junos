@@ -1,3 +1,12 @@
+## [0.1.5] - 2019-11-04
+
+### Added
+
+* Newly supported syntax
+  * `set security`
+  * Completion and validation of NAT pool name
+
+
 ## [0.1.4] - 2019-03-03
 
 ### Fixed
@@ -39,8 +48,8 @@
 ### Added
 
 * Newly supported syntax
-  * set system dump-on-panic
-  * set protocols bgp minimum-hold-time xxx
+  * `set system dump-on-panic`
+  * `set protocols bgp minimum-hold-time xxx`
 
 ### Fixed
 

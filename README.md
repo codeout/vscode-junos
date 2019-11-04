@@ -24,6 +24,7 @@ The language server has the following language features:
   * `as-path`
   * `as-path-group`
   * `firewall-filter`
+  * NAT pool (`source-pool`, `destination-pool`, `dns-alg-pool`, `overload-pool`)
 
 
 ## Screen Shot
