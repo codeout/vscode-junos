@@ -1,5 +1,3 @@
-'use strict';
-
 import {
     CompletionItem,
     CompletionItemKind,
@@ -15,8 +13,11 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
     return (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
         const uri = textDocumentPosition.textDocument.uri;
         const doc = session.documents.get(uri);
-        let line = doc.getText().split("\n")[textDocumentPosition.position.line];
+        if (!doc) {
+            return [];
+        }
 
+        let line = doc.getText().split("\n")[textDocumentPosition.position.line];
         if (!line.match(prefixPattern)) {
             return [];
         }
@@ -51,7 +52,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
     };
 }
 
-function addReferences(session: Session, definitions: Object, keywords) {
+function addReferences(session: Session, definitions: Object, keywords: string[]) {
     const index = keywords.indexOf('word');
     if (index < 0) {
         return;

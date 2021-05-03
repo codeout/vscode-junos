@@ -1,5 +1,3 @@
-'use strict';
-
 import {
     Definition,
     Location,
@@ -14,7 +12,13 @@ import {Session} from './session';
 
 
 export class DefinitionStore {
-    private readonly store: Object;
+    private readonly store: {
+        [uri: string]: {
+            [symbolType: string]: {
+                [symbol: string]: Range[]
+            }
+        }
+    };
 
     constructor() {
         this.store = {};
@@ -69,7 +73,11 @@ export class DefinitionStore {
 
 export function definition(session: Session): RequestHandler<TextDocumentPositionParams, Definition, void> {
     return (textDocumentPosition: TextDocumentPositionParams): Definition => {
-        const doc: TextDocument = session.documents.get(textDocumentPosition.textDocument.uri);
+        const doc = session.documents.get(textDocumentPosition.textDocument.uri);
+        if (!doc) {
+            return [];
+        }
+
         const line = doc.getText().split("\n")[textDocumentPosition.position.line];
 
         const definition = getInterfaceDefinition(session, line, textDocumentPosition) ||
@@ -95,13 +103,13 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
  * @param pattern
  */
 function getPointedSymbol(session: Session, line: string, position: number, pattern: string): string | undefined {
-    const m: RegExpMatchArray = line.match(`(${prefixPattern.source}(?:\\s+.*)?\\s+${pattern}\\s+)(\\S+)`);
+    const matched = line.match(`(${prefixPattern.source}(?:\\s+.*)?\\s+${pattern}\\s+)(\\S+)`);
 
     // Return nothing when the cursor doesn't point at the keyword
-    if (!m || m[0].length < position || m[1].length > position) {
+    if (!matched || matched[0].length < position || matched[1].length > position) {
         return;
     } else {
-        return m[2];
+        return matched[2];
     }
 }
 

@@ -1,5 +1,3 @@
-'use strict';
-
 import {InitializeParams} from 'vscode-languageserver';
 
 import {Session} from './session';

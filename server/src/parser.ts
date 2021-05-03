@@ -1,39 +1,38 @@
-'use strict';
-
 import {
     Enumeration,
     JunosSchema,
+    SchemaObject,
     Sequence
-} from '../src/junos';
+} from '../src/junos';  // './junos' breaks debugging on vscode
 
 export const prefixPattern = /^[\t ]*(?:set|delete|activate|deactivate)/;
 
 
 export class Node {
     name: string;
-    parent: Node;
-    children = [];
-    description: string;
-    type: string;
+    parent: Node | null;
+    children: Node[] = [];
+    description?: string;  // Can be undefined according to CompletionItem.detail
+    type: string | null = null;
 
-    constructor(name: string, parent: Node, raw_children, description?: string, type?: string) {
+    constructor(name: string, parent: Node | null, raw_children: SchemaObject | null, description?: string, type?: string) {
         this.name = name;
         this.parent = parent;
         this.description = description;
-        this.type = type;
+        this.type = type || null;
 
-        if (raw_children instanceof Enumeration) {
-            this.children = raw_children;
-        } else if (raw_children !== null) {
+        if (raw_children !== null) {
             this.load(raw_children);
         }
     }
 
-    load(raw_children) {
+    load(raw_children: string[] | Enumeration | Sequence | SchemaObject | Function) {
         switch (typeof raw_children) {
             case 'object':
-                if (Array.isArray(raw_children) || raw_children instanceof Enumeration) {
+                if (Array.isArray(raw_children)) {
                     this.load_array(raw_children);
+                } else if (raw_children instanceof Enumeration) {
+                    this.load_array(raw_children.list);
                 } else if (raw_children instanceof Sequence) {
                     this.load_sequence(raw_children, 0);
                 } else {
@@ -53,14 +52,16 @@ export class Node {
         }
     }
 
-    private load_object(obj: Object) {
+    private load_object(obj: SchemaObject) {
         Object.keys(obj).forEach((key: string) => {
+            const val = obj[key];
+
             if (key.startsWith('arg')) {
-                this.add(this.arg_node(key, obj[key]));
-            } else if (key.startsWith('null_')) {
-                this.add_null_node(obj[key]);
+                this.add(this.arg_node(key, val));
+            } else if (key.startsWith('null_') && val) {
+                this.add_null_node(val);
             } else if (typeof key === 'string') {
-                this.add_string_node(key, obj[key]);
+                this.add_string_node(key, val);
             } else {
                 throw new Error('Not implemented');
             }
@@ -68,7 +69,7 @@ export class Node {
     }
 
     private load_array(array: string[]) {
-        array.forEach((child: string | null) => {
+        array.forEach((child) => {
             this.add_string_node(child, null);
         });
     }
@@ -95,7 +96,7 @@ export class Node {
     private load_string(string: string) {
         switch (string) {
             case 'arg':
-                this.add(new Node('arg', this, null, null, 'arg'));
+                this.add(new Node('arg', this, null, undefined, 'arg'));
                 break;
             case 'any':
                 // NOTE: This is only for "set groups", and all are done by another hack
@@ -109,7 +110,7 @@ export class Node {
         this.children.push(child);
     }
 
-    add_array_string(args: string, description: string, raw_children) {
+    add_array_string(args: string, description: string, raw_children: SchemaObject | null) {
         args.split(/\s*\|\s*/)
             .filter((arg) => !arg.startsWith('$'))
             .forEach((arg) => {
@@ -117,17 +118,15 @@ export class Node {
             });
     }
 
-    /*
-     * This is a bit hacky, but migrates null node, which is originally nested choice element,
-     * will be migrated to the parent.
-     */
-    private add_null_node(children) {
+    // This is a bit hacky, but migrates null node, which is originally nested choice element,
+    // will be migrated to the parent.
+    private add_null_node(children: SchemaObject) {
         this.load(children);
     }
 
-    private add_string_node(key: string, raw_children) {
+    private add_string_node(key: string, raw_children: SchemaObject | null) {
         const [name, description] = this.extract_key(key);
-        const match: RegExpMatchArray = name.match(/(\S*)\((.*)\)/);
+        const match = name.match(/(\S*)\((.*)\)/);
 
         if (!match) {
             this.add(new Node(name, this, raw_children, description));
@@ -138,13 +137,13 @@ export class Node {
         }
     }
 
-    private arg_node(key: string, raw_children): Node {
+    private arg_node(key: string, raw_children: SchemaObject | null): Node {
         const [name, description] = this.extract_key(key);
         // name may be "arg_1"
         return new Node('arg', this, raw_children, description, 'arg');
     }
 
-    private argument_string_node(name: string, args: string, description: string, raw_children): Node {
+    private argument_string_node(name: string, args: string, description: string, raw_children: SchemaObject | null): Node {
         const node = new Node(name, this, null, description);
 
         node.add_array_string(args, description, raw_children);
@@ -159,13 +158,13 @@ export class Node {
         return this.children.map((node) => node.name).sort();
     }
 
-    find(string: string): Node {
+    find(string: string): Node | null {
         const child = this.children.find((node) => node.name === string);
         if (child) {
             return child;
         }
 
-        return this.children.find((node) => node.type === 'arg');
+        return this.children.find((node) => node.type === 'arg') || null;
     }
 }
 
@@ -176,8 +175,8 @@ export class Parser {
         this.ast = ast;
     }
 
-    parse(string: string): Node {
-        let ast = this.ast;
+    parse(string: string): Node | null {
+        let ast: Node | null = this.ast;
         string.trim().split(/\s+/).forEach((word) => {
             if (ast) {
                 ast = ast.find(word);
@@ -188,7 +187,7 @@ export class Parser {
     }
 
     keywords(string: string): string[] {
-        let ast = this.ast;
+        let ast: Node | null = this.ast;
         string = string.trim();
 
         // NOTE: Hack for "groups" statement
@@ -208,7 +207,7 @@ export class Parser {
         return ast ? ast.keywords().map((k) => k === 'arg' ? 'word' : k).concat(['apply-groups']) : [];
     }
 
-    description(string: string): string {
+    description(string: string): string | undefined {
         if (!string) {
             return;
         }
