@@ -1,4 +1,5 @@
 import {InitializeParams} from 'vscode-languageserver';
+import {TextDocumentSyncKind} from "vscode-languageserver/node";
 
 import {Session} from './session';
 import {
@@ -17,7 +18,7 @@ const session = new Session();
 session.connection.onInitialize((params: InitializeParams) => {
 	return {
 		capabilities: {
-			textDocumentSync: session.documents.syncKind,
+			textDocumentSync: TextDocumentSyncKind.Incremental,
 			completionProvider: {
 				resolveProvider: true,
 				triggerCharacters: [' ']

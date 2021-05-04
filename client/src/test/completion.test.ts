@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import * as assert from 'assert';
 import {getDocUri, activate} from './helper';
 
-describe('Should do completion', () => {
+suite('Should do completion', () => {
     const docUri = getDocUri('junos.conf');
 
-    it('Completes root config sections', async () => {
+    test('Completes root config sections', async () => {
         await testCompletion(docUri, new vscode.Position(1, 4), {
             items: [
                 {label: 'access', kind: vscode.CompletionItemKind.Text},
@@ -51,7 +51,7 @@ describe('Should do completion', () => {
         });
     });
 
-    it('Completes interface sections', async () => {
+    test('Completes interface sections', async () => {
         await testCompletion(docUri, new vscode.Position(2, 24), {
             items: [
                 {label: 'accounting-profile', kind: vscode.CompletionItemKind.Text},
@@ -164,7 +164,7 @@ describe('Should do completion', () => {
         });
     });
 
-    it('Completes defined prefix-list', async () => {
+    test('Completes defined prefix-list', async () => {
         await testCompletion(docUri, new vscode.Position(3, 67), {
             items: [
                 {label: 'apply-groups', kind: vscode.CompletionItemKind.Text},
@@ -173,7 +173,7 @@ describe('Should do completion', () => {
         });
     });
 
-    it('Completes defined policy-statement', async () => {
+    test('Completes defined policy-statement', async () => {
         await testCompletion(docUri, new vscode.Position(4, 41), {
             items: [
                 {label: 'apply-groups', kind: vscode.CompletionItemKind.Text},
@@ -182,7 +182,7 @@ describe('Should do completion', () => {
         });
     });
 
-    it('Completes defined community', async () => {
+    test('Completes defined community', async () => {
         await testCompletion(docUri, new vscode.Position(5, 65), {
             items: [
                 {label: 'apply-groups', kind: vscode.CompletionItemKind.Text},
@@ -191,7 +191,7 @@ describe('Should do completion', () => {
         });
     });
 
-    it('Completes defined as-path', async () => {
+    test('Completes defined as-path', async () => {
         await testCompletion(docUri, new vscode.Position(6, 63), {
             items: [
                 {label: 'apply-groups', kind: vscode.CompletionItemKind.Text},
@@ -200,7 +200,7 @@ describe('Should do completion', () => {
         });
     });
 
-    it('Completes defined as-path-group', async () => {
+    test('Completes defined as-path-group', async () => {
         await testCompletion(docUri, new vscode.Position(7, 69), {
             items: [
                 {label: 'apply-groups', kind: vscode.CompletionItemKind.Text},
@@ -209,7 +209,7 @@ describe('Should do completion', () => {
         });
     });
 
-    it('Completes defined firewall filter', async () => {
+    test('Completes defined firewall filter', async () => {
         await testCompletion(docUri, new vscode.Position(8, 56), {
             items: [
                 {label: 'apply-groups', kind: vscode.CompletionItemKind.Text},
@@ -220,7 +220,7 @@ describe('Should do completion', () => {
         });
     });
 
-    it('Completes defined nat pool', async () => {
+    test('Completes defined nat pool', async () => {
         await testCompletion(docUri, new vscode.Position(39, 68), {
             items: [
                 {label: 'apply-groups', kind: vscode.CompletionItemKind.Text},

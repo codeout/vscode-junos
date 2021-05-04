@@ -32,7 +32,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
 
         // Validate symbol reference
         // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
-        const matched = m;
+        const match = m;
         [
             ['interface', 'interface'],
             ['prefix-list', 'from\\s+(?:source-|destination-)?prefix-list'],
@@ -43,14 +43,14 @@ export async function validateTextDocument(session: Session, textDocument: TextD
             ['firewall-filter', 'filter\\s+(?:input|output|input-list|output-list)'],
             ['nat-pool', 'then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)']
         ].forEach(([symbolType, pattern]) => {
-            const invalidRange = validateReference(session, matched[2], textDocument.uri, symbolType, pattern);
+            const invalidRange = validateReference(session, match[2], textDocument.uri, symbolType, pattern);
             if (typeof invalidRange !== 'undefined') {
                 problems++;
 
                 diagnostics.push(createDiagnostic(session, textDocument,
-                    matched.index + matched[1].length + invalidRange[0],
-                    matched.index + matched[1].length + invalidRange[1],
-                    `"${matched[2].slice(...invalidRange)}" is not defined`,
+                    match.index + match[1].length + invalidRange[0],
+                    match.index + match[1].length + invalidRange[1],
+                    `"${match[2].slice(...invalidRange)}" is not defined`,
                 ));
             }
         });
@@ -79,25 +79,25 @@ function createDiagnostic(session: Session, textDocument: TextDocument, start: n
  * @return number or undefined
  */
 function validateLine(session: Session, line: string): number | undefined {
-    const matched = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
-    if (!matched) {
+    const match = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
+    if (!match) {
         return;
     }
 
     // There is an invalid keyword in the beginning like "set foo"
-    if (!matched[1]) {
+    if (!match[1]) {
         return 0;
     }
 
-    const keywords = session.parser.keywords(matched[1]);
+    const keywords = session.parser.keywords(match[1]);
 
     if (keywords.includes('word') ||  // 'word' means wildcard
-        keywords.includes(matched[2])) {
+        keywords.includes(match[2])) {
         return;
     }
 
-    const shorter = validateLine(session, matched[1]);
-    return typeof shorter === 'undefined' ? matched[1].length + 1 : shorter;
+    const shorter = validateLine(session, match[1]);
+    return typeof shorter === 'undefined' ? match[1].length + 1 : shorter;
 }
 
 /**
@@ -111,13 +111,13 @@ function validateLine(session: Session, line: string): number | undefined {
  * @return number[] or undefined [startPosition, endPosition]
  */
 function validateReference(session: Session, line: string, uri: string, symbolType: string, pattern: string): number[] | undefined {
-    const matched = line.match(`(\\s${pattern}\\s+)(\\S+)`);
-    if (!matched) {
+    const match = line.match(`(\\s${pattern}\\s+)(\\S+)`);
+    if (!match) {
         return;
     }
 
-    if (!(matched[2] in session.definitions.getDefinitions(uri, symbolType))) {
-        return [(matched.index || 0) + matched[1].length, (matched.index || 0) + matched[1].length + matched[2].length];
+    if (!(match[2] in session.definitions.getDefinitions(uri, symbolType))) {
+        return [(match.index || 0) + match[1].length, (match.index || 0) + match[1].length + match[2].length];
     }
 }
 
@@ -129,14 +129,14 @@ function validateReference(session: Session, line: string, uri: string, symbolTy
  */
 function squashQuotedSpaces(string: string): string {
     const pattern = /"[^"]*"/g;
-    let matched: RegExpExecArray | null;
+    let match: RegExpExecArray | null;
     let cursor = 0;
     let buffer = '';
 
-    while (matched = pattern.exec(string)) {
-        buffer += string.slice(cursor, matched.index);
-        buffer += matched[0].replace(/ /g, '_');
-        cursor += matched.index + matched[0].length;
+    while (match = pattern.exec(string)) {
+        buffer += string.slice(cursor, match.index);
+        buffer += match[0].replace(/ /g, '_');
+        cursor += match.index + match[0].length;
     }
     buffer += string.slice(cursor);
 
