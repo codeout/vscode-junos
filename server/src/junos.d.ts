@@ -4,6 +4,10 @@ export class Enumeration {
     list: string[]
 }
 
+export class Repeatable {
+    list: SchemaObject
+}
+
 export class Sequence {
     list: SchemaObject[]
     get(depth: number): SchemaObject
