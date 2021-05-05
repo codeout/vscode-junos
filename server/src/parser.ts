@@ -13,7 +13,7 @@ export class Node {
   constructor(
     name: string,
     parent: Node | null,
-    raw_children: SchemaObject | null,
+    rawChildren: SchemaObject | null,
     description?: string,
     type?: string,
   ) {
@@ -22,32 +22,32 @@ export class Node {
     this.description = description;
     this.type = type || null;
 
-    if (raw_children !== null) {
-      this.load(raw_children);
+    if (rawChildren !== null) {
+      this.load(rawChildren);
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
-  load(raw_children: string[] | Enumeration | Repeatable | Sequence | SchemaObject | Function) {
-    switch (typeof raw_children) {
+  load(rawChildren: string[] | Enumeration | Repeatable | Sequence | SchemaObject | Function) {
+    switch (typeof rawChildren) {
       case "object":
-        if (Array.isArray(raw_children)) {
-          this.load_array(raw_children);
-        } else if (raw_children instanceof Enumeration) {
-          this.load_array(raw_children.list);
-        } else if (raw_children instanceof Sequence) {
-          this.load_sequence(raw_children, 0);
-        } else if (raw_children instanceof Repeatable) {
-          this.load_repeatable(raw_children);
+        if (Array.isArray(rawChildren)) {
+          this.loadArray(rawChildren);
+        } else if (rawChildren instanceof Enumeration) {
+          this.loadArray(rawChildren.list);
+        } else if (rawChildren instanceof Sequence) {
+          this.loadSequence(rawChildren, 0);
+        } else if (rawChildren instanceof Repeatable) {
+          this.loadRepeatable(rawChildren);
         } else {
-          this.load_object(raw_children);
+          this.loadObject(rawChildren);
         }
         break;
       case "string":
-        this.load_string(raw_children);
+        this.loadString(rawChildren);
         break;
       case "function":
-        this.load(raw_children());
+        this.load(rawChildren());
         break;
       case "undefined":
         break;
@@ -56,48 +56,48 @@ export class Node {
     }
   }
 
-  private load_object(obj: SchemaObject) {
+  private loadObject(obj: SchemaObject) {
     Object.keys(obj).forEach((key: string) => {
       const val = obj[key];
 
       if (key.startsWith("arg")) {
-        this.add(this.arg_node(key, val));
+        this.add(this.argNode(key, val));
       } else if (key.startsWith("null_") && val) {
-        this.add_null_node(val);
+        this.addNullNode(val);
       } else if (typeof key === "string") {
-        this.add_string_node(key, val);
+        this.addStringNode(key, val);
       } else {
         throw new Error("Not implemented");
       }
     });
   }
 
-  private load_array(array: string[]) {
+  private loadArray(array: string[]) {
     array.forEach((child) => {
-      this.add_string_node(child, null);
+      this.addStringNode(child, null);
     });
   }
 
-  load_sequence(sequence: Sequence, depth: number) {
+  loadSequence(sequence: Sequence, depth: number) {
     const raw = sequence.get(depth);
 
     // NOTE: This is actually complicated, might be buggy
     if (this.children.length === 0) {
       this.load(raw);
       this.children.forEach((child) => {
-        child.load_sequence(sequence, depth + 1);
+        child.loadSequence(sequence, depth + 1);
       });
     } else {
       this.children.forEach((child) => {
         child.load(raw);
         child.children.forEach((grandChild) => {
-          grandChild.load_sequence(sequence, depth + 1);
+          grandChild.loadSequence(sequence, depth + 1);
         });
       });
     }
   }
 
-  private load_string(string: string) {
+  private loadString(string: string) {
     switch (string) {
       case "arg":
         this.add(new Node("arg", this, null, undefined, "arg"));
@@ -110,7 +110,7 @@ export class Node {
     }
   }
 
-  load_repeatable(repeatable: Repeatable) {
+  loadRepeatable(repeatable: Repeatable) {
     this.load(repeatable.list);
     this.repeatable = true;
   }
@@ -119,55 +119,50 @@ export class Node {
     this.children.push(child);
   }
 
-  add_array_string(args: string, description: string, raw_children: SchemaObject | null) {
+  addArrayString(args: string, description: string, rawChildren: SchemaObject | null) {
     args
       .split(/\s*\|\s*/)
       .filter((arg) => !arg.startsWith("$"))
       .forEach((arg) => {
-        this.load({ [arg]: raw_children });
+        this.load({ [arg]: rawChildren });
       });
   }
 
   // This is a bit hacky, but migrates null node, which is originally nested choice element,
   // will be migrated to the parent.
-  private add_null_node(children: SchemaObject) {
+  private addNullNode(children: SchemaObject) {
     this.load(children);
   }
 
-  private add_string_node(key: string, raw_children: SchemaObject | null) {
-    const [name, description] = this.extract_key(key);
+  private addStringNode(key: string, rawChildren: SchemaObject | null) {
+    const [name, description] = this.extractKey(key);
     const match = name.match(/(\S*)\((.*)\)/);
 
     if (!match) {
-      this.add(new Node(name, this, raw_children, description));
+      this.add(new Node(name, this, rawChildren, description));
     } else if (match[1]) {
       // eg: unit($junos-underlying-interface-unit|$junos-interface-unit|arg)
-      this.add(this.argument_string_node(match[1], match[2], description, raw_children));
+      this.add(this.argumentStringNode(match[1], match[2], description, rawChildren));
     } else {
       // eg: (any-unicast|any-ipv4|any-ipv6|arg)
-      this.add_array_string(match[2], description, raw_children);
+      this.addArrayString(match[2], description, rawChildren);
     }
   }
 
-  private arg_node(key: string, raw_children: SchemaObject | null): Node {
-    const [name, description] = this.extract_key(key);
+  private argNode(key: string, rawChildren: SchemaObject | null): Node {
+    const [name, description] = this.extractKey(key);
     // name may be "arg_1"
-    return new Node("arg", this, raw_children, description, "arg");
+    return new Node("arg", this, rawChildren, description, "arg");
   }
 
-  private argument_string_node(
-    name: string,
-    args: string,
-    description: string,
-    raw_children: SchemaObject | null,
-  ): Node {
+  private argumentStringNode(name: string, args: string, description: string, rawChildren: SchemaObject | null): Node {
     const node = new Node(name, this, null, description);
 
-    node.add_array_string(args, description, raw_children);
+    node.addArrayString(args, description, rawChildren);
     return node;
   }
 
-  private extract_key(key: string): string[] {
+  private extractKey(key: string): string[] {
     return key.split(" | ");
   }
 
