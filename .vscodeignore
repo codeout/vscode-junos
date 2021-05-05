@@ -11,6 +11,9 @@ client/node_modules/**
 !client/node_modules/vscode-languageclient/**
 !client/node_modules/vscode-languageserver-protocol/**
 !client/node_modules/vscode-languageserver-types/**
+!client/node_modules/semver/**
+
+# docs
 docs/images/*.mov
 
 # submodules
@@ -19,8 +22,10 @@ vscode-junos-syntax/**
 !vscode-junos-syntax/syntaxes/Junos.tmLanguage
 
 # development
+.eslintignore
 .gitmodules
 .idea/**
+.ignore
 *.js
 *.conf
 others/**

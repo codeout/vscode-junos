@@ -1,39 +1,33 @@
-import {InitializeParams} from 'vscode-languageserver';
+import { InitializeParams } from "vscode-languageserver";
+import { TextDocumentSyncKind } from "vscode-languageserver/node";
 
-import {Session} from './session';
-import {
-	completion,
-	completionResolve,
-} from './completion';
-import {
-	definition,
-	updateDefinitions,
-} from './definition'
-import {validateTextDocument} from './validation';
-
+import { completion, completionResolve } from "./completion";
+import { definition, updateDefinitions } from "./definition";
+import { Session } from "./session";
+import { validateTextDocument } from "./validation";
 
 const session = new Session();
 
 session.connection.onInitialize((params: InitializeParams) => {
-	return {
-		capabilities: {
-			textDocumentSync: session.documents.syncKind,
-			completionProvider: {
-				resolveProvider: true,
-				triggerCharacters: [' ']
-			},
-			definitionProvider: true,
-		}
-	};
+  return {
+    capabilities: {
+      textDocumentSync: TextDocumentSyncKind.Incremental,
+      completionProvider: {
+        resolveProvider: true,
+        triggerCharacters: [" "],
+      },
+      definitionProvider: true,
+    },
+  };
 });
 
 session.connection.onCompletion(completion(session));
 session.connection.onCompletionResolve(completionResolve(session));
 session.connection.onDefinition(definition(session));
 
-session.documents.onDidChangeContent(change => {
-	updateDefinitions(session, change.document);
-	validateTextDocument(session, change.document);
+session.documents.onDidChangeContent((change) => {
+  updateDefinitions(session, change.document);
+  validateTextDocument(session, change.document);
 });
 
 session.listen();

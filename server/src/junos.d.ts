@@ -1,15 +1,19 @@
 type SchemaObject = { [key: string]: SchemaObject | null };
 
 export class Enumeration {
-    list: string[]
+  list: string[];
+}
+
+export class Repeatable {
+  list: SchemaObject;
 }
 
 export class Sequence {
-    list: SchemaObject[]
-    get(depth: number): SchemaObject
+  list: SchemaObject[];
+
+  get(depth: number): SchemaObject;
 }
 
 export class JunosSchema {
-    configuration(): SchemaObject
+  configuration(): SchemaObject;
 }
-
