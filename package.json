@@ -103,7 +103,8 @@
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"test": "sh ./scripts/e2e.sh",
-		"lint": "npx eslint ."
+		"lint": "npx eslint .",
+		"clean": "rm -rf node_modules */node_modules */out"
 	},
 	"devDependencies": {
 		"@types/mocha": "^8.2.2",
