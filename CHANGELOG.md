@@ -1,3 +1,10 @@
+## [0.2.1] - 2021-08-30
+
+### Fixed
+
+* Line comment definition, that should be "#".
+
+
 ## [0.2.0] - 2021-05-05
 
 ### Added
