@@ -1,3 +1,10 @@
+## [0.2.2] - 2021-10-18
+
+### Fixed
+
+* `set snmp name` instead of `set snmp system-name` which is a JUNOS problem
+
+
 ## [0.2.1] - 2021-08-30
 
 ### Fixed
