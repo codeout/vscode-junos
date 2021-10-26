@@ -241,7 +241,8 @@ function insertDefinitions(
 function updateInterfaceDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "interface";
   session.definitions.clear(textDocument.uri, type);
-  insertDefinitions(session, textDocument, type, "interfaces\\s+)(\\S+)", (m) => m[2]);
+  insertDefinitions(session, textDocument, type, "interfaces\\s+)((?!interface-range)\\S+)", (m) => m[2]);
+  insertDefinitions(session, textDocument, type, "interfaces interface-range\\s+)(\\S+)", (m) => m[2]);
   insertDefinitions(
     session,
     textDocument,

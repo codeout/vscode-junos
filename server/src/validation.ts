@@ -32,7 +32,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     // Validate symbol reference
     const match = m;
     const rules = [
-      ["interface", "interface", ["all"]],
+      ["interface", "interface", ["all"], ["interface-range"]],
       ["prefix-list", "from\\s+(?:source-|destination-)?prefix-list"],
       ["policy-statement", "(?:import|export)"],
       ["community", "(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))"],
@@ -40,11 +40,19 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       ["as-path-group", "from\\s+as-path-group"],
       ["firewall-filter", "filter\\s+(?:input|output|input-list|output-list)"],
       ["nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
-    ] as Array<[string, string, string[]]>;
+    ] as Array<[string, string, string[], string[]]>;
 
     // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
-    rules.forEach(([symbolType, pattern, allowList]) => {
-      const invalidRange = validateReference(session, match[2], textDocument.uri, symbolType, pattern, allowList);
+    rules.forEach(([symbolType, pattern, allowList, denyList]) => {
+      const invalidRange = validateReference(
+        session,
+        match[2],
+        textDocument.uri,
+        symbolType,
+        pattern,
+        allowList,
+        denyList,
+      );
       if (typeof invalidRange !== "undefined") {
         problems++;
 
@@ -121,6 +129,7 @@ function validateLine(session: Session, line: string): number | undefined {
  * @param symbolType string A key of session.definitions (eg: 'interface')
  * @param pattern string A line pattern to kick the validation
  * @param allowList string[] Keywords to pass the validation
+ * @param denyList string[] Keywords to fail the validation
  * @return number[] or undefined [startPosition, endPosition]
  */
 function validateReference(
@@ -130,13 +139,14 @@ function validateReference(
   symbolType: string,
   pattern: string,
   allowList?: string[],
+  denyList?: string[],
 ): number[] | undefined {
   const match = line.match(`(\\s${pattern}\\s+)(\\S+)`);
   if (!match || allowList?.includes(match[2])) {
     return;
   }
 
-  if (!(match[2] in session.definitions.getDefinitions(uri, symbolType))) {
+  if (denyList?.includes(match[2]) || !(match[2] in session.definitions.getDefinitions(uri, symbolType))) {
     return [(match.index || 0) + match[1].length, (match.index || 0) + match[1].length + match[2].length];
   }
 }
