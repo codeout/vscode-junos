@@ -30,10 +30,9 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     }
 
     // Validate symbol reference
-    // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
     const match = m;
-    [
-      ["interface", "interface"],
+    const rules = [
+      ["interface", "interface", ["all"]],
       ["prefix-list", "from\\s+(?:source-|destination-)?prefix-list"],
       ["policy-statement", "(?:import|export)"],
       ["community", "(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))"],
@@ -41,8 +40,11 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       ["as-path-group", "from\\s+as-path-group"],
       ["firewall-filter", "filter\\s+(?:input|output|input-list|output-list)"],
       ["nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
-    ].forEach(([symbolType, pattern]) => {
-      const invalidRange = validateReference(session, match[2], textDocument.uri, symbolType, pattern);
+    ] as Array<[string, string, string[]]>;
+
+    // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
+    rules.forEach(([symbolType, pattern, allowList]) => {
+      const invalidRange = validateReference(session, match[2], textDocument.uri, symbolType, pattern, allowList);
       if (typeof invalidRange !== "undefined") {
         problems++;
 
@@ -118,6 +120,7 @@ function validateLine(session: Session, line: string): number | undefined {
  * @param uri TextDocument's URI
  * @param symbolType string A key of session.definitions (eg: 'interface')
  * @param pattern string A line pattern to kick the validation
+ * @param allowList string[] Keywords to pass the validation
  * @return number[] or undefined [startPosition, endPosition]
  */
 function validateReference(
@@ -126,9 +129,10 @@ function validateReference(
   uri: string,
   symbolType: string,
   pattern: string,
+  allowList?: string[],
 ): number[] | undefined {
   const match = line.match(`(\\s${pattern}\\s+)(\\S+)`);
-  if (!match) {
+  if (!match || allowList?.includes(match[2])) {
     return;
   }
 
