@@ -1,3 +1,10 @@
+## [0.2.3] - 2021-10-28
+
+### Added
+
+* Completion and validation of `interface-range`
+
+
 ## [0.2.2] - 2021-10-18
 
 ### Fixed
