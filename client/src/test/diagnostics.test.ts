@@ -74,6 +74,12 @@ suite("Should get diagnostics", () => {
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
+      {
+        message: '"foo_" is not defined',
+        range: toRange(46, 29, 46, 33),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
     ]);
   });
 });
