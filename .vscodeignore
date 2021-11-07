@@ -23,10 +23,12 @@ vscode-junos-syntax/**
 !vscode-junos-syntax/syntaxes/Junos.tmLanguage
 
 # development
+commitlint.config.js
 .eslintignore
 .gitmodules
 .idea/**
 .ignore
+.pre-commit-config.yaml
 *.js
 *.conf
 others/**

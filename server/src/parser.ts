@@ -210,6 +210,7 @@ export class Parser {
   keywords(string: string): string[] {
     let ast: Node | null = this.ast;
     string = string.trim();
+    const defaultKeywords = ["apply-groups"];
 
     // NOTE: Hack for "groups" statement
     if (string) {
@@ -220,17 +221,22 @@ export class Parser {
       string = string.replace(/apply-groups\s+\S+$/, "");
     }
 
+    // NOTE: Hack for implicit interface-range "all"
+    if (string?.match(/\s+interface$/)) {
+      defaultKeywords.push("all");
+    }
+
     if (string) {
       ast = this.parse(string);
     }
 
-    // replace "arg" with "word"
-    return (
+    const keywords =
       ast
         ?.keywords()
-        .map((k) => (k === "arg" ? "word" : k))
-        .concat(["apply-groups"]) || []
-    );
+        .map((k) => (k === "arg" ? "word" : k)) // replace "arg" with "word"
+        .concat(defaultKeywords) || [];
+
+    return [...new Set(keywords)]; // uniq
   }
 
   description(string: string): string | undefined {
