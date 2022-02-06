@@ -1,3 +1,10 @@
+## [0.2.4] - 2022-02-06
+
+### Fixed
+
+* Syntax highlight of `fxp?` and ipv6 address assigned interfaces
+
+
 ## [0.2.3] - 2021-10-28
 
 ### Added
