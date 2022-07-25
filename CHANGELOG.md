@@ -1,3 +1,10 @@
+## [0.2.5] - 2022-07-26
+
+### Fixed
+
+* `interfaces interface-range xxx member-range`
+
+
 ## [0.2.4] - 2022-02-06
 
 ### Fixed
