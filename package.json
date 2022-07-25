@@ -107,15 +107,15 @@
 		"clean": "rm -rf node_modules */node_modules */out"
 	},
 	"devDependencies": {
-		"@types/mocha": "^8.2.2",
-		"@types/node": "^12.12.0",
-		"@typescript-eslint/eslint-plugin": "^4.21.0",
-		"@typescript-eslint/parser": "^4.21.0",
-		"eslint": "^7.23.0",
-		"eslint-config-prettier": "^8.3.0",
-		"eslint-plugin-prettier": "^3.4.0",
-		"mocha": "^8.3.2",
-		"prettier": "2.2.1",
-		"typescript": "^4.2.3"
+		"@types/mocha": "^9.1.1",
+		"@types/node": "^18.6.1",
+		"@typescript-eslint/eslint-plugin": "^5.31.0",
+		"@typescript-eslint/parser": "^5.31.0",
+		"eslint": "^8.20.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-prettier": "^4.2.1",
+		"mocha": "^10.0.0",
+		"prettier": "2.7.1",
+		"typescript": "^4.7.4"
 	}
 }
