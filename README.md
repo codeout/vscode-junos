@@ -35,4 +35,4 @@ The language server has the following language features:
 
 ## Copyright and License
 
-Copyright (c) 2019-2021 Shintaro Kojima. Code released under the [MIT license](LICENSE.txt).
+Copyright (c) 2019-2022 Shintaro Kojima. Code released under the [MIT license](LICENSE.txt).
