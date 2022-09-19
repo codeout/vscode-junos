@@ -1,3 +1,17 @@
+## [0.2.6] - 2022-09-20
+
+### Added
+
+* Faster interface speed up to 800g
+
+### Fixed
+
+* `class-of-service interfaces all unit` to accept a unit number
+* `classifiers` and `rewrite-rules` to accept arbitrary strings in various hierarchy
+* `protocols mpls path xxx` to accept a next hop address
+* `match` instead of `dest-nat-rule-match`, `src-nat-rule-match` or `static-nat-rule-match`
+
+
 ## [0.2.5] - 2022-07-26
 
 ### Fixed
