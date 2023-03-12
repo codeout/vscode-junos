@@ -19,7 +19,7 @@
 		"juniper"
 	],
 	"engines": {
-		"vscode": "^1.43.0"
+		"vscode": "^1.75.0"
 	},
 	"activationEvents": [
 		"onLanguage:junos"
@@ -101,9 +101,9 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
+		"lint": "npx eslint .",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"test": "sh ./scripts/e2e.sh",
-		"lint": "npx eslint .",
 		"clean": "rm -rf node_modules */node_modules */out"
 	},
 	"devDependencies": {
