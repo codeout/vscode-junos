@@ -1,3 +1,18 @@
+## [0.3.0] - 2023-03-12
+
+### Added
+
+* Upgrade language server and client to 8.1.0
+* Recreate parser based on MX 21.2R3-S2.9 xsd
+* Newly supported syntax
+  * `protocols iccp peer xxx liveness-detection single-hop`
+  * `poe` based on EX 18.1R3-S6.1
+
+### Fixed
+
+* `interfaces xxx ether-options speed` was unexpectedly marked as invalid
+
+
 ## [0.2.6] - 2022-09-20
 
 ### Added
