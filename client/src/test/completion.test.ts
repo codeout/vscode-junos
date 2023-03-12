@@ -32,6 +32,7 @@ suite("Should do completion", () => {
         { label: "logical-systems", kind: vscode.CompletionItemKind.Text },
         { label: "multi-chassis", kind: vscode.CompletionItemKind.Text },
         { label: "multicast-snooping-options", kind: vscode.CompletionItemKind.Text },
+        { label: "openconfig-bfd:bfd", kind: vscode.CompletionItemKind.Text },
         { label: "openconfig-bgp:bgp", kind: vscode.CompletionItemKind.Text },
         { label: "openconfig-interfaces:interfaces", kind: vscode.CompletionItemKind.Text },
         { label: "openconfig-lacp:lacp", kind: vscode.CompletionItemKind.Text },
@@ -40,6 +41,7 @@ suite("Should do completion", () => {
         { label: "openconfig-mpls:mpls", kind: vscode.CompletionItemKind.Text },
         { label: "openconfig-network-instance:network-instances", kind: vscode.CompletionItemKind.Text },
         { label: "openconfig-platform:components", kind: vscode.CompletionItemKind.Text },
+        { label: "openconfig-qos:qos", kind: vscode.CompletionItemKind.Text },
         { label: "openconfig-routing-policy:routing-policy", kind: vscode.CompletionItemKind.Text },
         { label: "openconfig-system:system", kind: vscode.CompletionItemKind.Text },
         { label: "openconfig-telemetry:telemetry-system", kind: vscode.CompletionItemKind.Text },
@@ -111,7 +113,6 @@ suite("Should do completion", () => {
         { label: "gratuitous-arp-reply", kind: vscode.CompletionItemKind.Text },
         { label: "hierarchical-scheduler", kind: vscode.CompletionItemKind.Text },
         { label: "hold-time", kind: vscode.CompletionItemKind.Text },
-        { label: "hybrid-access", kind: vscode.CompletionItemKind.Text },
         { label: "ima-group-options", kind: vscode.CompletionItemKind.Text },
         { label: "ima-link-options", kind: vscode.CompletionItemKind.Text },
         { label: "input-native-vlan-push", kind: vscode.CompletionItemKind.Text },
@@ -146,6 +147,7 @@ suite("Should do completion", () => {
         { label: "no-per-unit-scheduler", kind: vscode.CompletionItemKind.Text },
         { label: "no-pseudowire-down-on-core-isolation", kind: vscode.CompletionItemKind.Text },
         { label: "no-traps", kind: vscode.CompletionItemKind.Text },
+        { label: "number-of-sub-ports", kind: vscode.CompletionItemKind.Text },
         { label: "oam-on-svlan", kind: vscode.CompletionItemKind.Text },
         { label: "och-options", kind: vscode.CompletionItemKind.Text },
         { label: "odu-options", kind: vscode.CompletionItemKind.Text },
@@ -176,11 +178,13 @@ suite("Should do completion", () => {
         { label: "switch-options", kind: vscode.CompletionItemKind.Text },
         { label: "t1-options", kind: vscode.CompletionItemKind.Text },
         { label: "t3-options", kind: vscode.CompletionItemKind.Text },
+        { label: "tdm-options", kind: vscode.CompletionItemKind.Text },
         { label: "traceoptions", kind: vscode.CompletionItemKind.Text },
         { label: "transmit-bucket", kind: vscode.CompletionItemKind.Text },
         { label: "traps", kind: vscode.CompletionItemKind.Text },
         { label: "unidirectional", kind: vscode.CompletionItemKind.Text },
         { label: "unit", kind: vscode.CompletionItemKind.Text },
+        { label: "unused", kind: vscode.CompletionItemKind.Text },
         { label: "vdsl-options", kind: vscode.CompletionItemKind.Text },
         { label: "vlan-offload", kind: vscode.CompletionItemKind.Text },
         { label: "vlan-tagging", kind: vscode.CompletionItemKind.Text },
@@ -283,6 +287,11 @@ async function testCompletion(
     position,
   )) as vscode.CompletionList;
 
+  console.log(
+      "--",
+      JSON.stringify(actualCompletionList.items.map((i)=> i.label)),
+      JSON.stringify(expectedCompletionList.items.map((i)=> i.label)),
+  );
   assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
   expectedCompletionList.items.forEach((expectedItem, i) => {
     const actualItem = actualCompletionList.items[i];
