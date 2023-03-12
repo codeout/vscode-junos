@@ -3,7 +3,7 @@
 	"description": "Language server for Junos configuration",
 	"author": "Shintaro Kojima",
 	"license": "MIT",
-	"version": "0.2.6",
+	"version": "0.3.0",
 	"engines": {
 		"node": "*"
 	},
