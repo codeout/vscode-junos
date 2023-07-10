@@ -1,3 +1,16 @@
+## [0.3.1] - 2023-07-10
+
+### Added
+
+* Newly supported syntax
+  * `chassis cluster`
+  * `set security log stream xxx transport`
+
+### Fixed
+
+* `forwarding-options dhcp-relay server-group` was unexpectedly marked as invalid
+
+
 ## [0.3.0] - 2023-03-12
 
 ### Added
