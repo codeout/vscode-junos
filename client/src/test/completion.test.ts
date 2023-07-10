@@ -287,11 +287,6 @@ async function testCompletion(
     position,
   )) as vscode.CompletionList;
 
-  console.log(
-      "--",
-      JSON.stringify(actualCompletionList.items.map((i)=> i.label)),
-      JSON.stringify(expectedCompletionList.items.map((i)=> i.label)),
-  );
   assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
   expectedCompletionList.items.forEach((expectedItem, i) => {
     const actualItem = actualCompletionList.items[i];
