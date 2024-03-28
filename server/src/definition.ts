@@ -1,11 +1,6 @@
-import {
-  Definition,
-  Location,
-  Range,
-  RequestHandler,
-  TextDocument,
-  TextDocumentPositionParams,
-} from "vscode-languageserver";
+import { Definition, Location, Range, RequestHandler, TextDocumentPositionParams } from "vscode-languageserver";
+
+import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { Session } from "./session";
 import { prefixPattern } from "./parser";
