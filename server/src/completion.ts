@@ -21,21 +21,21 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
 
     // List defined symbols
     if (line.match(/\s+interface\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "interface"), keywords);
+      addReferences(session, session.definitions.getDefinitions(uri, "global", "interface"), keywords);
     } else if (line.match(/\s+from\s+(?:source-|destination-)?prefix-list\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "prefix-list"), keywords);
+      addReferences(session, session.definitions.getDefinitions(uri, "global", "prefix-list"), keywords);
     } else if (line.match(/\s+(?:import|export)\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "policy-statement"), keywords);
+      addReferences(session, session.definitions.getDefinitions(uri, "global", "policy-statement"), keywords);
     } else if (line.match(/\s+(?:from\s+community|then\s+community\s+(?:add|delete|set))\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "community"), keywords);
+      addReferences(session, session.definitions.getDefinitions(uri, "global", "community"), keywords);
     } else if (line.match(/\s+from\s+as-path\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "as-path"), keywords);
+      addReferences(session, session.definitions.getDefinitions(uri, "global", "as-path"), keywords);
     } else if (line.match(/\s+from\s+as-path-group\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "as-path-group"), keywords);
+      addReferences(session, session.definitions.getDefinitions(uri, "global", "as-path-group"), keywords);
     } else if (line.match(/\s+filter\s+(?:input|output|input-list|output-list)\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "firewall-filter"), keywords);
+      addReferences(session, session.definitions.getDefinitions(uri, "global", "firewall-filter"), keywords);
     } else if (line.match(/\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "nat-pool"), keywords);
+      addReferences(session, session.definitions.getDefinitions(uri, "global", "nat-pool"), keywords);
     }
 
     return keywords.map((keyword) => ({

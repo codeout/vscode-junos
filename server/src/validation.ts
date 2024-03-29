@@ -146,7 +146,7 @@ function validateReference(
     return;
   }
 
-  if (denyList?.includes(m[2]) || !(m[2] in session.definitions.getDefinitions(uri, symbolType))) {
+  if (denyList?.includes(m[2]) || !(m[2] in session.definitions.getDefinitions(uri, "global", symbolType))) {
     return [(m.index || 0) + m[1].length, (m.index || 0) + m[1].length + m[2].length];
   }
 }
