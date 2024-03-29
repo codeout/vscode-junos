@@ -271,6 +271,24 @@ suite("Should do completion", () => {
       ],
     });
   });
+
+  test("Completes defined policy-statement only in logical-systems", async () => {
+    await testCompletion(docUri, new vscode.Position(9, 56), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "foo-import", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
+  test("Completes defined prefix-list only in logical-systems", async () => {
+    await testCompletion(docUri, new vscode.Position(10, 85), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "bar-prefix", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
 });
 
 async function testCompletion(

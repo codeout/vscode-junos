@@ -141,12 +141,15 @@ function validateReference(
   allowList?: string[],
   denyList?: string[],
 ): number[] | undefined {
-  const m = line.match(`(\\s${pattern}\\s+)(\\S+)`);
+  let m = line.match(`^logical-systems\\s+(\\S+)`);
+  const logicalSystem = m?.[1] || "global";
+
+  m = line.match(`(\\s${pattern}\\s+)(\\S+)`);
   if (!m || allowList?.includes(m[2])) {
     return;
   }
 
-  if (denyList?.includes(m[2]) || !(m[2] in session.definitions.getDefinitions(uri, "global", symbolType))) {
+  if (denyList?.includes(m[2]) || !(m[2] in session.definitions.getDefinitions(uri, logicalSystem, symbolType))) {
     return [(m.index || 0) + m[1].length, (m.index || 0) + m[1].length + m[2].length];
   }
 }
