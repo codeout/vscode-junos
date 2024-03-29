@@ -54,7 +54,7 @@ export class DefinitionStore {
    * @param symbolType
    */
   // eslint-disable-next-line @typescript-eslint/ban-types
-  getDefinitions(uri: string, symbolType: string): Object {
+  getDefinitions(uri: string, symbolType: string): object {
     return this.store[uri] ? this.store[uri][symbolType] : {};
   }
 
