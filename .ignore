@@ -1,2 +1,4 @@
 /server/src/junos.js
 /vscode-junos-syntax
+
+node_modules/
