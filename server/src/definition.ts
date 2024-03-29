@@ -98,13 +98,13 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
  * @param pattern
  */
 function getPointedSymbol(session: Session, line: string, position: number, pattern: string): string | undefined {
-  const match = line.match(`(${prefixPattern.source}(?:\\s+.*)?\\s+${pattern}\\s+)(\\S+)`);
+  const m = line.match(`(${prefixPattern.source}(?:\\s+.*)?\\s+${pattern}\\s+)(\\S+)`);
 
   // Return nothing when the cursor doesn't point at the keyword
-  if (!match || match[0].length < position || match[1].length > position) {
+  if (!m || m[0].length < position || m[1].length > position) {
     return;
   } else {
-    return match[2];
+    return m[2];
   }
 }
 

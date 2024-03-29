@@ -136,16 +136,16 @@ export class Node {
 
   private addStringNode(key: string, rawChildren: SchemaObject | null) {
     const [name, description] = this.extractKey(key);
-    const match = name.match(/(\S*)\((.*)\)/);
+    const m = name.match(/(\S*)\((.*)\)/);
 
-    if (!match) {
+    if (!m) {
       this.add(new Node(name, this, rawChildren, description));
-    } else if (match[1]) {
+    } else if (m[1]) {
       // eg: unit($junos-underlying-interface-unit|$junos-interface-unit|arg)
-      this.add(this.argumentStringNode(match[1], match[2], description, rawChildren));
+      this.add(this.argumentStringNode(m[1], m[2], description, rawChildren));
     } else {
       // eg: (any-unicast|any-ipv4|any-ipv6|arg)
-      this.addArrayString(match[2], description, rawChildren);
+      this.addArrayString(m[2], description, rawChildren);
     }
   }
 

@@ -97,27 +97,27 @@ function createDiagnostic(
  * @return number or undefined
  */
 function validateLine(session: Session, line: string): number | undefined {
-  const match = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
-  if (!match) {
+  const m = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
+  if (!m) {
     return;
   }
 
   // There is an invalid keyword in the beginning like "set foo"
-  if (!match[1]) {
+  if (!m[1]) {
     return 0;
   }
 
-  const keywords = session.parser.keywords(match[1]);
+  const keywords = session.parser.keywords(m[1]);
 
   if (
     keywords.includes("word") || // 'word' means wildcard
-    keywords.includes(match[2])
+    keywords.includes(m[2])
   ) {
     return;
   }
 
-  const shorter = validateLine(session, match[1]);
-  return typeof shorter === "undefined" ? match[1].length + 1 : shorter;
+  const shorter = validateLine(session, m[1]);
+  return typeof shorter === "undefined" ? m[1].length + 1 : shorter;
 }
 
 /**
@@ -141,13 +141,13 @@ function validateReference(
   allowList?: string[],
   denyList?: string[],
 ): number[] | undefined {
-  const match = line.match(`(\\s${pattern}\\s+)(\\S+)`);
-  if (!match || allowList?.includes(match[2])) {
+  const m = line.match(`(\\s${pattern}\\s+)(\\S+)`);
+  if (!m || allowList?.includes(m[2])) {
     return;
   }
 
-  if (denyList?.includes(match[2]) || !(match[2] in session.definitions.getDefinitions(uri, symbolType))) {
-    return [(match.index || 0) + match[1].length, (match.index || 0) + match[1].length + match[2].length];
+  if (denyList?.includes(m[2]) || !(m[2] in session.definitions.getDefinitions(uri, symbolType))) {
+    return [(m.index || 0) + m[1].length, (m.index || 0) + m[1].length + m[2].length];
   }
 }
 
