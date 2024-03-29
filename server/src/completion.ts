@@ -19,23 +19,26 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
     line = line.replace(prefixPattern, "");
     const keywords = session.parser.keywords(line);
 
+    const m = line.match(/\s*logical-systems\s+(\S+)/);
+    const logicalSystem = m?.[1] || "global";
+
     // List defined symbols
-    if (line.match(/\s+interface\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "interface"), keywords);
-    } else if (line.match(/\s+from\s+(?:source-|destination-)?prefix-list\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "prefix-list"), keywords);
-    } else if (line.match(/\s+(?:import|export)\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "policy-statement"), keywords);
-    } else if (line.match(/\s+(?:from\s+community|then\s+community\s+(?:add|delete|set))\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "community"), keywords);
-    } else if (line.match(/\s+from\s+as-path\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "as-path"), keywords);
-    } else if (line.match(/\s+from\s+as-path-group\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "as-path-group"), keywords);
-    } else if (line.match(/\s+filter\s+(?:input|output|input-list|output-list)\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "firewall-filter"), keywords);
-    } else if (line.match(/\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/)) {
-      addReferences(session, session.definitions.getDefinitions(uri, "nat-pool"), keywords);
+    const rules = [
+      [/\s+interface\s+$/, "interface"],
+      [/\s+from\s+(?:source-|destination-)?prefix-list\s+$/, "prefix-list"],
+      [/\s+(?:import|export)\s+$/, "policy-statement"],
+      [/\s+(?:from\s+community|then\s+community\s+(?:add|delete|set))\s+$/, "community"],
+      [/\s+from\s+as-path\s+$/, "as-path"],
+      [/\s+from\s+as-path-group\s+$/, "as-path-group"],
+      [/\s+filter\s+(?:input|output|input-list|output-list)\s+$/, "firewall-filter"],
+      [/\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/, "nat-pool"],
+    ] as [RegExp, string][];
+
+    for (const [pattern, symbolType] of rules) {
+      if (line.match(pattern)) {
+        addReferences(session, session.definitions.getDefinitions(uri, logicalSystem, symbolType), keywords);
+        break;
+      }
     }
 
     return keywords.map((keyword) => ({

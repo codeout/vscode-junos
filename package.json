@@ -102,6 +102,8 @@
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"lint": "npx eslint .",
+		"type-check": "tsc --pretty --noEmit --project server/tsconfig.json && tsc --pretty --noEmit --project client/tsconfig.json",
+		"check": "npm run type-check && npm run lint",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"test": "sh ./scripts/e2e.sh",
 		"clean": "rm -rf node_modules */node_modules */out"
