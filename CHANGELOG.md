@@ -1,3 +1,11 @@
+## [0.3.2] - 2024-03-29
+
+### Added
+
+* Newly supported syntax
+  * `set logical-systems`
+
+
 ## [0.3.1] - 2023-07-10
 
 ### Added
