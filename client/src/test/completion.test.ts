@@ -249,29 +249,6 @@ suite("Should do completion", () => {
     });
   });
 
-  test("Completes defined nat pool", async () => {
-    await testCompletion(docUri, new vscode.Position(39, 68), {
-      items: [
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "foo-pool", kind: vscode.CompletionItemKind.Text },
-      ],
-    });
-  });
-
-  test("Completes defined interface-range", async () => {
-    await testCompletion(docUri, new vscode.Position(44, 29), {
-      items: [
-        { label: "all", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "foo", kind: vscode.CompletionItemKind.Text },
-        { label: "xe-0/0/0", kind: vscode.CompletionItemKind.Text },
-        { label: "xe-0/0/0.0", kind: vscode.CompletionItemKind.Text },
-        { label: "xe-0/0/1", kind: vscode.CompletionItemKind.Text },
-        { label: "xe-0/0/1.0", kind: vscode.CompletionItemKind.Text },
-      ],
-    });
-  });
-
   test("Completes defined policy-statement only in logical-systems", async () => {
     await testCompletion(docUri, new vscode.Position(9, 56), {
       items: [
@@ -286,6 +263,29 @@ suite("Should do completion", () => {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "bar-prefix", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
+  test("Completes defined nat pool", async () => {
+    await testCompletion(docUri, new vscode.Position(11, 68), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "foo-pool", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
+  test("Completes defined interface-range", async () => {
+    await testCompletion(docUri, new vscode.Position(12, 29), {
+      items: [
+        { label: "all", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "foo", kind: vscode.CompletionItemKind.Text },
+        { label: "xe-0/0/0", kind: vscode.CompletionItemKind.Text },
+        { label: "xe-0/0/0.0", kind: vscode.CompletionItemKind.Text },
+        { label: "xe-0/0/1", kind: vscode.CompletionItemKind.Text },
+        { label: "xe-0/0/1.0", kind: vscode.CompletionItemKind.Text },
       ],
     });
   });
