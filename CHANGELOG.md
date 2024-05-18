@@ -1,3 +1,12 @@
+## [0.3.3] - 2024-05-19
+
+### Added
+
+* Newly supported syntax
+  * `apply-groups-except`
+  * `interfaces xxx enable`
+
+
 ## [0.3.2] - 2024-03-29
 
 ### Added
