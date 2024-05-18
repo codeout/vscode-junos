@@ -96,6 +96,7 @@ suite("Should do completion", () => {
         { label: "dsl-sfp-options", kind: vscode.CompletionItemKind.Text },
         { label: "e1-options", kind: vscode.CompletionItemKind.Text },
         { label: "e3-options", kind: vscode.CompletionItemKind.Text },
+        { label: "enable", kind: vscode.CompletionItemKind.Text },
         { label: "encapsulation", kind: vscode.CompletionItemKind.Text },
         { label: "es-options", kind: vscode.CompletionItemKind.Text },
         { label: "esi", kind: vscode.CompletionItemKind.Text },
