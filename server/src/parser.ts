@@ -210,15 +210,15 @@ export class Parser {
   keywords(string: string): string[] {
     let ast: Node | null = this.ast;
     string = string.trim();
-    const defaultKeywords = ["apply-groups"];
+    const defaultKeywords = ["apply-groups", "apply-groups-except"];
 
     // NOTE: Hack for "groups" statement
     if (string) {
-      if (string.match(/^groups\s*$|\s*apply-groups$/)) {
+      if (string.match(/^groups\s*$|\s*apply-groups(-except)?$/)) {
         return ["word"];
       }
       string = string.replace(/^groups\s+\S+/, "");
-      string = string.replace(/apply-groups\s+\S+$/, "");
+      string = string.replace(/apply-groups(-except)?\s+\S+$/, "");
     }
 
     // NOTE: Hack for implicit interface-range "all"
