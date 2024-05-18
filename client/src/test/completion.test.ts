@@ -14,6 +14,7 @@ suite("Should do completion", () => {
         { label: "accounting-options", kind: vscode.CompletionItemKind.Text },
         { label: "applications", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "bridge-domains", kind: vscode.CompletionItemKind.Text },
         { label: "chassis", kind: vscode.CompletionItemKind.Text },
         { label: "class-of-service", kind: vscode.CompletionItemKind.Text },
@@ -78,6 +79,7 @@ suite("Should do completion", () => {
         { label: "anchor-point", kind: vscode.CompletionItemKind.Text },
         { label: "anchoring-options", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "arp-l2-validate", kind: vscode.CompletionItemKind.Text },
         { label: "atm-options", kind: vscode.CompletionItemKind.Text },
         { label: "auto-configure", kind: vscode.CompletionItemKind.Text },
@@ -198,6 +200,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(3, 67), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo-prefix", kind: vscode.CompletionItemKind.Text },
       ],
     });
@@ -207,6 +210,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(4, 41), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo-statement", kind: vscode.CompletionItemKind.Text },
       ],
     });
@@ -216,6 +220,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(5, 65), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo-community", kind: vscode.CompletionItemKind.Text },
       ],
     });
@@ -225,6 +230,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(6, 63), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo-as-path", kind: vscode.CompletionItemKind.Text },
       ],
     });
@@ -234,6 +240,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(7, 69), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo-as-path-group", kind: vscode.CompletionItemKind.Text },
       ],
     });
@@ -243,6 +250,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(8, 56), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo-filter", kind: vscode.CompletionItemKind.Text },
         { label: "precedence", kind: vscode.CompletionItemKind.Text },
         { label: "shared-name", kind: vscode.CompletionItemKind.Text },
@@ -254,6 +262,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(9, 56), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo-import", kind: vscode.CompletionItemKind.Text },
       ],
     });
@@ -263,6 +272,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(10, 85), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "bar-prefix", kind: vscode.CompletionItemKind.Text },
       ],
     });
@@ -272,6 +282,7 @@ suite("Should do completion", () => {
     await testCompletion(docUri, new vscode.Position(11, 68), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo-pool", kind: vscode.CompletionItemKind.Text },
       ],
     });
@@ -282,6 +293,7 @@ suite("Should do completion", () => {
       items: [
         { label: "all", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
         { label: "foo", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/0", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/0.0", kind: vscode.CompletionItemKind.Text },
