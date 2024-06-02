@@ -7,7 +7,7 @@ const maxNumberOfProblems = 1000; // Just a guard
 
 export async function validateTextDocument(session: Session, textDocument: TextDocument): Promise<void> {
   const text = textDocument.getText();
-  const pattern = new RegExp(`(${prefixPattern.source}\\s+)(.*)`, "gm");
+  const pattern = new RegExp(`(${prefixPattern.source}[\\t ]+)(.*)`, "gm");
   let m: RegExpExecArray | null;
 
   let problems = 0;
