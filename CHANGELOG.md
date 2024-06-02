@@ -1,3 +1,15 @@
+## [0.3.4] - 2024-06-02
+
+### Added
+
+* Newly supported syntax
+  * `interfaces xxx unit xxx enable`
+
+### Fixed
+
+* Parse of `set`, `delete`, `activate`, and `deactivate` at the end of a line
+
+
 ## [0.3.3] - 2024-05-19
 
 ### Added

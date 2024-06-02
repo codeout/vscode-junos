@@ -4,7 +4,7 @@
 	"description": "Junos for Visual Studio Code",
 	"author": "Shintaro Kojima",
 	"license": "MIT",
-	"version": "0.3.3",
+	"version": "0.3.4",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/codeout/vscode-junos"
