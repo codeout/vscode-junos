@@ -1,3 +1,10 @@
+## [0.3.5] - 2024-06-07
+
+### Fixed
+
+* Path to `.tmLanguage` for case-sensitive systems
+
+
 ## [0.3.4] - 2024-06-02
 
 ### Added
