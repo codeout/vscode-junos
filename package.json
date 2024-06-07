@@ -93,7 +93,7 @@
 			{
 				"language": "junos",
 				"scopeName": "text.junos",
-				"path": "vscode-junos-syntax/syntaxes/junos.tmLanguage"
+				"path": "vscode-junos-syntax/syntaxes/Junos.tmLanguage"
 			}
 		]
 	},
