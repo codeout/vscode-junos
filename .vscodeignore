@@ -24,7 +24,7 @@ vscode-junos-syntax/**
 
 # development
 commitlint.config.js
-.eslintignore
+eslint.config.mjs
 .gitmodules
 .idea/**
 .ignore
