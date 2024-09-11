@@ -1,9 +1,9 @@
-import { ProposedFeatures, TextDocuments, createConnection } from "vscode-languageserver/node";
-import { TextDocument } from "vscode-languageserver-textdocument";
 import { _Connection } from "vscode-languageserver/lib/common/server"; // This is probably internal
+import { createConnection,ProposedFeatures, TextDocuments } from "vscode-languageserver/node";
+import { TextDocument } from "vscode-languageserver-textdocument";
 
-import { Parser, createParser } from "./parser";
 import { DefinitionStore } from "./definition";
+import { createParser,Parser } from "./parser";
 
 export class Session {
   public readonly connection: _Connection;
@@ -23,7 +23,7 @@ export class Session {
     this.connection.listen();
   }
 
-  log(...obj: any[]) {
+  log(...obj: never[]) {
     this.connection.console.log(JSON.stringify(obj));
   }
 }

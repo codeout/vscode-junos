@@ -1,7 +1,7 @@
 import { Diagnostic, DiagnosticSeverity, TextDocument } from "vscode-languageserver";
 
-import { Session } from "./session";
 import { prefixPattern } from "./parser";
+import { Session } from "./session";
 
 const maxNumberOfProblems = 1000; // Just a guard
 

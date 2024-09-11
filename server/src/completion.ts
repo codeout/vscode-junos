@@ -1,7 +1,7 @@
 import { CompletionItem, CompletionItemKind, RequestHandler, TextDocumentPositionParams } from "vscode-languageserver";
 
-import { Session } from "./session";
 import { prefixPattern } from "./parser";
+import { Session } from "./session";
 
 export function completion(session: Session): RequestHandler<TextDocumentPositionParams, CompletionItem[], void> {
   return (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
@@ -49,8 +49,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-function addReferences(session: Session, definitions: Object, keywords: string[]) {
+function addReferences(session: Session, definitions: object, keywords: string[]) {
   const index = keywords.indexOf("word");
   if (index < 0) {
     return;

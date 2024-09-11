@@ -1,9 +1,8 @@
 import { Definition, Location, Range, RequestHandler, TextDocumentPositionParams } from "vscode-languageserver";
-
 import { TextDocument } from "vscode-languageserver-textdocument";
 
-import { Session } from "./session";
 import { prefixPattern } from "./parser";
+import { Session } from "./session";
 
 export class DefinitionStore {
   private readonly store: {
@@ -53,7 +52,6 @@ export class DefinitionStore {
    * @param logicalSystem
    * @param symbolType
    */
-  // eslint-disable-next-line @typescript-eslint/ban-types
   getDefinitions(uri: string, logicalSystem: string, symbolType: string): object {
     return this.store[uri]?.[logicalSystem]?.[symbolType] || {};
   }

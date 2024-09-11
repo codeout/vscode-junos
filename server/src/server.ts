@@ -1,4 +1,3 @@
-import { InitializeParams } from "vscode-languageserver";
 import { TextDocumentSyncKind } from "vscode-languageserver/node";
 
 import { completion, completionResolve } from "./completion";
@@ -8,7 +7,7 @@ import { validateTextDocument } from "./validation";
 
 const session = new Session();
 
-session.connection.onInitialize((params: InitializeParams) => {
+session.connection.onInitialize(() => {
   return {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,

@@ -27,7 +27,7 @@ export class Node {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   load(rawChildren: string[] | Enumeration | Repeatable | Sequence | SchemaObject | Function) {
     switch (typeof rawChildren) {
       case "object":
@@ -150,7 +150,7 @@ export class Node {
   }
 
   private argNode(key: string, rawChildren: SchemaObject | null): Node {
-    const [name, description] = this.extractKey(key);
+    const [, description] = this.extractKey(key);
     // name may be "arg_1"
     return new Node("arg", this, rawChildren, description, "arg");
   }
