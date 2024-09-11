@@ -3,6 +3,9 @@ node_modules
 client/server
 .vscode-test
 
+# typescript
+*.tsbuildinfo
+
 # editors
 .idea
 
