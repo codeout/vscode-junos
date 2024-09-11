@@ -3,7 +3,9 @@ node_modules
 client/server
 .vscode-test
 
+# editors
 .idea
 
+# packaging
 /others
 /pkgs
