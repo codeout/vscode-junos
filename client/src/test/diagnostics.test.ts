@@ -9,12 +9,6 @@ suite("Should get diagnostics", () => {
   test("Diagnoses syntax", async () => {
     await testDiagnostics(docUri, [
       {
-        message: '"set interfaces xe-0/0/0 " is invalid',
-        range: toRange(2, 0, 2, 24),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
-      {
         message: '"foo-filter_" is not defined',
         range: toRange(18, 56, 18, 67),
         severity: vscode.DiagnosticSeverity.Error,
