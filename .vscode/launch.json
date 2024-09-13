@@ -9,7 +9,8 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}",
-        "${workspaceRoot}/junos.conf"
+        "${workspaceRoot}/junos.conf",
+        "${workspaceRoot}/client/testFixture/junos.conf"
       ],
       "outFiles": [
         "${workspaceRoot}/client/out/**/*.js",
