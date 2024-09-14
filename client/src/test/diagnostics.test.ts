@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 17; // lines for completion tests
+const offset = 21; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
@@ -79,6 +79,30 @@ suite("Should get diagnostics", () => {
       {
         message: '"bar-import" is not defined',
         range: toRange(36, 62, 36, 72),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
+      {
+        message: '"foo-address_" is not defined',
+        range: toRange(46, 81, 46, 93),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
+      {
+        message: '"foo-address_" is not defined',
+        range: toRange(48, 86, 48, 98),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
+      {
+        message: '"foo-address_" is not defined',
+        range: toRange(50, 86, 50, 98),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
+      {
+        message: '"foo-address_" is not defined',
+        range: toRange(52, 91, 52, 103),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },

@@ -302,6 +302,35 @@ suite("Should do completion", () => {
       ],
     });
   });
+
+  test("Completes defined global address-name", async () => {
+    for (const [line, character] of [
+      [14, 81],
+      [15, 86],
+    ]) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "any-unicast", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: "foo-address", kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
+
+    for (const [line, character] of [
+      [16, 86],
+      [17, 91],
+    ]) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: "foo-address", kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
+  });
 });
 
 async function testCompletion(

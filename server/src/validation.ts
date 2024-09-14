@@ -40,6 +40,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       ["as-path-group", "from\\s+as-path-group"],
       ["firewall-filter", "filter\\s+(?:input|output|input-list|output-list)"],
       ["nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
+      ["address:global", "match\\s+(?:source|destination)-address(?:-name)?"],
     ] as Array<[string, string, string[], string[]]>;
 
     // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755

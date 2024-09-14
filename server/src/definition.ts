@@ -90,6 +90,7 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
       getAsPathGroupDefinition(session, line, textDocumentPosition) ||
       getFirewallFilterDefinition(session, line, textDocumentPosition) ||
       getNatPoolDefinition(session, line, textDocumentPosition) ||
+      getAddressDefinition(session, line, textDocumentPosition) ||
       [];
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
@@ -209,6 +210,20 @@ function getNatPoolDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "nat-pool", symbol);
 }
 
+function getAddressDefinition(
+  session: Session,
+  line: string,
+  textDocumentPosition: TextDocumentPositionParams,
+): Range[] | undefined {
+  const symbol = getPointedSymbol(
+    session,
+    line,
+    textDocumentPosition.position.character,
+    "match\\s+(?:source|destination)-address(?:-name)?",
+  );
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
+}
+
 export function updateDefinitions(session: Session, textDocument: TextDocument): void {
   updateInterfaceDefinitions(session, textDocument);
   updatePrefixListDefinitions(session, textDocument);
@@ -218,12 +233,13 @@ export function updateDefinitions(session: Session, textDocument: TextDocument):
   updateAsPathGroupDefinitions(session, textDocument);
   updateFirewallFilterDefinitions(session, textDocument);
   updateNatPoolDefinitions(session, textDocument);
+  updateAddressDefinitions(session, textDocument);
 }
 
 function insertDefinitions(
   session: Session,
   textDocument: TextDocument,
-  symbolType: string,
+  symbolType: string | ((arg: RegExpExecArray) => string),
   pattern: string,
   modifyFunction: (arg: RegExpExecArray) => string,
 ): void {
@@ -234,8 +250,9 @@ function insertDefinitions(
   let m: RegExpExecArray | null;
 
   while ((m = fullPattern.exec(text))) {
+    const type = typeof symbolType === "function" ? symbolType(m) : symbolType;
     const symbol = modifyFunction(m);
-    session.definitions.set(textDocument.uri, m[2] || "global", symbolType, symbol, {
+    session.definitions.set(textDocument.uri, m[2] || "global", type, symbol, {
       start: textDocument.positionAt(m.index + m[1].length),
       end: textDocument.positionAt(m.index + m[0].length),
     });
@@ -296,4 +313,23 @@ function updateNatPoolDefinitions(session: Session, textDocument: TextDocument):
   const type = "nat-pool";
   session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "services\\s+nat\\s+pool\\s+)(\\S+)", (m) => m[3]);
+}
+
+function updateAddressDefinitions(session: Session, textDocument: TextDocument): void {
+  const type = "address";
+
+  const text = textDocument.getText();
+  const pattern = /security\s+address-book\s+(\S+)/gm;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(text))) {
+    session.definitions.clear(textDocument.uri, `${type}:${m[1]}`);
+  }
+
+  insertDefinitions(
+    session,
+    textDocument,
+    (m) => `${type}:${m[3]}`,
+    "security\\s+address-book\\s+(\\S+)\\s+address\\s+)(\\S+)",
+    (m) => m[4],
+  );
 }
