@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 21; // lines for completion tests
+const offset = 22; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
@@ -103,6 +103,12 @@ suite("Should get diagnostics", () => {
       {
         message: '"foo-address_" is not defined',
         range: toRange(52, 91, 52, 103),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
+      {
+        message: '"foo-address_" is not defined',
+        range: toRange(54, 51, 54, 63),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },

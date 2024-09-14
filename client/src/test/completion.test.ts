@@ -321,6 +321,7 @@ suite("Should do completion", () => {
     for (const [line, character] of [
       [16, 86],
       [17, 91],
+      [18, 51],
     ]) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [

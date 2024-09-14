@@ -90,7 +90,8 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
       getAsPathGroupDefinition(session, line, textDocumentPosition) ||
       getFirewallFilterDefinition(session, line, textDocumentPosition) ||
       getNatPoolDefinition(session, line, textDocumentPosition) ||
-      getAddressDefinition(session, line, textDocumentPosition) ||
+      getMatchAddressDefinition(session, line, textDocumentPosition) ||
+      getPoolAddressDefinition(session, line, textDocumentPosition) ||
       [];
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
@@ -210,7 +211,7 @@ function getNatPoolDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "nat-pool", symbol);
 }
 
-function getAddressDefinition(
+function getMatchAddressDefinition(
   session: Session,
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
@@ -220,6 +221,20 @@ function getAddressDefinition(
     line,
     textDocumentPosition.position.character,
     "match\\s+(?:source|destination)-address(?:-name)?",
+  );
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
+}
+
+function getPoolAddressDefinition(
+  session: Session,
+  line: string,
+  textDocumentPosition: TextDocumentPositionParams,
+): Range[] | undefined {
+  const symbol = getPointedSymbol(
+    session,
+    line,
+    textDocumentPosition.position.character,
+    "pool\\s+\\S+\\s+address-name",
   );
   return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
 }

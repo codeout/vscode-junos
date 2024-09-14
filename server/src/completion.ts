@@ -33,6 +33,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
       ["firewall-filter", /\s+filter\s+(?:input|output|input-list|output-list)\s+$/],
       ["nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
       ["address:global", /\s+match\s+(?:source|destination)-address(?:-name)?\s+$/],
+      ["address:global", /\s+pool\s+\S+\s+address-name\s+$/],
     ] as [string, RegExp][];
 
     for (const [symbolType, pattern] of rules) {
