@@ -23,7 +23,8 @@ export class Session {
     this.connection.listen();
   }
 
-  log(...obj: never[]) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  log(...obj: any[]) {
     this.connection.console.log(JSON.stringify(obj));
   }
 }
