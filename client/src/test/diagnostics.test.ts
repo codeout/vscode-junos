@@ -12,115 +12,115 @@ suite("Should get diagnostics", () => {
     await testDiagnostics(docUri, [
       {
         message: '"foo-filter_" is not defined',
-        range: toRange(3, 56, 3, 67),
+        range: toRange(3, 56, 67),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"inet_" is invalid',
-        range: toRange(4, 38, 4, 43),
+        range: toRange(4, 38, 43),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-statement_" is not defined',
-        range: toRange(7, 41, 7, 55),
+        range: toRange(7, 41, 55),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"xe-0/0/0.1" is not defined',
-        range: toRange(9, 29, 9, 39),
+        range: toRange(9, 29, 39),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"protocols" is invalid',
-        range: toRange(11, 4, 11, 13),
+        range: toRange(11, 4, 13),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-prefix_" is not defined',
-        range: toRange(18, 67, 18, 78),
+        range: toRange(18, 67, 78),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-community_" is not defined',
-        range: toRange(20, 65, 20, 79),
+        range: toRange(20, 65, 79),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-as-path_" is not defined',
-        range: toRange(22, 63, 22, 75),
+        range: toRange(22, 63, 75),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-as-path-group_" is not defined',
-        range: toRange(24, 69, 24, 87),
+        range: toRange(24, 69, 87),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-pool_" is not defined',
-        range: toRange(29, 68, 29, 77),
+        range: toRange(29, 68, 77),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-interface_" is not defined',
-        range: toRange(33, 29, 33, 43),
+        range: toRange(33, 29, 43),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"bar-import" is not defined',
-        range: toRange(36, 62, 36, 72),
+        range: toRange(36, 62, 72),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(46, 81, 46, 93),
+        range: toRange(46, 81, 93),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(48, 86, 48, 98),
+        range: toRange(48, 86, 98),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(50, 86, 50, 98),
+        range: toRange(50, 86, 98),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(52, 91, 52, 103),
+        range: toRange(52, 91, 103),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(54, 51, 54, 63),
+        range: toRange(54, 51, 63),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address" is not defined',
-        range: toRange(57, 79, 57, 90),
+        range: toRange(57, 79, 90),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"bar-address_" is not defined',
-        range: toRange(59, 79, 59, 91),
+        range: toRange(59, 79, 91),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
@@ -128,9 +128,9 @@ suite("Should get diagnostics", () => {
   });
 });
 
-function toRange(sLine: number, sChar: number, eLine: number, eChar: number) {
-  const start = new vscode.Position(sLine + offset, sChar);
-  const end = new vscode.Position(eLine + offset, eChar);
+function toRange(line: number, sChar: number, eChar: number) {
+  const start = new vscode.Position(line + offset, sChar);
+  const end = new vscode.Position(line + offset, eChar);
   return new vscode.Range(start, end);
 }
 
