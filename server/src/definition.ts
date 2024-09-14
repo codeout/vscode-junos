@@ -21,10 +21,10 @@ export class DefinitionStore {
 
   set(uri: string, logicalSystem: string, symbolType: string, symbol: string, definition: Range): void {
     // initialize
-    this.store[uri] = this.store[uri] || {};
-    this.store[uri][logicalSystem] = this.store[uri][logicalSystem] || {};
-    this.store[uri][logicalSystem][symbolType] = this.store[uri][logicalSystem][symbolType] || {};
-    this.store[uri][logicalSystem][symbolType][symbol] = this.store[uri][logicalSystem][symbolType][symbol] || [];
+    this.store[uri] ||= {};
+    this.store[uri][logicalSystem] ||= {};
+    this.store[uri][logicalSystem][symbolType] ||= {};
+    this.store[uri][logicalSystem][symbolType][symbol] ||= [];
 
     this.store[uri][logicalSystem][symbolType][symbol].push(definition);
   }
