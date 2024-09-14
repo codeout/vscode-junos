@@ -90,9 +90,10 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
       getAsPathGroupDefinition(session, line, textDocumentPosition) ||
       getFirewallFilterDefinition(session, line, textDocumentPosition) ||
       getNatPoolDefinition(session, line, textDocumentPosition) ||
-      getMatchAddressDefinition(session, line, textDocumentPosition) ||
+      getNatAddressDefinition(session, line, textDocumentPosition) ||
       getPoolAddressDefinition(session, line, textDocumentPosition) ||
       getAddressSetAddressDefinition(session, line, textDocumentPosition) ||
+      getPoliciesAddressDefinition(session, line, textDocumentPosition) ||
       [];
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
@@ -207,7 +208,7 @@ function getNatPoolDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "nat-pool", symbol);
 }
 
-function getMatchAddressDefinition(
+function getNatAddressDefinition(
   session: Session,
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
@@ -215,7 +216,7 @@ function getMatchAddressDefinition(
   const symbol = getPointedSymbol(
     line,
     textDocumentPosition.position.character,
-    "match\\s+(?:source|destination)-address(?:-name)?",
+    "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
   );
   return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
 }
@@ -229,7 +230,6 @@ function getPoolAddressDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
 }
 
-// update both address and address-set definitions for performance reason
 function getAddressSetAddressDefinition(
   session: Session,
   line: string,
@@ -242,6 +242,34 @@ function getAddressSetAddressDefinition(
 
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
   return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:${m[1]}`, symbol);
+}
+
+function getPoliciesAddressDefinition(
+  session: Session,
+  line: string,
+  textDocumentPosition: TextDocumentPositionParams,
+): Range[] | undefined {
+  const m = line.match(
+    /(?:logical-systems\s+(\S+))?.*\s+policies\s+from-zone\s+(\S+)\s+to-zone\s+(\S+)\s+.*\s+match\s+(source|destination)-address/,
+  );
+  if (!m) {
+    return;
+  }
+
+  const zone = m[4] === "source" ? m[2] : m[3];
+  const symbol = getPointedSymbol(
+    line,
+    textDocumentPosition.position.character,
+    "policies\\s+.*\\s+match\\s+(?:source|destination)-address",
+  );
+
+  const addressBooks = session.zoneAddressBooks.get(textDocumentPosition.textDocument.uri, m[1] || "global", zone);
+  return [...addressBooks]
+    .map((a) => [`address:${a}`, `address-set:${a}`])
+    .flat()
+    .map((a) => session.definitions.get(textDocumentPosition.textDocument.uri, a, symbol))
+    .filter((i) => i)
+    .flat() as Range[];
 }
 
 export function updateDefinitions(session: Session, textDocument: TextDocument): void {
@@ -335,11 +363,10 @@ function updateNatPoolDefinitions(session: Session, textDocument: TextDocument):
   insertDefinitions(session, textDocument, type, "services\\s+nat\\s+pool\\s+)(\\S+)", (m) => m[3]);
 }
 
-// update both address and address-set definitions for performance reason
 function updateAddressDefinitions(session: Session, textDocument: TextDocument): void {
   const text = textDocument.getText();
 
-  const pattern = /security\s+address-book\s+(\S+)/gm;
+  let pattern = /security\s+address-book\s+(\S+)/gm;
   let m: RegExpExecArray | null;
   while ((m = pattern.exec(text))) {
     session.definitions.clear(textDocument.uri, `address:${m[1]}`);
@@ -354,5 +381,16 @@ function updateAddressDefinitions(session: Session, textDocument: TextDocument):
       `security\\s+address-book\\s+(\\S+)\\s+${type}\\s+)(\\S+)`,
       (m) => m[4],
     );
+  }
+
+  // zone address book mapping
+  pattern = /(?:\s+logical-systems\s+(\S+))?\s+.*\s+address-book\s+(\S+)\s+attach\s+zone\s+(\S+)/gm;
+  while ((m = pattern.exec(text))) {
+    session.zoneAddressBooks.clear(textDocument.uri, m[2]);
+  }
+
+  // pattern = /address-book\s+\S+\s+attach\s+zone\s+(\S+)/gm;
+  while ((m = pattern.exec(text))) {
+    session.zoneAddressBooks.set(textDocument.uri, m[1] || "global", m[3], m[2]);
   }
 }

@@ -4,20 +4,21 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { DefinitionStore } from "./definition";
 import { createParser, Parser } from "./parser";
+import { ZoneAddressBookStore } from "./zone_address_book";
 
 export class Session {
   public readonly connection: _Connection;
   public readonly documents: TextDocuments<TextDocument>;
   public readonly parser: Parser;
   public readonly definitions: DefinitionStore;
-  public readonly zoneAddressBooks: Record<string, string>;
+  public readonly zoneAddressBooks: ZoneAddressBookStore;
 
   constructor() {
     this.connection = createConnection(ProposedFeatures.all);
     this.documents = new TextDocuments(TextDocument);
     this.parser = createParser();
     this.definitions = new DefinitionStore();
-    this.zoneAddressBooks = {};
+    this.zoneAddressBooks = new ZoneAddressBookStore();
   }
 
   listen() {

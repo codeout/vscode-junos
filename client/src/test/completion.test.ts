@@ -352,6 +352,27 @@ suite("Should do completion", () => {
       ],
     });
   });
+
+  test("Completes defined address / address-set in security policies", async () => {
+    for (const [line, character, address] of [
+      [21, 86, "bar-address"],
+      [22, 91, "baz-address"],
+      [23, 96, "foo-address"],
+      [24, 99, "foo-address"],
+    ] as Array<[number, number, string]>) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "any", kind: vscode.CompletionItemKind.Text },
+          { label: "any-ipv4", kind: vscode.CompletionItemKind.Text },
+          { label: "any-ipv6", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: address, kind: vscode.CompletionItemKind.Text },
+          { label: `${address}-set`, kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
+  });
 });
 
 async function testCompletion(

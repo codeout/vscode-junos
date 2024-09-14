@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 24; // lines for completion tests
+const offset = 28; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
@@ -136,6 +136,33 @@ suite("Should get diagnostics", () => {
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
+      ...(
+        [
+          [71, 93, 104, "foo-address"],
+          [75, 93, 104, "baz-address"],
+          [77, 98, 109, "foo-address"],
+          [79, 98, 109, "bar-address"],
+          [85, 96, 107, "bar-address"],
+          [87, 96, 107, "baz-address"],
+          [91, 99, 110, "bar-address"],
+          [93, 99, 110, "baz-address"],
+        ] as Array<[number, number, number, string]>
+      )
+        .map(([line, sChar, eChar, address]) => [
+          {
+            message: `"${address}" is not defined`,
+            range: toRange(line, sChar, eChar),
+            severity: vscode.DiagnosticSeverity.Error,
+            source: "ex",
+          },
+          {
+            message: `"${address}-set" is not defined`,
+            range: toRange(line + 1, sChar, eChar + 4),
+            severity: vscode.DiagnosticSeverity.Error,
+            source: "ex",
+          },
+        ])
+        .flat(),
     ]);
   });
 });
