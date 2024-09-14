@@ -332,6 +332,16 @@ suite("Should do completion", () => {
       });
     }
   });
+
+  test("Completes defined address-name in address-book", async () => {
+    await testCompletion(docUri, new vscode.Position(19, 79), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "bar-address", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
 });
 
 async function testCompletion(

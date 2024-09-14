@@ -19,7 +19,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
     line = line.replace(prefixPattern, "");
     const keywords = session.parser.keywords(line);
 
-    const m = line.match(/\s*logical-systems\s+(\S+)/);
+    let m = line.match(/\s*logical-systems\s+(\S+)/);
     const logicalSystem = m?.[1] || "global";
 
     // List defined symbols
@@ -34,11 +34,14 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
       ["nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
       ["address:global", /\s+match\s+(?:source|destination)-address(?:-name)?\s+$/],
       ["address:global", /\s+pool\s+\S+\s+address-name\s+$/],
-    ] as [string, RegExp][];
+      [(m) => `address:${m[1]}`, /\s+address-book\s+(\S+)\s+address-set\s+\S+\s+address\s+$/],
+    ] as Array<[string | ((arg: RegExpMatchArray) => string), RegExp]>;
 
     for (const [symbolType, pattern] of rules) {
-      if (line.match(pattern)) {
-        addReferences(session.definitions.getDefinitions(uri, logicalSystem, symbolType), keywords);
+      m = line.match(pattern);
+      if (m) {
+        const type = typeof symbolType === "function" ? symbolType(m) : symbolType;
+        addReferences(session.definitions.getDefinitions(uri, logicalSystem, type), keywords);
         break;
       }
     }

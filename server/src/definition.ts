@@ -67,7 +67,7 @@ export class DefinitionStore {
   }
 }
 
-type PointedSymbol = {
+export type PointedSymbol = {
   logicalSystem: string;
   symbol?: string;
 };
@@ -92,6 +92,7 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
       getNatPoolDefinition(session, line, textDocumentPosition) ||
       getMatchAddressDefinition(session, line, textDocumentPosition) ||
       getPoolAddressDefinition(session, line, textDocumentPosition) ||
+      getAddressSetAddressDefinition(session, line, textDocumentPosition) ||
       [];
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
@@ -239,6 +240,25 @@ function getPoolAddressDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
 }
 
+function getAddressSetAddressDefinition(
+  session: Session,
+  line: string,
+  textDocumentPosition: TextDocumentPositionParams,
+): Range[] | undefined {
+  const m = line.match(/address-book\s+(\S+)/);
+  if (!m) {
+    return;
+  }
+
+  const symbol = getPointedSymbol(
+    session,
+    line,
+    textDocumentPosition.position.character,
+    "address-set\\s+\\S+\\s+address",
+  );
+  return session.definitions.get(textDocumentPosition.textDocument.uri, `address:${m[1]}`, symbol);
+}
+
 export function updateDefinitions(session: Session, textDocument: TextDocument): void {
   updateInterfaceDefinitions(session, textDocument);
   updatePrefixListDefinitions(session, textDocument);
@@ -330,21 +350,24 @@ function updateNatPoolDefinitions(session: Session, textDocument: TextDocument):
   insertDefinitions(session, textDocument, type, "services\\s+nat\\s+pool\\s+)(\\S+)", (m) => m[3]);
 }
 
+// update both address and address-set definitions for performance reason
 function updateAddressDefinitions(session: Session, textDocument: TextDocument): void {
-  const type = "address";
-
   const text = textDocument.getText();
+
   const pattern = /security\s+address-book\s+(\S+)/gm;
   let m: RegExpExecArray | null;
   while ((m = pattern.exec(text))) {
-    session.definitions.clear(textDocument.uri, `${type}:${m[1]}`);
+    session.definitions.clear(textDocument.uri, `address:${m[1]}`);
+    session.definitions.clear(textDocument.uri, `address-set:${m[1]}`);
   }
 
-  insertDefinitions(
-    session,
-    textDocument,
-    (m) => `${type}:${m[3]}`,
-    "security\\s+address-book\\s+(\\S+)\\s+address\\s+)(\\S+)",
-    (m) => m[4],
-  );
+  for (const type of ["address", "address-set"]) {
+    insertDefinitions(
+      session,
+      textDocument,
+      (m) => `${type}:${m[3]}`,
+      `security\\s+address-book\\s+(\\S+)\\s+${type}\\s+)(\\S+)`,
+      (m) => m[4],
+    );
+  }
 }

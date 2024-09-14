@@ -42,7 +42,8 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       ["nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
       ["address:global", "match\\s+(?:source|destination)-address(?:-name)?"],
       ["address:global", "pool\\s+\\S+\\s+address-name"],
-    ] as Array<[string, string, string[], string[]]>;
+      [(m) => `address:${m[2]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
+    ] as Array<[string | ((arg: RegExpMatchArray) => string), string, string[], string[]]>;
 
     // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
     rules.forEach(([symbolType, pattern, allowList, denyList]) => {
@@ -138,7 +139,7 @@ function validateReference(
   session: Session,
   line: string,
   uri: string,
-  symbolType: string,
+  symbolType: string | ((arg: RegExpMatchArray) => string),
   pattern: string,
   allowList?: string[],
   denyList?: string[],
@@ -146,13 +147,18 @@ function validateReference(
   let m = line.match(`^logical-systems\\s+(\\S+)`);
   const logicalSystem = m?.[1] || "global";
 
-  m = line.match(`(\\s${pattern}\\s+)(\\S+)`);
-  if (!m || allowList?.includes(m[2])) {
+  m = line.match(`(?<stmt>\\s${pattern}\\s+)(?<arg>\\S+)`);
+  if (!m || allowList?.includes(m.groups!.arg)) {
     return;
   }
 
-  if (denyList?.includes(m[2]) || !(m[2] in session.definitions.getDefinitions(uri, logicalSystem, symbolType))) {
-    return [(m.index || 0) + m[1].length, (m.index || 0) + m[1].length + m[2].length];
+  const type = typeof symbolType === "function" ? symbolType(m) : symbolType;
+
+  if (
+    denyList?.includes(m.groups!.arg) ||
+    !(m.groups!.arg in session.definitions.getDefinitions(uri, logicalSystem, type))
+  ) {
+    return [(m.index || 0) + m[1].length, (m.index || 0) + m[1].length + m.groups!.arg.length];
   }
 }
 
