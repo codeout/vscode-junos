@@ -24,17 +24,17 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
 
     // List defined symbols
     const rules = [
-      [/\s+interface\s+$/, "interface"],
-      [/\s+from\s+(?:source-|destination-)?prefix-list\s+$/, "prefix-list"],
-      [/\s+(?:import|export)\s+$/, "policy-statement"],
-      [/\s+(?:from\s+community|then\s+community\s+(?:add|delete|set))\s+$/, "community"],
-      [/\s+from\s+as-path\s+$/, "as-path"],
-      [/\s+from\s+as-path-group\s+$/, "as-path-group"],
-      [/\s+filter\s+(?:input|output|input-list|output-list)\s+$/, "firewall-filter"],
-      [/\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/, "nat-pool"],
-    ] as [RegExp, string][];
+      ["interface", /\s+interface\s+$/],
+      ["prefix-list", /\s+from\s+(?:source-|destination-)?prefix-list\s+$/],
+      ["policy-statement", /\s+(?:import|export)\s+$/],
+      ["community", /\s+(?:from\s+community|then\s+community\s+(?:add|delete|set))\s+$/],
+      ["as-path", /\s+from\s+as-path\s+$/],
+      ["as-path-group", /\s+from\s+as-path-group\s+$/],
+      ["firewall-filter", /\s+filter\s+(?:input|output|input-list|output-list)\s+$/],
+      ["nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
+    ] as [string, RegExp][];
 
-    for (const [pattern, symbolType] of rules) {
+    for (const [symbolType, pattern] of rules) {
       if (line.match(pattern)) {
         addReferences(session, session.definitions.getDefinitions(uri, logicalSystem, symbolType), keywords);
         break;
