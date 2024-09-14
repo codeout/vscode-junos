@@ -35,6 +35,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
       ["address:global", /\s+match\s+(?:source|destination)-address(?:-name)?\s+$/],
       ["address:global", /\s+pool\s+\S+\s+address-name\s+$/],
       [(m) => `address:${m[1]}`, /\s+address-book\s+(\S+)\s+address-set\s+\S+\s+address\s+$/],
+      [(m) => `address-set:${m[1]}`, /\s+address-book\s+(\S+)\s+address-set\s+\S+\s+address-set\s+$/],
     ] as Array<[string | ((arg: RegExpMatchArray) => string), RegExp]>;
 
     for (const [symbolType, pattern] of rules) {

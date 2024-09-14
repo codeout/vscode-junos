@@ -43,6 +43,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       ["address:global", "match\\s+(?:source|destination)-address(?:-name)?"],
       ["address:global", "pool\\s+\\S+\\s+address-name"],
       [(m) => `address:${m[2]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
+      [(m) => `address-set:${m[2]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address-set"],
     ] as Array<[string | ((arg: RegExpMatchArray) => string), string, string[], string[]]>;
 
     // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755

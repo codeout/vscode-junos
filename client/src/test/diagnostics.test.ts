@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 23; // lines for completion tests
+const offset = 24; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
@@ -84,43 +84,55 @@ suite("Should get diagnostics", () => {
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(46, 81, 93),
+        range: toRange(47, 81, 93),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(48, 86, 98),
+        range: toRange(49, 86, 98),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(50, 86, 98),
+        range: toRange(51, 86, 98),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(52, 91, 103),
+        range: toRange(53, 91, 103),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address_" is not defined',
-        range: toRange(54, 51, 63),
+        range: toRange(55, 51, 63),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"foo-address" is not defined',
-        range: toRange(57, 79, 90),
+        range: toRange(58, 79, 90),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"bar-address_" is not defined',
-        range: toRange(59, 79, 91),
+        range: toRange(60, 79, 91),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
+      {
+        message: '"foo-address-set" is not defined',
+        range: toRange(61, 83, 98),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
+      {
+        message: '"bar-address-set_" is not defined',
+        range: toRange(63, 83, 99),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },

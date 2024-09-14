@@ -229,18 +229,19 @@ function getPoolAddressDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
 }
 
+// update both address and address-set definitions for performance reason
 function getAddressSetAddressDefinition(
   session: Session,
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
-  const m = line.match(/address-book\s+(\S+)/);
+  const m = line.match(/address-book\s+(\S+)\s+address-set\s+\S+\s+(address(?:-set))/);
   if (!m) {
     return;
   }
 
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "address-set\\s+\\S+\\s+address");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, `address:${m[1]}`, symbol);
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:${m[1]}`, symbol);
 }
 
 export function updateDefinitions(session: Session, textDocument: TextDocument): void {
