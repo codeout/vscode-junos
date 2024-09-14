@@ -71,14 +71,14 @@ suite("Should get diagnostics", () => {
         source: "ex",
       },
       {
-        message: '"foo_" is not defined',
-        range: toRange(33, 29, 33, 33),
+        message: '"foo-interface_" is not defined',
+        range: toRange(33, 29, 33, 43),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       {
         message: '"bar-import" is not defined',
-        range: toRange(36, 56, 36, 66),
+        range: toRange(36, 62, 36, 72),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },

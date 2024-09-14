@@ -259,7 +259,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined policy-statement only in logical-systems", async () => {
-    await testCompletion(docUri, new vscode.Position(10, 56), {
+    await testCompletion(docUri, new vscode.Position(10, 62), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -294,7 +294,7 @@ suite("Should do completion", () => {
         { label: "all", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "foo", kind: vscode.CompletionItemKind.Text },
+        { label: "foo-interface", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/0", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/0.0", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/1", kind: vscode.CompletionItemKind.Text },
