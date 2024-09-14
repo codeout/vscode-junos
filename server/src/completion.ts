@@ -36,7 +36,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
 
     for (const [symbolType, pattern] of rules) {
       if (line.match(pattern)) {
-        addReferences(session, session.definitions.getDefinitions(uri, logicalSystem, symbolType), keywords);
+        addReferences(session.definitions.getDefinitions(uri, logicalSystem, symbolType), keywords);
         break;
       }
     }
@@ -49,7 +49,7 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
   };
 }
 
-function addReferences(session: Session, definitions: object, keywords: string[]) {
+function addReferences(definitions: object, keywords: string[]) {
   const index = keywords.indexOf("word");
   if (index < 0) {
     return;
