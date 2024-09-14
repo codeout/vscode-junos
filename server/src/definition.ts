@@ -102,12 +102,11 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
 /**
  * Return if the cursor is pointing the symbol which matches a given pattern, or undefined.
  *
- * @param session
  * @param line
  * @param position
  * @param pattern
  */
-function getPointedSymbol(session: Session, line: string, position: number, pattern: string): PointedSymbol {
+function getPointedSymbol(line: string, position: number, pattern: string): PointedSymbol {
   const m = line.match(
     `(${prefixPattern.source}(?:\\s+logical-systems\\s+(\\S+))?(?:\\s+.*)?\\s+${pattern}\\s+)(\\S+)`,
   );
@@ -125,7 +124,7 @@ function getInterfaceDefinition(
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
-  const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, "interface");
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "interface");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "interface", symbol);
 }
 
@@ -135,7 +134,6 @@ function getPrefixListDefinition(
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
   const symbol = getPointedSymbol(
-    session,
     line,
     textDocumentPosition.position.character,
     "from\\s+(?:source-|destination-)?prefix-list",
@@ -148,7 +146,7 @@ function getPolicyStatementDefinition(
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
-  const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, "(?:import|export)");
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "(?:import|export)");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "policy-statement", symbol);
 }
 
@@ -158,7 +156,6 @@ function getCommunityDefinition(
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
   const symbol = getPointedSymbol(
-    session,
     line,
     textDocumentPosition.position.character,
     "(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))",
@@ -171,7 +168,7 @@ function getAsPathDefinition(
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
-  const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, "from\\s+as-path");
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "from\\s+as-path");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "as-path", symbol);
 }
 
@@ -180,7 +177,7 @@ function getAsPathGroupDefinition(
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
-  const symbol = getPointedSymbol(session, line, textDocumentPosition.position.character, "from\\s+as-path-group");
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "from\\s+as-path-group");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "as-path-group", symbol);
 }
 
@@ -190,7 +187,6 @@ function getFirewallFilterDefinition(
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
   const symbol = getPointedSymbol(
-    session,
     line,
     textDocumentPosition.position.character,
     "filter\\s+(?:input|output|input-list|output-list)",
@@ -204,7 +200,6 @@ function getNatPoolDefinition(
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
   const symbol = getPointedSymbol(
-    session,
     line,
     textDocumentPosition.position.character,
     "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)",
@@ -218,7 +213,6 @@ function getMatchAddressDefinition(
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
   const symbol = getPointedSymbol(
-    session,
     line,
     textDocumentPosition.position.character,
     "match\\s+(?:source|destination)-address(?:-name)?",
@@ -231,12 +225,7 @@ function getPoolAddressDefinition(
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
-  const symbol = getPointedSymbol(
-    session,
-    line,
-    textDocumentPosition.position.character,
-    "pool\\s+\\S+\\s+address-name",
-  );
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "pool\\s+\\S+\\s+address-name");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
 }
 
@@ -250,12 +239,7 @@ function getAddressSetAddressDefinition(
     return;
   }
 
-  const symbol = getPointedSymbol(
-    session,
-    line,
-    textDocumentPosition.position.character,
-    "address-set\\s+\\S+\\s+address",
-  );
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "address-set\\s+\\S+\\s+address");
   return session.definitions.get(textDocumentPosition.textDocument.uri, `address:${m[1]}`, symbol);
 }
 
