@@ -303,7 +303,7 @@ suite("Should do completion", () => {
     });
   });
 
-  test("Completes defined global address-name", async () => {
+  test("Completes defined global address-name in nat", async () => {
     for (const [line, character] of [
       [14, 81],
       [15, 86],
@@ -334,23 +334,18 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined address-name in address-book", async () => {
-    await testCompletion(docUri, new vscode.Position(19, 79), {
-      items: [
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "bar-address", kind: vscode.CompletionItemKind.Text },
-      ],
-    });
-  });
-
-  test("Completes defined address-set in address-book", async () => {
-    await testCompletion(docUri, new vscode.Position(20, 83), {
-      items: [
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "bar-address-set", kind: vscode.CompletionItemKind.Text },
-      ],
-    });
+    for (const [line, character, address] of [
+      [19, 79, "bar-address"],
+      [20, 83, "bar-address-set"],
+    ] as Array<[number, number, string]>) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: address, kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
   });
 
   test("Completes defined address / address-set in security policies", async () => {

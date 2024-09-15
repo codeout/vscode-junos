@@ -82,60 +82,24 @@ suite("Should get diagnostics", () => {
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
-      {
-        message: '"foo-address_" is not defined',
-        range: toRange(47, 81, 93),
+      ...(
+        [
+          [47, 81, 93, "foo-address_"],
+          [49, 86, 98, "foo-address_"],
+          [51, 86, 98, "foo-address_"],
+          [53, 91, 103, "foo-address_"],
+          [55, 51, 63, "foo-address_"],
+          [58, 79, 90, "foo-address"],
+          [60, 79, 91, "bar-address_"],
+          [61, 83, 98, "foo-address-set"],
+          [63, 83, 99, "bar-address-set_"],
+        ] as Array<[number, number, number, string]>
+      ).map(([line, sChar, eChar, address]) => ({
+        message: `"${address}" is not defined`,
+        range: toRange(line, sChar, eChar),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
-      },
-      {
-        message: '"foo-address_" is not defined',
-        range: toRange(49, 86, 98),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
-      {
-        message: '"foo-address_" is not defined',
-        range: toRange(51, 86, 98),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
-      {
-        message: '"foo-address_" is not defined',
-        range: toRange(53, 91, 103),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
-      {
-        message: '"foo-address_" is not defined',
-        range: toRange(55, 51, 63),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
-      {
-        message: '"foo-address" is not defined',
-        range: toRange(58, 79, 90),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
-      {
-        message: '"bar-address_" is not defined',
-        range: toRange(60, 79, 91),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
-      {
-        message: '"foo-address-set" is not defined',
-        range: toRange(61, 83, 98),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
-      {
-        message: '"bar-address-set_" is not defined',
-        range: toRange(63, 83, 99),
-        severity: vscode.DiagnosticSeverity.Error,
-        source: "ex",
-      },
+      })),
       ...(
         [
           [71, 93, 104, "foo-address"],
