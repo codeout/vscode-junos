@@ -1,3 +1,24 @@
+## [0.3.6] - 2024-09-15
+
+### Added
+
+* Update vSRX syntax to 22.4R1.10
+  * `security`
+  * `chassis cluster`
+* Completion and validation support
+  * `security address-book xxx address-set xxx address`
+  * `security address-book xxx address-set xxx address-set`
+| * `security nat xxx pool xxx address-name`
+| * `security nat ... match xxx-address`
+  * `security policies ... match (source|destination)-address`
+
+### Fixed
+
+* Syntax highlight
+  * `address-book`
+  * `address-set` / `address`
+
+
 ## [0.3.5] - 2024-06-07
 
 ### Fixed
