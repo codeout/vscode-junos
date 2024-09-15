@@ -7,7 +7,7 @@ suite("Should do completion", () => {
   const docUri = getDocUri("junos.conf");
 
   test("Completes root config sections", async () => {
-    await testCompletion(docUri, new vscode.Position(1, 4), {
+    await testCompletion(docUri, new vscode.Position(2, 4), {
       items: [
         { label: "access", kind: vscode.CompletionItemKind.Text },
         { label: "access-profile", kind: vscode.CompletionItemKind.Text },
@@ -70,7 +70,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes interface sections", async () => {
-    await testCompletion(docUri, new vscode.Position(2, 24), {
+    await testCompletion(docUri, new vscode.Position(3, 24), {
       items: [
         { label: "accounting-profile", kind: vscode.CompletionItemKind.Text },
         { label: "aggregated-ether-options", kind: vscode.CompletionItemKind.Text },
@@ -197,7 +197,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined prefix-list", async () => {
-    await testCompletion(docUri, new vscode.Position(3, 67), {
+    await testCompletion(docUri, new vscode.Position(4, 67), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -207,7 +207,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined policy-statement", async () => {
-    await testCompletion(docUri, new vscode.Position(4, 41), {
+    await testCompletion(docUri, new vscode.Position(5, 41), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -217,7 +217,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined community", async () => {
-    await testCompletion(docUri, new vscode.Position(5, 65), {
+    await testCompletion(docUri, new vscode.Position(6, 65), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -227,7 +227,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined as-path", async () => {
-    await testCompletion(docUri, new vscode.Position(6, 63), {
+    await testCompletion(docUri, new vscode.Position(7, 63), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -237,7 +237,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined as-path-group", async () => {
-    await testCompletion(docUri, new vscode.Position(7, 69), {
+    await testCompletion(docUri, new vscode.Position(8, 69), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -247,7 +247,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined firewall filter", async () => {
-    await testCompletion(docUri, new vscode.Position(8, 56), {
+    await testCompletion(docUri, new vscode.Position(9, 56), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -259,7 +259,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined policy-statement only in logical-systems", async () => {
-    await testCompletion(docUri, new vscode.Position(9, 56), {
+    await testCompletion(docUri, new vscode.Position(10, 62), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -269,7 +269,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined prefix-list only in logical-systems", async () => {
-    await testCompletion(docUri, new vscode.Position(10, 85), {
+    await testCompletion(docUri, new vscode.Position(11, 85), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -279,7 +279,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined nat pool", async () => {
-    await testCompletion(docUri, new vscode.Position(11, 68), {
+    await testCompletion(docUri, new vscode.Position(12, 68), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -289,18 +289,84 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined interface-range", async () => {
-    await testCompletion(docUri, new vscode.Position(12, 29), {
+    await testCompletion(docUri, new vscode.Position(13, 29), {
       items: [
         { label: "all", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "foo", kind: vscode.CompletionItemKind.Text },
+        { label: "foo-interface", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/0", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/0.0", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/1", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/1.0", kind: vscode.CompletionItemKind.Text },
       ],
     });
+  });
+
+  test("Completes defined global address-name in nat", async () => {
+    for (const [line, character] of [
+      [14, 81],
+      [15, 86],
+    ]) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "any-unicast", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: "foo-address", kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
+
+    for (const [line, character] of [
+      [16, 86],
+      [17, 91],
+      [18, 51],
+    ]) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: "foo-address", kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
+  });
+
+  test("Completes defined address-name in address-book", async () => {
+    for (const [line, character, address] of [
+      [19, 79, "bar-address"],
+      [20, 83, "bar-address-set"],
+    ] as Array<[number, number, string]>) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: address, kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
+  });
+
+  test("Completes defined address / address-set in security policies", async () => {
+    for (const [line, character, address] of [
+      [21, 86, "bar-address"],
+      [22, 91, "baz-address"],
+      [23, 96, "foo-address"],
+      [24, 99, "foo-address"],
+    ] as Array<[number, number, string]>) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "any", kind: vscode.CompletionItemKind.Text },
+          { label: "any-ipv4", kind: vscode.CompletionItemKind.Text },
+          { label: "any-ipv6", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: address, kind: vscode.CompletionItemKind.Text },
+          { label: `${address}-set`, kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
   });
 });
 

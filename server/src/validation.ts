@@ -1,7 +1,7 @@
 import { Diagnostic, DiagnosticSeverity, TextDocument } from "vscode-languageserver";
 
-import { Session } from "./session";
 import { prefixPattern } from "./parser";
+import { Session } from "./session";
 
 const maxNumberOfProblems = 1000; // Just a guard
 
@@ -40,7 +40,19 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       ["as-path-group", "from\\s+as-path-group"],
       ["firewall-filter", "filter\\s+(?:input|output|input-list|output-list)"],
       ["nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
-    ] as Array<[string, string, string[], string[]]>;
+      ["address:global", "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?"],
+      ["address:global", "pool\\s+\\S+\\s+address-name"],
+      [(m) => `address:${m[3]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
+      [(m) => `address-set:${m[3]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address-set"],
+      [
+        (m) => {
+          const zone = m[5] === "source" ? m[3] : m[4];
+          const addressBooks = session.zoneAddressBooks.get(textDocument.uri, m.groups!.ls || "global", zone);
+          return [...addressBooks].map((a) => [`address:${a}`, `address-set:${a}`]).flat();
+        },
+        "from-zone\\s+(\\S+)\\s+to-zone\\s+(\\S+)\\s+.*\\s+match\\s+(source|destination)-address",
+      ],
+    ] as Array<[string | ((arg: RegExpMatchArray) => string | string[]), string, string[], string[]]>;
 
     // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
     rules.forEach(([symbolType, pattern, allowList, denyList]) => {
@@ -136,22 +148,35 @@ function validateReference(
   session: Session,
   line: string,
   uri: string,
-  symbolType: string,
+  symbolType: string | ((arg: RegExpMatchArray) => string | string[]),
   pattern: string,
   allowList?: string[],
   denyList?: string[],
 ): number[] | undefined {
-  let m = line.match(`^logical-systems\\s+(\\S+)`);
-  const logicalSystem = m?.[1] || "global";
-
-  m = line.match(`(\\s${pattern}\\s+)(\\S+)`);
-  if (!m || allowList?.includes(m[2])) {
+  const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+))?.*\\s${pattern}\\s+)(?<arg>\\S+)`);
+  if (!m || allowList?.includes(m.groups!.arg)) {
     return;
   }
 
-  if (denyList?.includes(m[2]) || !(m[2] in session.definitions.getDefinitions(uri, logicalSystem, symbolType))) {
-    return [(m.index || 0) + m[1].length, (m.index || 0) + m[1].length + m[2].length];
+  const stmtLength = (m.index || 0) + m.groups!.stmt.length;
+  const range = [stmtLength, stmtLength + m.groups!.arg.length];
+
+  if (denyList?.includes(m.groups!.arg)) {
+    return range;
   }
+
+  let types = typeof symbolType === "function" ? symbolType(m) : symbolType;
+  if (!Array.isArray(types)) {
+    types = [types];
+  }
+
+  for (const type of types) {
+    if (m.groups!.arg in session.definitions.getDefinitions(uri, m.groups!.ls || "global", type)) {
+      return;
+    }
+  }
+
+  return range;
 }
 
 /**
