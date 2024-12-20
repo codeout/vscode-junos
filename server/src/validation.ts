@@ -5,7 +5,7 @@ import { Session } from "./session";
 
 const maxNumberOfProblems = 1000; // Just a guard
 
-export async function validateTextDocument(session: Session, textDocument: TextDocument): Promise<void> {
+export async function validateTextDocument(session: Session, textDocument: TextDocument): Promise<Diagnostic[]> {
   const text = textDocument.getText();
   const pattern = new RegExp(`(${prefixPattern.source}[\\t ]+)(.*)`, "gm");
   let m: RegExpExecArray | null;
@@ -81,7 +81,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     });
   }
 
-  session.connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+  return diagnostics;
 }
 
 function createDiagnostic(
