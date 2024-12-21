@@ -3,7 +3,7 @@
 	"description": "VSCode part of a language server",
 	"author": "Shintaro Kojima",
 	"license": "MIT",
-	"version": "0.3.6",
+	"version": "0.4.0",
 	"publisher": "vscode",
 	"repository": {
 		"type": "git",
