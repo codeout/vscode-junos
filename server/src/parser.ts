@@ -60,7 +60,11 @@ export class Node {
     Object.keys(obj).forEach((key: string) => {
       const val = obj[key];
 
-      if (key.startsWith("arg")) {
+      if (val === false) {
+        // Only the "set groups" has the value false, like:
+        // "groups(arg) | Configuration groups": opts?.groups !== false && { ... }
+        // Just skip it.
+      } else if (key.startsWith("arg")) {
         this.add(this.argNode(key, val));
       } else if (key.startsWith("null_") && val) {
         this.addNullNode(val);
@@ -101,9 +105,6 @@ export class Node {
     switch (string) {
       case "arg":
         this.add(new Node("arg", this, null, undefined, "arg"));
-        break;
-      case "any":
-        // This is only for "set groups", and all are done by another hack
         break;
       default:
         throw new Error("Not implemented");
@@ -217,7 +218,6 @@ export class Parser {
       if (string.match(/^groups\s*$|\s*apply-groups(-except)?$/)) {
         return ["word"];
       }
-      string = string.replace(/^groups\s+\S+/, "");
       string = string.replace(/apply-groups(-except)?\s+\S+$/, "");
     }
 

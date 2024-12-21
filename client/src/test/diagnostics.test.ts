@@ -3,13 +3,19 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 28; // lines for completion tests
+const offset = 31; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
 
   test("Diagnoses syntax", async () => {
     await testDiagnostics(docUri, [
+      {
+        message: '"groups " is invalid',
+        range: toRange(-6, 4, 11),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
       {
         message: '"foo-filter_" is not defined',
         range: toRange(3, 56, 67),
