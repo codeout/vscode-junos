@@ -1,4 +1,6 @@
-type SchemaObject = { [key: string]: SchemaObject | null };
+// Only the "set groups" has the value false, like:
+// "groups(arg) | Configuration groups": opts?.groups !== false && { ... }
+type SchemaObject = { [key: string]: SchemaObject | null | false };
 
 export class Enumeration {
   list: string[];

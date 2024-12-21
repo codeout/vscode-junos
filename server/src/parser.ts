@@ -60,7 +60,11 @@ export class Node {
     Object.keys(obj).forEach((key: string) => {
       const val = obj[key];
 
-      if (key.startsWith("arg")) {
+      if (val === false) {
+        // Only the "set groups" has the value false, like:
+        // "groups(arg) | Configuration groups": opts?.groups !== false && { ... }
+        // Just skip it.
+      } else if (key.startsWith("arg")) {
         this.add(this.argNode(key, val));
       } else if (key.startsWith("null_") && val) {
         this.addNullNode(val);
@@ -81,7 +85,7 @@ export class Node {
   loadSequence(sequence: Sequence, depth: number) {
     const raw = sequence.get(depth);
 
-    // NOTE: This is actually complicated, might be buggy
+    // This is actually complicated, might be buggy
     if (this.children.length === 0) {
       this.load(raw);
       this.children.forEach((child) => {
@@ -101,9 +105,6 @@ export class Node {
     switch (string) {
       case "arg":
         this.add(new Node("arg", this, null, undefined, "arg"));
-        break;
-      case "any":
-        // NOTE: This is only for "set groups", and all are done by another hack
         break;
       default:
         throw new Error("Not implemented");
@@ -212,16 +213,15 @@ export class Parser {
     string = string.trim();
     const defaultKeywords = ["apply-groups", "apply-groups-except"];
 
-    // NOTE: Hack for "groups" statement
+    // Hack for "groups" statement
     if (string) {
       if (string.match(/^groups\s*$|\s*apply-groups(-except)?$/)) {
         return ["word"];
       }
-      string = string.replace(/^groups\s+\S+/, "");
       string = string.replace(/apply-groups(-except)?\s+\S+$/, "");
     }
 
-    // NOTE: Hack for implicit interface-range "all"
+    // Hack for implicit interface-range "all"
     if (string?.match(/\s+interface$/)) {
       defaultKeywords.push("all");
     }

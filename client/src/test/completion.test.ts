@@ -6,70 +6,80 @@ import { activate, getDocUri } from "./helper";
 suite("Should do completion", () => {
   const docUri = getDocUri("junos.conf");
 
-  test("Completes root config sections", async () => {
+  const rootItems = [
+    { label: "access", kind: vscode.CompletionItemKind.Text },
+    { label: "access-profile", kind: vscode.CompletionItemKind.Text },
+    { label: "accounting-options", kind: vscode.CompletionItemKind.Text },
+    { label: "applications", kind: vscode.CompletionItemKind.Text },
+    { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+    { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+    { label: "bridge-domains", kind: vscode.CompletionItemKind.Text },
+    { label: "chassis", kind: vscode.CompletionItemKind.Text },
+    { label: "class-of-service", kind: vscode.CompletionItemKind.Text },
+    { label: "diameter", kind: vscode.CompletionItemKind.Text },
+    { label: "dynamic-profiles", kind: vscode.CompletionItemKind.Text },
+    { label: "ethernet-switching-options", kind: vscode.CompletionItemKind.Text },
+    { label: "event-options", kind: vscode.CompletionItemKind.Text },
+    { label: "fabric", kind: vscode.CompletionItemKind.Text },
+    { label: "firewall", kind: vscode.CompletionItemKind.Text },
+    { label: "forwarding-options", kind: vscode.CompletionItemKind.Text },
+    { label: "ietf-interfaces:interfaces", kind: vscode.CompletionItemKind.Text },
+    { label: "interfaces", kind: vscode.CompletionItemKind.Text },
+    { label: "jnx-aug-openconfig-gribi-statistics:gribi-statistics", kind: vscode.CompletionItemKind.Text },
+    { label: "jnx-tel-RE-local-interfaces-stats:interfaces", kind: vscode.CompletionItemKind.Text },
+    { label: "jsrc", kind: vscode.CompletionItemKind.Text },
+    { label: "jsrc-partition", kind: vscode.CompletionItemKind.Text },
+    { label: "logical-systems", kind: vscode.CompletionItemKind.Text },
+    { label: "multi-chassis", kind: vscode.CompletionItemKind.Text },
+    { label: "multicast-snooping-options", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-acl:acl", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-bfd:bfd", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-bgp:bgp", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-interfaces:interfaces", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-keychain:keychains", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-lacp:lacp", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-lldp:lldp", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-local-routing:local-routes", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-macsec:macsec", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-messages:messages", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-network-instance:network-instances", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-platform:components", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-probes:probes", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-qos:qos", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-routing-policy:routing-policy", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-sampling-sflow:sampling", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-system:system", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-telemetry:telemetry-system", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-terminal-device:terminal-device", kind: vscode.CompletionItemKind.Text },
+    { label: "poe", kind: vscode.CompletionItemKind.Text },
+    { label: "policy-options", kind: vscode.CompletionItemKind.Text },
+    { label: "protocols", kind: vscode.CompletionItemKind.Text },
+    { label: "rcsid", kind: vscode.CompletionItemKind.Text },
+    { label: "routing-instances", kind: vscode.CompletionItemKind.Text },
+    { label: "routing-options", kind: vscode.CompletionItemKind.Text },
+    { label: "security", kind: vscode.CompletionItemKind.Text },
+    { label: "services", kind: vscode.CompletionItemKind.Text },
+    { label: "session-limit-group", kind: vscode.CompletionItemKind.Text },
+    { label: "snmp", kind: vscode.CompletionItemKind.Text },
+    { label: "switch-options", kind: vscode.CompletionItemKind.Text },
+    { label: "system", kind: vscode.CompletionItemKind.Text },
+    { label: "tenants", kind: vscode.CompletionItemKind.Text },
+    { label: "unified-edge", kind: vscode.CompletionItemKind.Text },
+    { label: "version", kind: vscode.CompletionItemKind.Text },
+    { label: "virtual-chassis", kind: vscode.CompletionItemKind.Text },
+    { label: "vlans", kind: vscode.CompletionItemKind.Text },
+    { label: "vmhost", kind: vscode.CompletionItemKind.Text },
+  ];
+
+  test("Completes root config section", async () => {
     await testCompletion(docUri, new vscode.Position(2, 4), {
-      items: [
-        { label: "access", kind: vscode.CompletionItemKind.Text },
-        { label: "access-profile", kind: vscode.CompletionItemKind.Text },
-        { label: "accounting-options", kind: vscode.CompletionItemKind.Text },
-        { label: "applications", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "bridge-domains", kind: vscode.CompletionItemKind.Text },
-        { label: "chassis", kind: vscode.CompletionItemKind.Text },
-        { label: "class-of-service", kind: vscode.CompletionItemKind.Text },
-        { label: "diameter", kind: vscode.CompletionItemKind.Text },
-        { label: "dynamic-profiles", kind: vscode.CompletionItemKind.Text },
-        { label: "ethernet-switching-options", kind: vscode.CompletionItemKind.Text },
-        { label: "event-options", kind: vscode.CompletionItemKind.Text },
-        { label: "fabric", kind: vscode.CompletionItemKind.Text },
-        { label: "firewall", kind: vscode.CompletionItemKind.Text },
-        { label: "forwarding-options", kind: vscode.CompletionItemKind.Text },
-        { label: "groups", kind: vscode.CompletionItemKind.Text },
-        { label: "ietf-interfaces:interfaces", kind: vscode.CompletionItemKind.Text },
-        { label: "interfaces", kind: vscode.CompletionItemKind.Text },
-        { label: "jsrc", kind: vscode.CompletionItemKind.Text },
-        { label: "jsrc-partition", kind: vscode.CompletionItemKind.Text },
-        { label: "logical-systems", kind: vscode.CompletionItemKind.Text },
-        { label: "multi-chassis", kind: vscode.CompletionItemKind.Text },
-        { label: "multicast-snooping-options", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-bfd:bfd", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-bgp:bgp", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-interfaces:interfaces", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-lacp:lacp", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-lldp:lldp", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-local-routing:local-routes", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-mpls:mpls", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-network-instance:network-instances", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-platform:components", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-qos:qos", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-routing-policy:routing-policy", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-system:system", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-telemetry:telemetry-system", kind: vscode.CompletionItemKind.Text },
-        { label: "openconfig-vlan:vlans", kind: vscode.CompletionItemKind.Text },
-        { label: "poe", kind: vscode.CompletionItemKind.Text },
-        { label: "policy-options", kind: vscode.CompletionItemKind.Text },
-        { label: "protocols", kind: vscode.CompletionItemKind.Text },
-        { label: "rcsid", kind: vscode.CompletionItemKind.Text },
-        { label: "routing-instances", kind: vscode.CompletionItemKind.Text },
-        { label: "routing-options", kind: vscode.CompletionItemKind.Text },
-        { label: "security", kind: vscode.CompletionItemKind.Text },
-        { label: "services", kind: vscode.CompletionItemKind.Text },
-        { label: "session-limit-group", kind: vscode.CompletionItemKind.Text },
-        { label: "snmp", kind: vscode.CompletionItemKind.Text },
-        { label: "switch-options", kind: vscode.CompletionItemKind.Text },
-        { label: "system", kind: vscode.CompletionItemKind.Text },
-        { label: "tenants", kind: vscode.CompletionItemKind.Text },
-        { label: "unified-edge", kind: vscode.CompletionItemKind.Text },
-        { label: "version", kind: vscode.CompletionItemKind.Text },
-        { label: "virtual-chassis", kind: vscode.CompletionItemKind.Text },
-        { label: "vlans", kind: vscode.CompletionItemKind.Text },
-        { label: "vmhost", kind: vscode.CompletionItemKind.Text },
-      ],
+      items: [...rootItems, { label: "groups", kind: vscode.CompletionItemKind.Text }].sort((a, b) =>
+        a.label.localeCompare(b.label),
+      ),
     });
   });
 
-  test("Completes interface sections", async () => {
+  test("Completes interfaces section", async () => {
     await testCompletion(docUri, new vscode.Position(3, 24), {
       items: [
         { label: "accounting-profile", kind: vscode.CompletionItemKind.Text },
@@ -140,6 +150,7 @@ suite("Should do completion", () => {
         { label: "multiservice-options", kind: vscode.CompletionItemKind.Text },
         { label: "native-vlan-id", kind: vscode.CompletionItemKind.Text },
         { label: "no-bypass-queueing-chip", kind: vscode.CompletionItemKind.Text },
+        { label: "no-forwarding-viable", kind: vscode.CompletionItemKind.Text },
         { label: "no-gratuitous-arp-reply", kind: vscode.CompletionItemKind.Text },
         { label: "no-gratuitous-arp-request", kind: vscode.CompletionItemKind.Text },
         { label: "no-interface-mib", kind: vscode.CompletionItemKind.Text },
@@ -157,6 +168,7 @@ suite("Should do completion", () => {
         { label: "optics-options", kind: vscode.CompletionItemKind.Text },
         { label: "otn-options", kind: vscode.CompletionItemKind.Text },
         { label: "otu-options", kind: vscode.CompletionItemKind.Text },
+        { label: "p4rt", kind: vscode.CompletionItemKind.Text },
         { label: "partition", kind: vscode.CompletionItemKind.Text },
         { label: "passive-monitor-mode", kind: vscode.CompletionItemKind.Text },
         { label: "per-unit-scheduler", kind: vscode.CompletionItemKind.Text },
@@ -168,6 +180,7 @@ suite("Should do completion", () => {
         { label: "redundancy-group", kind: vscode.CompletionItemKind.Text },
         { label: "redundancy-options", kind: vscode.CompletionItemKind.Text },
         { label: "redundant-ether-options", kind: vscode.CompletionItemKind.Text },
+        { label: "rpf-stats", kind: vscode.CompletionItemKind.Text },
         { label: "satop-options", kind: vscode.CompletionItemKind.Text },
         { label: "schedulers", kind: vscode.CompletionItemKind.Text },
         { label: "serial-options", kind: vscode.CompletionItemKind.Text },
@@ -181,6 +194,7 @@ suite("Should do completion", () => {
         { label: "switch-options", kind: vscode.CompletionItemKind.Text },
         { label: "t1-options", kind: vscode.CompletionItemKind.Text },
         { label: "t3-options", kind: vscode.CompletionItemKind.Text },
+        { label: "targeted-options", kind: vscode.CompletionItemKind.Text },
         { label: "tdm-options", kind: vscode.CompletionItemKind.Text },
         { label: "traceoptions", kind: vscode.CompletionItemKind.Text },
         { label: "transmit-bucket", kind: vscode.CompletionItemKind.Text },
@@ -368,6 +382,32 @@ suite("Should do completion", () => {
       });
     }
   });
+
+  suite("Completes groups section", async () => {
+    test("name", async () => {
+      await testCompletion(docUri, new vscode.Position(25, 11), {
+        items: [{ label: "word", kind: vscode.CompletionItemKind.Value }],
+      });
+    });
+
+    test("after name", async () => {
+      await testCompletion(docUri, new vscode.Position(26, 15), {
+        items: [...rootItems, { label: "when", kind: vscode.CompletionItemKind.Text }].sort((a, b) =>
+          a.label.localeCompare(b.label),
+        ),
+      });
+    });
+
+    test("after when", async () => {
+      await testCompletion(docUri, new vscode.Position(27, 33), {
+        items: [
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: "word", kind: vscode.CompletionItemKind.Value },
+        ],
+      });
+    });
+  });
 });
 
 async function testCompletion(
@@ -384,6 +424,7 @@ async function testCompletion(
     position,
   )) as vscode.CompletionList;
 
+  // assert.deepEqual(actualCompletionList.items, expectedCompletionList.items);
   assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
   expectedCompletionList.items.forEach((expectedItem, i) => {
     const actualItem = actualCompletionList.items[i];
