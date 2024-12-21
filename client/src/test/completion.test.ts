@@ -6,7 +6,7 @@ import { activate, getDocUri } from "./helper";
 suite("Should do completion", () => {
   const docUri = getDocUri("junos.conf");
 
-  test("Completes root config sections", async () => {
+  test("Completes root config section", async () => {
     await testCompletion(docUri, new vscode.Position(2, 4), {
       items: [
         { label: "access", kind: vscode.CompletionItemKind.Text },
@@ -69,7 +69,7 @@ suite("Should do completion", () => {
     });
   });
 
-  test("Completes interface sections", async () => {
+  test("Completes interfaces section", async () => {
     await testCompletion(docUri, new vscode.Position(3, 24), {
       items: [
         { label: "accounting-profile", kind: vscode.CompletionItemKind.Text },
