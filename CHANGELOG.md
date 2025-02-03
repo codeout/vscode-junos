@@ -1,3 +1,12 @@
+## [0.4.1] - 2025-02-03
+
+### Added
+
+* Newly supported syntax
+  * `system services web-management http`
+
+
+
 ## [0.4.0] - 2024-12-20
 
 ### Added
