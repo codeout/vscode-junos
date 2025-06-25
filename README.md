@@ -10,7 +10,6 @@ The language server has the following language features:
 * Completion
 * Syntax validation
 * Syntax highlighting
-  * Thanks to woodjme's [vscode-junos-syntax](https://github.com/woodjme/vscode-junos-syntax)
 
 ### Experimental Features
 
