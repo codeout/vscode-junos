@@ -1,0 +1,326 @@
+{
+  "scopeName": "text.junos",
+  "name": "Junos",
+  "uuid": "67ee2ed0-aeb6-45e4-95fb-0259da69792c",
+  "fileTypes": [
+    "conf",
+    "conf.1",
+    "conf.2",
+    "conf.3",
+    "conf.4",
+    "conf.5",
+    "conf.6",
+    "conf.7",
+    "conf.8",
+    "conf.9",
+    "conf.10",
+    "conf.11",
+    "conf.12",
+    "conf.13",
+    "conf.14",
+    "conf.15",
+    "conf.16",
+    "conf.17",
+    "conf.18",
+    "conf.19",
+    "conf.20",
+    "conf.21",
+    "conf.22",
+    "conf.23",
+    "conf.24",
+    "conf.25",
+    "conf.26",
+    "conf.27",
+    "conf.28",
+    "conf.29",
+    "conf.30",
+    "conf.31",
+    "conf.32",
+    "conf.33",
+    "conf.34",
+    "conf.35",
+    "conf.36",
+    "conf.37",
+    "conf.38",
+    "conf.39",
+    "conf.40",
+    "conf.41",
+    "conf.42",
+    "conf.43",
+    "conf.44",
+    "conf.45",
+    "conf.46",
+    "conf.47",
+    "conf.48",
+    "conf.49"
+  ],
+  "patterns": [
+    {
+      "include": "#command"
+    },
+    {
+      "include": "#keyword"
+    },
+    {
+      "include": "#user_defined_name"
+    },
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#quote"
+    },
+    {
+      "include": "#value"
+    }
+  ],
+  "repository": {
+    "command": {
+      "comment": "keywords captured without a major/minor section attached",
+      "match": "(?<=^|\\s)(set|request|delete|edit|show|protect:?|inactive:|unprotect|deactivate|activate)\\s+([-\\w<>:\\./]+)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.junos"
+        },
+        "2": {
+          "name": "entity.other.attribute-name.junos"
+        }
+      }
+    },
+    "keyword": {
+      "patterns": [
+        {
+          "include": "#section_and_argument_address_structured"
+        },
+        {
+          "include": "#section_and_argument_address"
+        },
+        {
+          "include": "#section_and_argument_structured"
+        },
+        {
+          "include": "#section_and_argument"
+        },
+        {
+          "include": "#accept"
+        },
+        {
+          "include": "#reject"
+        }
+      ]
+    },
+    "section_and_argument_address_structured": {
+      "comment": "User defined arbitrary addresses in structured format",
+      "begin": "(?<=^|\\s)((?:source-|destination-|range)?address)\\s*{\\s*",
+      "end": "{|;",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.scss.junos"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#value"
+        },
+        {
+          "match": "[-\\w<>:\\./]+",
+          "name": "variable.language.junos"
+        }
+      ]
+    },
+    "section_and_argument_address": {
+      "comment": "User defined arbitrary addresses",
+      "begin": "(?<=^|\\s)((?:source-|destination-|range-)?address)\\s",
+      "_comment": "need '|$' to avoid matching multiline",
+      "end": "(?=\\s|;|$)",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.scss.junos"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#value"
+        },
+        {
+          "match": "[-\\w<>:\\./]+",
+          "name": "variable.language.junos"
+        }
+      ]
+    },
+    "section_and_argument_structured": {
+      "comment": "Stanza double-line capture for user defined arbitrary names (such as filters, policy names, prefix-lists, etc)",
+      "begin": "(?<=^|\\s)(logical-systems|dynamic-profiles|jsrc-partition|partition|filter input|filter output|access-profile|dscp|dscp-ipv6|exp|ieee-802\\.1|ieee-802\\.1ad|inet-precedence|scheduler-map|scheduler-maps|input-traffic-control-profile-remaining|input-traffic-control-profile|traffic-control-profiles|output-traffic-control-profile-remaining|output-traffic-control-profile|output-forwarding-class-map|scheduler-map-chassis|fragmentation-maps|source-prefix-list|bridge-domains|group|mime-pattern|url-pattern|label-switched-path|admin-groups|custom-url-category|profile|url-whitelist|url-blacklist|ca-profile|idp-policy|active-policy|interface-set|interface-range|family|count|destination-prefix-list|schedulers|drop-profiles|forwarding-class|forwarding-class-map|import|export|instance|utm-policy|ids-option|next-hop-group|routing-instances|rule|rule-set|pool|zone|class|port-mirror-instance|from-zone|to-zone|apply-groups(?:-except)?|file|host-name|domain-name|path|domain-search|community delete|community add|community set|community|trap-group|policy|policy-statement|import-policy|instance-export|instance-import|vrf-import|vrf-export|import|export|keep-import|inter-area-prefix-import|inter-area-prefix-export|network-summary-export|network-summary-import|egress-policy|bootstrap-import|bootstrap-export|filter|prefix-list|proposal|address-set|address-book(?!\\saddress-set)|(?:source-|destination-)?address-name|scheduler|rib-groups|groups|security-zone|term|application|application-set|vlans|gateway|user|policer|lsp|condition|as-path|as-path-group|service-set)\\s*{\\s*",
+      "end": "{|;",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.scss.junos"
+        }
+      },
+      "patterns": [
+        {
+          "match": "[-\\w<>:\\./]+",
+          "name": "variable.language.junos"
+        }
+      ]
+    },
+    "section_and_argument": {
+      "comment": "User defined arbitrary names (such as filters, policy names, prefix-lists, etc)",
+      "match": "(?<=^|\\s)(logical-systems|dynamic-profiles|jsrc-partition|partition|filter input|filter output|access-profile|dscp|dscp-ipv6|exp|ieee-802\\.1|ieee-802\\.1ad|inet-precedence|scheduler-map|scheduler-maps|input-traffic-control-profile-remaining|input-traffic-control-profile|traffic-control-profiles|output-traffic-control-profile-remaining|output-traffic-control-profile|output-forwarding-class-map|scheduler-map-chassis|fragmentation-maps|source-prefix-list|bridge-domains|group|mime-pattern|url-pattern|label-switched-path|admin-groups|custom-url-category|profile|url-whitelist|url-blacklist|ca-profile|idp-policy|active-policy|interface-set|interface-range|family|count|destination-prefix-list|schedulers|drop-profiles|forwarding-class|forwarding-class-map|import|export|instance|utm-policy|ids-option|next-hop-group|routing-instances|rule|rule-set|pool|zone|class|port-mirror-instance|from-zone|to-zone|apply-groups(?:-except)?|file|host-name|domain-name|path|domain-search|community delete|community add|community set|community|trap-group|policy|policy-statement|import-policy|instance-export|instance-import|vrf-import|vrf-export|import|export|keep-import|inter-area-prefix-import|inter-area-prefix-export|network-summary-export|network-summary-import|egress-policy|bootstrap-import|bootstrap-export|filter|prefix-list|proposal|address-set|address-book(?!\\saddress-set)|(?:source-|destination-)?address-name|scheduler|rib-groups|groups|security-zone|term|application|application-set|vlans|gateway|user|policer|lsp|condition|as-path|as-path-group|service-set)\\s+([-\\w<>:\\./]+)",
+      "captures": {
+        "1": {
+          "name": "entity.other.attribute-name.scss.junos"
+        },
+        "2": {
+          "name": "variable.language.junos"
+        }
+      }
+    },
+    "accept": {
+      "comment": "Policy/filter denial/rejection actions",
+      "match": "(?<=^|\\s)(deny|discard|reject)(?=\\s|;|$)",
+      "name": "invalid.illegal.junos"
+    },
+    "reject": {
+      "comment": "Policy/filter accept/permit actions",
+      "match": "(?<=\\s)(accept|permit)(?=\\s|;|$)",
+      "name": "variable.language.junos"
+    },
+    "user_defined_name": {
+      "patterns": [
+        {
+          "include": "#interface_name"
+        },
+        {
+          "include": "#routing_table_name"
+        }
+      ]
+    },
+    "interface_name": {
+      "comment": "Interface names",
+      "match": "(?<=^|\\s)((?:ge|et|so|fe|gr|xe|lt|vt|si|sp)-(?:\\d+|\\*)\\/(?:\\d+|\\*)\\/(?:\\d+|\\*)|(?:st|lo|me|vme|fxp|ae)\\d+|irb|vlan)(\\.\\d+)?(?=\\s|;|$)",
+      "name": "string.value.junos"
+    },
+    "routing_table_name": {
+      "comment": "Routing table names",
+      "match": "(?<=^|\\s)(?:[\\w-]+\\.)?(?:inet6?|mpls|inetflow|iso|bgp\\.l(?:2|3)vpn)\\.\\d+(?=\\s|;|$)",
+      "name": "string.value.junos"
+    },
+    "comment": {
+      "patterns": [
+        {
+          "include": "#comment_line"
+        },
+        {
+          "include": "#comment_block"
+        }
+      ]
+    },
+    "comment_line": {
+      "comment": "Line comment, anything following a hashtag (#)",
+      "begin": "#",
+      "end": "$\\n?",
+      "name": "comment.line.number-sign.junos"
+    },
+    "comment_block": {
+      "comment": "Block Comment or annotation",
+      "begin": "/\\*",
+      "end": "\\*/",
+      "name": "comment.block.junos"
+    },
+    "quote": {
+      "patterns": [
+        {
+          "include": "#single_quote"
+        },
+        {
+          "include": "#double_quote"
+        },
+        {
+          "include": "#description"
+        }
+      ]
+    },
+    "single_quote": {
+      "comment": "Single quoted string",
+      "begin": "'",
+      "end": "'",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.junos"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.junos"
+        }
+      },
+      "name": "string.quoted.single.junos"
+    },
+    "double_quote": {
+      "comment": "Double quoted string",
+      "begin": "\"",
+      "end": "\"",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.junos"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.junos"
+        }
+      },
+      "name": "string.quoted.double.junos"
+    },
+    "description": {
+      "comment": "Descriptions should always look like strings, even if no quotations are needed",
+      "match": "(?<=(?:^|\\s)description\\s+)([-\\w<>:\\./\\[\\]']+)",
+      "name": "string.quoted.double.junos"
+    },
+    "value": {
+      "patterns": [
+        {
+          "include": "#ipv4_address"
+        },
+        {
+          "include": "#ipv6_address"
+        },
+        {
+          "include": "#mac_address"
+        },
+        {
+          "include": "#range"
+        },
+        {
+          "include": "#number"
+        }
+      ]
+    },
+    "ipv4_address": {
+      "comment": "IPv4 addresses, with or without a mask",
+      "match": "(?<=^|\\s)(?:(?:0|1(?:[0-9][0-9]?)?|2(?:[0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)\\.){3}(?:0|1(?:[0-9][0-9]?)?|2(?:[0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)(?:\\/\\d{1,2})?(?=\\s|;|$)",
+      "name": "constant.numeric.integer.junos"
+    },
+    "ipv6_address": {
+      "comment": "IPv6 Addresses. This will not fully validate the structure of the IP, so some invalid IPv6 addresses might be false positives. IPv6 addresses themselves should be validated by running commands against a Junos device.",
+      "match": "(?<=^|\\s)(?:(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?::(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?|(?:[0-9A-Fa-f]{1,4}:){6,6}(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)|(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?::((?:[0-9A-Fa-f]{1,4}:)*)(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)|[Ff][Ee]80(?::[0-9A-Fa-f]{1,4}){7}%[-0-9A-Za-z._~]+|[Ff][Ee]80:(?:(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?::(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?|:(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)?:[0-9A-Fa-f]{1,4}%[-0-9A-Za-z._~]+)(?:\\/\\d{1,3})?(?=\\s|;|$)",
+      "name": "constant.numeric.integer.junos"
+    },
+    "mac_address": {
+      "comment": "MAC Addresses identified as a number",
+      "match": "(?<=^|\\s)(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}(?=\\s|;|$)",
+      "name": "constant.numeric.integer.junos"
+    },
+    "range": {
+      "comment": "Unit numbers, port numbers, etc",
+      "match": "(?<=(?:^|\\s)(?:(?:peer-)?unit|queue(?:-num)?|(?:destination-|source-)port)\\s+)(\\d+(-\\d+)?)(?=\\s|;|$)",
+      "name": "constant.numeric.integer.junos"
+    },
+    "number": {
+      "comment": "Other general numbers",
+      "match": "(?<=^|\\s)(\\d+)(?=\\s|;|$)",
+      "name": "constant.numeric.integer.junos"
+    }
+  }
+}
