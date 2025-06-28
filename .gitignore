@@ -12,3 +12,6 @@ client/server
 # packaging
 /others
 /pkgs
+
+# assets
+/docs/images/mov

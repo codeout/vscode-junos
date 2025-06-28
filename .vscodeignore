@@ -16,12 +16,8 @@ client/node_modules/**
 !client/node_modules/{semver,lru-cache,yallist}/**
 
 # docs
-docs/images/*.mov
-
-# submodules
-vscode-junos-syntax/**
-!vscode-junos-syntax/language-configuration.json
-!vscode-junos-syntax/syntaxes/Junos.tmLanguage
+docs/images/mov/
+docs/images/screen_shot*
 
 # development
 commitlint.config.js

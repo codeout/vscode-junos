@@ -10,7 +10,6 @@ The language server has the following language features:
 * Completion
 * Syntax validation
 * Syntax highlighting
-  * Thanks to woodjme's [vscode-junos-syntax](https://github.com/woodjme/vscode-junos-syntax)
 
 ### Experimental Features
 
@@ -29,8 +28,8 @@ The language server has the following language features:
 
 ## Screen Shot
 
-![Screen Shot](docs/images/screen_shot01.gif)
-![Screen Shot](docs/images/screen_shot02.gif)
+![Screen Shot](https://raw.githubusercontent.com/codeout/vscode-junos/refs/heads/main/docs/images/screen_shot01.gif)
+![Screen Shot](https://raw.githubusercontent.com/codeout/vscode-junos/refs/heads/main/docs/images/screen_shot02.gif)
 
 
 ## Copyright and License
