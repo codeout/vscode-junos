@@ -1,5 +1,6 @@
 import { Diagnostic, DiagnosticSeverity, TextDocument } from "vscode-languageserver";
 
+import { isIpPrefix } from "./ip";
 import { prefixPattern } from "./parser";
 import { Session } from "./session";
 
@@ -40,7 +41,11 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       ["as-path-group", "from\\s+as-path-group"],
       ["firewall-filter", "filter\\s+(?:input|output|input-list|output-list)"],
       ["nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
-      ["address:global", "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?"],
+      [
+        "address:global",
+        "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
+        (m) => (isIpPrefix(m[3]) ? [m[3]] : []),
+      ],
       ["address:global", "pool\\s+\\S+\\s+address-name"],
       [(m) => `address:${m[3]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
       [(m) => `address-set:${m[3]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address-set"],
@@ -53,7 +58,14 @@ export async function validateTextDocument(session: Session, textDocument: TextD
         "from-zone\\s+(\\S+)\\s+to-zone\\s+(\\S+)\\s+.*\\s+match\\s+(source|destination)-address",
         ["any", "any-ipv4", "any-ipv6"],
       ],
-    ] as Array<[string | ((arg: RegExpMatchArray) => string | string[]), string, string[], string[]]>;
+    ] as Array<
+      [
+        string | ((arg: RegExpMatchArray) => string | string[]),
+        string,
+        string[] | ((arg: RegExpMatchArray) => string[]),
+        string[],
+      ]
+    >;
 
     // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
     rules.forEach(([symbolType, pattern, allowList, denyList]) => {
@@ -151,11 +163,16 @@ function validateReference(
   uri: string,
   symbolType: string | ((arg: RegExpMatchArray) => string | string[]),
   pattern: string,
-  allowList?: string[],
+  allowList?: string[] | ((arg: RegExpMatchArray) => string[]),
   denyList?: string[],
 ): number[] | undefined {
   const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+))?.*\\s${pattern}\\s+)(?<arg>\\S+)`);
-  if (!m || allowList?.includes(m.groups!.arg)) {
+  if (!m) {
+    return;
+  }
+
+  const list = typeof allowList === "function" ? allowList(m) : allowList;
+  if (list?.includes(m.groups!.arg)) {
     return;
   }
 
