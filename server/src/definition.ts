@@ -378,10 +378,9 @@ function updateAddressDefinitions(session: Session, textDocument: TextDocument):
   }
 
   // zone address book mapping
-  const pattern = /(?:\s+logical-systems\s+(\S+))?\s+.*\s+address-book\s+(\S+)\s+attach\s+zone\s+(\S+)/gm;
+  const pattern = /^\s*set(?:\s+logical-systems\s+(\S+))?\s+.*\s+address-book\s+(\S+)\s+attach\s+zone\s+(\S+)/gm;
   let m: RegExpExecArray | null;
 
-  // pattern = /address-book\s+\S+\s+attach\s+zone\s+(\S+)/gm;
   while ((m = pattern.exec(text))) {
     session.zoneAddressBooks.set(textDocument.uri, m[1] || "global", m[3], m[2]);
   }
