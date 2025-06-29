@@ -24,13 +24,11 @@ export class ZoneAddressBookStore {
     return this.store[uri]?.[logicalSystem]?.[zone] || new Set(["global"]);
   }
 
-  clear(uri: string, zone: string): void {
+  clear(uri: string): void {
     if (!this.store[uri]) {
       return;
     }
 
-    for (const logicalSystem in this.store[uri]) {
-      this.store[uri][logicalSystem][zone] = new Set();
-    }
+    this.store[uri] = {};
   }
 }

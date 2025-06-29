@@ -365,13 +365,7 @@ function updateNatPoolDefinitions(session: Session, textDocument: TextDocument):
 
 function updateAddressDefinitions(session: Session, textDocument: TextDocument): void {
   const text = textDocument.getText();
-
-  let pattern = /security\s+address-book\s+(\S+)/gm;
-  let m: RegExpExecArray | null;
-  while ((m = pattern.exec(text))) {
-    session.definitions.clear(textDocument.uri, `address:${m[1]}`);
-    session.definitions.clear(textDocument.uri, `address-set:${m[1]}`);
-  }
+  session.zoneAddressBooks.clear(textDocument.uri);
 
   for (const type of ["address", "address-set"]) {
     insertDefinitions(
@@ -384,10 +378,8 @@ function updateAddressDefinitions(session: Session, textDocument: TextDocument):
   }
 
   // zone address book mapping
-  pattern = /(?:\s+logical-systems\s+(\S+))?\s+.*\s+address-book\s+(\S+)\s+attach\s+zone\s+(\S+)/gm;
-  while ((m = pattern.exec(text))) {
-    session.zoneAddressBooks.clear(textDocument.uri, m[2]);
-  }
+  const pattern = /(?:\s+logical-systems\s+(\S+))?\s+.*\s+address-book\s+(\S+)\s+attach\s+zone\s+(\S+)/gm;
+  let m: RegExpExecArray | null;
 
   // pattern = /address-book\s+\S+\s+attach\s+zone\s+(\S+)/gm;
   while ((m = pattern.exec(text))) {
