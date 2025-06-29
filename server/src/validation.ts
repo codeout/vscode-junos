@@ -51,6 +51,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
           return [...addressBooks].map((a) => [`address:${a}`, `address-set:${a}`]).flat();
         },
         "from-zone\\s+(\\S+)\\s+to-zone\\s+(\\S+)\\s+.*\\s+match\\s+(source|destination)-address",
+        ["any", "any-ipv4", "any-ipv6"],
       ],
     ] as Array<[string | ((arg: RegExpMatchArray) => string | string[]), string, string[], string[]]>;
 
