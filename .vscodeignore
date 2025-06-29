@@ -16,8 +16,8 @@ client/node_modules/**
 !client/node_modules/{semver,lru-cache,yallist}/**
 
 # docs
-docs/images/mov/
-docs/images/screen_shot*
+docs/images/
+!docs/images/junos.jpg
 
 # development
 commitlint.config.js
