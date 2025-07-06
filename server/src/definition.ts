@@ -263,7 +263,12 @@ function getPoliciesAddressDefinition(
 
   const addressBooks = session.zoneAddressBooks.get(textDocumentPosition.textDocument.uri, m[1] || "global", zone);
   return [...addressBooks]
-    .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
+    .map((a) => [
+      `address:global:global`,
+      `address:global:${a}`,
+      `address-set:global:global`,
+      `address-set:global:${a}`,
+    ])
     .flat()
     .map((a) => session.definitions.get(textDocumentPosition.textDocument.uri, a, symbol))
     .filter((i) => i)

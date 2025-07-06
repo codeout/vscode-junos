@@ -53,7 +53,14 @@ export async function validateTextDocument(session: Session, textDocument: TextD
         (m) => {
           const zone = m[5] === "source" ? m[3] : m[4];
           const addressBooks = session.zoneAddressBooks.get(textDocument.uri, m.groups!.ls || "global", zone);
-          return [...addressBooks].map((a) => [`address:global:${a}`, `address-set:global:${a}`]).flat();
+          return [...addressBooks]
+            .map((a) => [
+              `address:global:global`,
+              `address:global:${a}`,
+              `address-set:global:global`,
+              `address-set:global:${a}`,
+            ])
+            .flat();
         },
         "from-zone\\s+(\\S+)\\s+to-zone\\s+(\\S+)\\s+.*\\s+match\\s+(source|destination)-address",
         ["any", "any-ipv4", "any-ipv6"],

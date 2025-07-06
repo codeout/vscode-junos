@@ -108,9 +108,7 @@ suite("Should get diagnostics", () => {
       })),
       ...(
         [
-          [72, 93, 104, "foo-address"],
           [76, 93, 104, "baz-address"],
-          [78, 98, 109, "foo-address"],
           [80, 98, 109, "bar-address"],
           [86, 96, 107, "bar-address"],
           [88, 96, 107, "baz-address"],

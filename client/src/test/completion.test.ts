@@ -366,8 +366,8 @@ suite("Should do completion", () => {
     for (const [line, character, address] of [
       [21, 86, "bar-address"],
       [22, 91, "baz-address"],
-      [23, 96, "foo-address"],
-      [24, 99, "foo-address"],
+      [23, 96],
+      [24, 99],
     ] as Array<[number, number, string]>) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [
@@ -376,8 +376,10 @@ suite("Should do completion", () => {
           { label: "any-ipv6", kind: vscode.CompletionItemKind.Text },
           { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
           { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-          { label: address, kind: vscode.CompletionItemKind.Text },
-          { label: `${address}-set`, kind: vscode.CompletionItemKind.Text },
+          ...(address ? [{ label: address, kind: vscode.CompletionItemKind.Text }] : []),
+          ...(address ? [{ label: `${address}-set`, kind: vscode.CompletionItemKind.Text }] : []),
+          { label: "foo-address", kind: vscode.CompletionItemKind.Text },
+          { label: "foo-address-set", kind: vscode.CompletionItemKind.Text },
         ],
       });
     }

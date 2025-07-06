@@ -40,7 +40,14 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
         (m) => {
           const zone = m[3] === "source" ? m[1] : m[2];
           const addressBooks = session.zoneAddressBooks.get(uri, logicalSystem, zone);
-          return [...addressBooks].map((a) => [`address:global:${a}`, `address-set:global:${a}`]).flat();
+          return [...addressBooks]
+            .map((a) => [
+              `address:global:global`,
+              `address:global:${a}`,
+              `address-set:global:global`,
+              `address-set:global:${a}`,
+            ])
+            .flat();
         },
         /\s+policies\s+from-zone\s+(\S+)\s+to-zone\s+(\S+)\s+.*\s+match\s+(source|destination)-address\s+$/,
       ],
