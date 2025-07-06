@@ -108,14 +108,14 @@ suite("Should get diagnostics", () => {
       })),
       ...(
         [
-          [71, 93, 104, "foo-address"],
-          [75, 93, 104, "baz-address"],
-          [77, 98, 109, "foo-address"],
-          [79, 98, 109, "bar-address"],
-          [85, 96, 107, "bar-address"],
-          [87, 96, 107, "baz-address"],
-          [91, 99, 110, "bar-address"],
-          [93, 99, 110, "baz-address"],
+          [72, 93, 104, "foo-address"],
+          [76, 93, 104, "baz-address"],
+          [78, 98, 109, "foo-address"],
+          [80, 98, 109, "bar-address"],
+          [86, 96, 107, "bar-address"],
+          [88, 96, 107, "baz-address"],
+          [92, 99, 110, "bar-address"],
+          [94, 99, 110, "baz-address"],
         ] as Array<[number, number, number, string]>
       )
         .map(([line, sChar, eChar, address]) => [
