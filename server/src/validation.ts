@@ -47,20 +47,37 @@ export async function validateTextDocument(session: Session, textDocument: TextD
         (m) => (isIpPrefix(m[3]) ? [m[3]] : []),
       ],
       ["address:global:global", "pool\\s+\\S+\\s+address-name"],
-      [(m) => `address:global:${m[3]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
-      [(m) => `address-set:global:${m[3]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address-set"],
+
+      // global address books
+      [(m) => `address:global:${m[3]}`, "(?<=security\\s+)address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
+      [
+        (m) => `address-set:global:${m[3]}`,
+        "(?<=security\\s+)address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address-set",
+      ],
+
+      // zone-specific address books
+      [
+        (m) => `address:${m[3]}:global`,
+        "(?<=security\\s+)zones\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address",
+      ],
+      [
+        (m) => `address-set:${m[3]}:global`,
+        "(?<=security\\s+)zones\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address-set",
+      ],
+
       [
         (m) => {
           const zone = m[5] === "source" ? m[3] : m[4];
           const addressBooks = session.zoneAddressBooks.get(textDocument.uri, m.groups!.ls || "global", zone);
           return [...addressBooks]
-            .map((a) => [
-              `address:global:global`,
-              `address:global:${a}`,
-              `address-set:global:global`,
-              `address-set:global:${a}`,
-            ])
-            .flat();
+            .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
+            .flat()
+            .concat([
+              "address:global:global",
+              `address:${zone}:global`,
+              "address-set:global:global",
+              `address-set:${zone}:global`,
+            ]);
         },
         "from-zone\\s+(\\S+)\\s+to-zone\\s+(\\S+)\\s+.*\\s+match\\s+(source|destination)-address",
         ["any", "any-ipv4", "any-ipv6"],

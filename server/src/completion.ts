@@ -34,20 +34,34 @@ export function completion(session: Session): RequestHandler<TextDocumentPositio
       ["nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
       ["address:global:global", /\s+nat\s+.*\s+match\s+(?:source|destination)-address(?:-name)?\s+$/],
       ["address:global:global", /\s+pool\s+\S+\s+address-name\s+$/],
-      [(m) => `address:global:${m[1]}`, /\s+address-book\s+(\S+)\s+address-set\s+\S+\s+address\s+$/],
-      [(m) => `address-set:global:${m[1]}`, /\s+address-book\s+(\S+)\s+address-set\s+\S+\s+address-set\s+$/],
+
+      // global address books
+      [(m) => `address:global:${m[1]}`, /security\s+address-book\s+(\S+)\s+address-set\s+\S+\s+address\s+$/],
+      [(m) => `address-set:global:${m[1]}`, /security\s+address-book\s+(\S+)\s+address-set\s+\S+\s+address-set\s+$/],
+
+      // zone-specific address books
+      [
+        (m) => `address:${m[1]}:global`,
+        /security\s+zones\s+security-zone\s+(\S+)\s+address-book\s+address-set\s+\S+\s+address\s+$/,
+      ],
+      [
+        (m) => `address-set:${m[1]}:global`,
+        /security\s+zones\s+security-zone\s+(\S+)\s+address-book\s+address-set\s+\S+\s+address-set\s+$/,
+      ],
+
       [
         (m) => {
           const zone = m[3] === "source" ? m[1] : m[2];
           const addressBooks = session.zoneAddressBooks.get(uri, logicalSystem, zone);
           return [...addressBooks]
-            .map((a) => [
-              `address:global:global`,
-              `address:global:${a}`,
-              `address-set:global:global`,
-              `address-set:global:${a}`,
-            ])
-            .flat();
+            .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
+            .flat()
+            .concat([
+              "address:global:global",
+              `address:${zone}:global`,
+              "address-set:global:global",
+              `address-set:${zone}:global`,
+            ]);
         },
         /\s+policies\s+from-zone\s+(\S+)\s+to-zone\s+(\S+)\s+.*\s+match\s+(source|destination)-address\s+$/,
       ],

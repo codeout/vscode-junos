@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 31; // lines for completion tests
+const offset = 33; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
@@ -106,6 +106,8 @@ suite("Should get diagnostics", () => {
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       })),
+
+      // global address books
       ...(
         [
           [76, 93, 104, "baz-address"],
@@ -114,6 +116,33 @@ suite("Should get diagnostics", () => {
           [88, 96, 107, "baz-address"],
           [92, 99, 110, "bar-address"],
           [94, 99, 110, "baz-address"],
+        ] as Array<[number, number, number, string]>
+      )
+        .map(([line, sChar, eChar, address]) => [
+          {
+            message: `"${address}" is not defined`,
+            range: toRange(line, sChar, eChar),
+            severity: vscode.DiagnosticSeverity.Error,
+            source: "ex",
+          },
+          {
+            message: `"${address}-set" is not defined`,
+            range: toRange(line + 1, sChar, eChar + 4),
+            severity: vscode.DiagnosticSeverity.Error,
+            source: "ex",
+          },
+        ])
+        .flat(),
+
+      // zone-specific address books
+      ...(
+        [
+          [106, 97, 108, "baz-address"],
+          [110, 102, 113, "bar-address"],
+          [116, 97, 108, "bar-address"],
+          [118, 97, 108, "baz-address"],
+          [122, 102, 113, "bar-address"],
+          [124, 102, 113, "baz-address"],
         ] as Array<[number, number, number, string]>
       )
         .map(([line, sChar, eChar, address]) => [

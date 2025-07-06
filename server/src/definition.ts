@@ -90,7 +90,8 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
       getNatPoolDefinition(session, line, textDocumentPosition) ||
       getNatAddressDefinition(session, line, textDocumentPosition) ||
       getPoolAddressDefinition(session, line, textDocumentPosition) ||
-      getAddressSetAddressDefinition(session, line, textDocumentPosition) ||
+      getGlobalAddressSetAddressDefinition(session, line, textDocumentPosition) ||
+      getZoneSpecificAddressSetAddressDefinition(session, line, textDocumentPosition) ||
       getPoliciesAddressDefinition(session, line, textDocumentPosition) ||
       [];
 
@@ -228,7 +229,7 @@ function getPoolAddressDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global:global", symbol);
 }
 
-function getAddressSetAddressDefinition(
+function getGlobalAddressSetAddressDefinition(
   session: Session,
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
@@ -240,6 +241,22 @@ function getAddressSetAddressDefinition(
 
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
   return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:global:${m[1]}`, symbol);
+}
+
+function getZoneSpecificAddressSetAddressDefinition(
+  session: Session,
+  line: string,
+  textDocumentPosition: TextDocumentPositionParams,
+): Range[] | undefined {
+  const m = line.match(
+    /security\s+zones\s+security-zone\s+(\S+)\s+address-book\s+address-set\s+\S+\s+(address(?:-set)?)/,
+  );
+  if (!m) {
+    return;
+  }
+
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:${m[1]}:global`, symbol);
 }
 
 function getPoliciesAddressDefinition(
@@ -263,13 +280,14 @@ function getPoliciesAddressDefinition(
 
   const addressBooks = session.zoneAddressBooks.get(textDocumentPosition.textDocument.uri, m[1] || "global", zone);
   return [...addressBooks]
-    .map((a) => [
-      `address:global:global`,
-      `address:global:${a}`,
-      `address-set:global:global`,
-      `address-set:global:${a}`,
-    ])
+    .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
     .flat()
+    .concat([
+      "address:global:global",
+      `address:${zone}:global`,
+      "address-set:global:global",
+      `address-set:${zone}:global`,
+    ])
     .map((a) => session.definitions.get(textDocumentPosition.textDocument.uri, a, symbol))
     .filter((i) => i)
     .flat() as Range[];
@@ -363,6 +381,7 @@ function updateNatPoolDefinitions(session: Session, textDocument: TextDocument):
 function updateAddressDefinitions(session: Session, textDocument: TextDocument): void {
   session.zoneAddressBooks.clear(textDocument.uri);
   updateGlobalAddressDefinitions(session, textDocument);
+  updateZoneSpecificAddressDefinitions(session, textDocument);
 }
 
 function updateGlobalAddressDefinitions(session: Session, textDocument: TextDocument): void {
@@ -385,5 +404,18 @@ function updateGlobalAddressDefinitions(session: Session, textDocument: TextDocu
 
   while ((m = pattern.exec(text))) {
     session.zoneAddressBooks.set(textDocument.uri, m[1] || "global", m[3], m[2]);
+  }
+}
+
+function updateZoneSpecificAddressDefinitions(session: Session, textDocument: TextDocument): void {
+  for (const type of ["address", "address-set"]) {
+    insertDefinitions(
+      session,
+      textDocument,
+      // <"address" or "address-set">:<zone>:<address-book-name>
+      (m) => `${type}:${m[3]}:global`,
+      `security\\s+zones\\s+security-zone\\s+(\\S+)\\s+address-book\\s+${type}\\s+)(\\S+)`,
+      (m) => m[4],
+    );
   }
 }

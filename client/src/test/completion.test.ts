@@ -348,9 +348,24 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined address-name in address-book", async () => {
+    // global address book
     for (const [line, character, address] of [
       [19, 79, "bar-address"],
       [20, 83, "bar-address-set"],
+    ] as Array<[number, number, string]>) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: address, kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
+
+    // zone-specific address book
+    for (const [line, character, address] of [
+      [21, 91, "bar-address"],
+      [22, 95, "bar-address-set"],
     ] as Array<[number, number, string]>) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [
@@ -364,10 +379,10 @@ suite("Should do completion", () => {
 
   test("Completes defined address / address-set in security policies", async () => {
     for (const [line, character, address] of [
-      [21, 86, "bar-address"],
-      [22, 91, "baz-address"],
-      [23, 96],
-      [24, 99],
+      [23, 86, "bar-address"],
+      [24, 91, "baz-address"],
+      [25, 96],
+      [26, 99],
     ] as Array<[number, number, string]>) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [
@@ -387,13 +402,13 @@ suite("Should do completion", () => {
 
   suite("Completes groups section", async () => {
     test("name", async () => {
-      await testCompletion(docUri, new vscode.Position(25, 11), {
+      await testCompletion(docUri, new vscode.Position(27, 11), {
         items: [{ label: "word", kind: vscode.CompletionItemKind.Value }],
       });
     });
 
     test("after name", async () => {
-      await testCompletion(docUri, new vscode.Position(26, 15), {
+      await testCompletion(docUri, new vscode.Position(28, 15), {
         items: [...rootItems, { label: "when", kind: vscode.CompletionItemKind.Text }].sort((a, b) =>
           a.label.localeCompare(b.label),
         ),
@@ -401,7 +416,7 @@ suite("Should do completion", () => {
     });
 
     test("after when", async () => {
-      await testCompletion(docUri, new vscode.Position(27, 33), {
+      await testCompletion(docUri, new vscode.Position(29, 33), {
         items: [
           { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
           { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
