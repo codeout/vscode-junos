@@ -233,13 +233,13 @@ function getAddressSetAddressDefinition(
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
-  const m = line.match(/address-book\s+(\S+)\s+address-set\s+\S+\s+(address(?:-set))/);
+  const m = line.match(/security\s+address-book\s+(\S+)\s+address-set\s+\S+\s+(address(?:-set)?)/);
   if (!m) {
     return;
   }
 
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
-  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:${m[1]}`, symbol);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:global:${m[1]}`, symbol);
 }
 
 function getPoliciesAddressDefinition(
