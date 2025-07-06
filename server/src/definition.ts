@@ -56,14 +56,12 @@ export class DefinitionStore {
     return this.store[uri]?.[logicalSystem]?.[symbolType] || {};
   }
 
-  clear(uri: string, symbolType: string): void {
+  clear(uri: string): void {
     if (!this.store[uri]) {
       return;
     }
 
-    for (const logicalSystem in this.store[uri]) {
-      this.store[uri][logicalSystem][symbolType] = {};
-    }
+    this.store[uri] = {};
   }
 }
 
@@ -273,6 +271,8 @@ function getPoliciesAddressDefinition(
 }
 
 export function updateDefinitions(session: Session, textDocument: TextDocument): void {
+  session.definitions.clear(textDocument.uri);
+
   updateInterfaceDefinitions(session, textDocument);
   updatePrefixListDefinitions(session, textDocument);
   updatePolicyStatementDefinitions(session, textDocument);
@@ -309,7 +309,6 @@ function insertDefinitions(
 
 function updateInterfaceDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "interface";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "interfaces\\s+)((?!interface-range)\\S+)", (m) => m[3]);
   insertDefinitions(session, textDocument, type, "interfaces interface-range\\s+)(\\S+)", (m) => m[3]);
   insertDefinitions(
@@ -323,43 +322,36 @@ function updateInterfaceDefinitions(session: Session, textDocument: TextDocument
 
 function updatePrefixListDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "prefix-list";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+prefix-list\\s+)(\\S+)", (m) => m[3]);
 }
 
 function updatePolicyStatementDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "policy-statement";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+policy-statement\\s+)(\\S+)", (m) => m[3]);
 }
 
 function updateCommunityDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "community";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+community\\s+)(\\S+)", (m) => m[3]);
 }
 
 function updateAsPathDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "as-path";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+as-path\\s+)(\\S+)", (m) => m[3]);
 }
 
 function updateAsPathGroupDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "as-path-group";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+as-path-group\\s+)(\\S+)", (m) => m[3]);
 }
 
 function updateFirewallFilterDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "firewall-filter";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "firewall(?:\\s+family\\s+\\S+)?\\s+filter\\s+)(\\S+)", (m) => m[3]);
 }
 
 function updateNatPoolDefinitions(session: Session, textDocument: TextDocument): void {
   const type = "nat-pool";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "services\\s+nat\\s+pool\\s+)(\\S+)", (m) => m[3]);
 }
 
