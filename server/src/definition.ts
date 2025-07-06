@@ -218,7 +218,7 @@ function getNatAddressDefinition(
     textDocumentPosition.position.character,
     "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
   );
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global:global", symbol);
 }
 
 function getPoolAddressDefinition(
@@ -227,7 +227,7 @@ function getPoolAddressDefinition(
   textDocumentPosition: TextDocumentPositionParams,
 ): Range[] | undefined {
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "pool\\s+\\S+\\s+address-name");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global:global", symbol);
 }
 
 function getAddressSetAddressDefinition(
@@ -265,7 +265,7 @@ function getPoliciesAddressDefinition(
 
   const addressBooks = session.zoneAddressBooks.get(textDocumentPosition.textDocument.uri, m[1] || "global", zone);
   return [...addressBooks]
-    .map((a) => [`address:${a}`, `address-set:${a}`])
+    .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
     .flat()
     .map((a) => session.definitions.get(textDocumentPosition.textDocument.uri, a, symbol))
     .filter((i) => i)
@@ -364,14 +364,19 @@ function updateNatPoolDefinitions(session: Session, textDocument: TextDocument):
 }
 
 function updateAddressDefinitions(session: Session, textDocument: TextDocument): void {
-  const text = textDocument.getText();
   session.zoneAddressBooks.clear(textDocument.uri);
+  updateGlobalAddressDefinitions(session, textDocument);
+}
+
+function updateGlobalAddressDefinitions(session: Session, textDocument: TextDocument): void {
+  const text = textDocument.getText();
 
   for (const type of ["address", "address-set"]) {
     insertDefinitions(
       session,
       textDocument,
-      (m) => `${type}:${m[3]}`,
+      // <"address" or "address-set">:<zone>:<address-book-name>
+      (m) => `${type}:global:${m[3]}`,
       `security\\s+address-book\\s+(\\S+)\\s+${type}\\s+)(\\S+)`,
       (m) => m[4],
     );
