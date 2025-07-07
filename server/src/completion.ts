@@ -32,6 +32,11 @@ export function completion(session: Session) {
       ["as-path-group", /\s+from\s+as-path-group\s+$/],
       ["firewall-filter", /\s+filter\s+(?:input|output|input-list|output-list)\s+$/],
       ["service-nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
+      [
+        (m) => `security-nat-pool:${m[1]}`,
+        /\s+security\s+nat\s+(?:source|destination)\s+.*\s+then\s+(source|destination)-nat\s+pool\s+$/,
+        true,
+      ],
       ["address:global:global", /\s+nat\s+.*\s+match\s+(?:source|destination)-address(?:-name)?\s+$/],
       ["address:global:global", /\s+pool\s+\S+\s+address-name\s+$/],
 
@@ -65,9 +70,9 @@ export function completion(session: Session) {
         },
         /\s+policies\s+from-zone\s+(\S+)\s+to-zone\s+(\S+)\s+.*\s+match\s+(source|destination)-address\s+$/,
       ],
-    ] as Array<[string | ((arg: RegExpMatchArray) => string | string[]), RegExp]>;
+    ] as Array<[string | ((arg: RegExpMatchArray) => string | string[]), RegExp, boolean]>;
 
-    for (const [symbolType, pattern] of rules) {
+    for (const [symbolType, pattern, keepWord] of rules) {
       m = line.match(pattern);
       if (m) {
         let types = typeof symbolType === "function" ? symbolType(m) : symbolType;
@@ -80,6 +85,7 @@ export function completion(session: Session) {
             types.map((type) => Object.entries(session.definitions.getDefinitions(uri, logicalSystem, type))).flat(),
           ),
           keywords,
+          keepWord,
         );
 
         break;
@@ -94,13 +100,17 @@ export function completion(session: Session) {
   };
 }
 
-function addReferences(definitions: object, keywords: string[]) {
+// replace "word" in `keywords` array with all definitions keys
+function addReferences(definitions: object, keywords: string[], keepWord = false) {
   const index = keywords.indexOf("word");
   if (index < 0) {
     return;
   }
 
-  keywords.splice(index, 1);
+  if (!keepWord) {
+    keywords.splice(index, 1);
+  }
+
   keywords.unshift(...Object.keys(definitions));
 }
 

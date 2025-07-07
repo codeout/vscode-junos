@@ -88,6 +88,7 @@ export function definition(session: Session) {
       getAsPathGroupDefinition(session, line, textDocumentPosition) ||
       getFirewallFilterDefinition(session, line, textDocumentPosition) ||
       getServiceNatPoolDefinition(session, line, textDocumentPosition) ||
+      getSecurityNatPoolDefinition(session, line, textDocumentPosition) ||
       getNatAddressDefinition(session, line, textDocumentPosition) ||
       getPoolAddressDefinition(session, line, textDocumentPosition) ||
       getGlobalAddressSetAddressDefinition(session, line, textDocumentPosition) ||
@@ -179,6 +180,20 @@ function getServiceNatPoolDefinition(session: Session, line: string, textDocumen
   return session.definitions.get(textDocumentPosition.textDocument.uri, "service-nat-pool", symbol);
 }
 
+function getSecurityNatPoolDefinition(
+  session: Session,
+  line: string,
+  textDocumentPosition: TextDocumentPositionParams,
+) {
+  const m = line.match(/security\s+nat\s+(?:source|destination)\s+.*\s+then\s+(source|destination)-nat\s+pool/);
+  if (!m) {
+    return;
+  }
+
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "pool");
+  return session.definitions.get(textDocumentPosition.textDocument.uri, `security-nat-pool:${m[1]}`, symbol);
+}
+
 function getNatAddressDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(
     line,
@@ -268,6 +283,7 @@ export function updateDefinitions(session: Session, textDocument: TextDocument) 
   updateAsPathGroupDefinitions(session, textDocument);
   updateFirewallFilterDefinitions(session, textDocument);
   updateServiceNatPoolDefinitions(session, textDocument);
+  updateSecurityNatPoolDefinitions(session, textDocument);
   updateAddressDefinitions(session, textDocument);
 }
 
@@ -340,6 +356,16 @@ function updateFirewallFilterDefinitions(session: Session, textDocument: TextDoc
 function updateServiceNatPoolDefinitions(session: Session, textDocument: TextDocument) {
   const type = "service-nat-pool";
   insertDefinitions(session, textDocument, type, "services\\s+nat\\s+pool\\s+)(\\S+)", (m) => m[3]);
+}
+
+function updateSecurityNatPoolDefinitions(session: Session, textDocument: TextDocument) {
+  insertDefinitions(
+    session,
+    textDocument,
+    (m) => `security-nat-pool:${m[3]}`,
+    "security\\s+nat\\s+(source|destination)\\s+pool\\s+)(\\S+)",
+    (m) => m[4],
+  );
 }
 
 function updateAddressDefinitions(session: Session, textDocument: TextDocument) {

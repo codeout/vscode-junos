@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 33; // lines for completion tests
+const offset = 35; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
@@ -95,10 +95,10 @@ suite("Should get diagnostics", () => {
           [51, 86, 98, "foo-address_"],
           [53, 91, 103, "foo-address_"],
           [55, 51, 63, "foo-address_"],
-          [58, 79, 90, "foo-address"],
-          [60, 79, 91, "bar-address_"],
-          [61, 83, 98, "foo-address-set"],
-          [63, 83, 99, "bar-address-set_"],
+          [59, 79, 90, "foo-address"],
+          [61, 79, 91, "bar-address_"],
+          [62, 83, 98, "foo-address-set"],
+          [64, 83, 99, "bar-address-set_"],
         ] as Array<[number, number, number, string]>
       ).map(([line, sChar, eChar, address]) => ({
         message: `"${address}" is not defined`,
@@ -110,12 +110,12 @@ suite("Should get diagnostics", () => {
       // global address books
       ...(
         [
-          [76, 93, 104, "baz-address"],
-          [80, 98, 109, "bar-address"],
-          [86, 96, 107, "bar-address"],
-          [88, 96, 107, "baz-address"],
-          [92, 99, 110, "bar-address"],
-          [94, 99, 110, "baz-address"],
+          [77, 93, 104, "baz-address"],
+          [81, 98, 109, "bar-address"],
+          [87, 96, 107, "bar-address"],
+          [89, 96, 107, "baz-address"],
+          [93, 99, 110, "bar-address"],
+          [95, 99, 110, "baz-address"],
         ] as Array<[number, number, number, string]>
       )
         .map(([line, sChar, eChar, address]) => [
@@ -137,12 +137,12 @@ suite("Should get diagnostics", () => {
       // zone-specific address books
       ...(
         [
-          [106, 97, 108, "baz-address"],
-          [110, 102, 113, "bar-address"],
-          [116, 97, 108, "bar-address"],
-          [118, 97, 108, "baz-address"],
-          [122, 102, 113, "bar-address"],
-          [124, 102, 113, "baz-address"],
+          [107, 97, 108, "baz-address"],
+          [111, 102, 113, "bar-address"],
+          [117, 97, 108, "bar-address"],
+          [119, 97, 108, "baz-address"],
+          [123, 102, 113, "bar-address"],
+          [125, 102, 113, "baz-address"],
         ] as Array<[number, number, number, string]>
       )
         .map(([line, sChar, eChar, address]) => [
