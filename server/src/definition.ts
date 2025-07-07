@@ -87,7 +87,7 @@ export function definition(session: Session) {
       getAsPathDefinition(session, line, textDocumentPosition) ||
       getAsPathGroupDefinition(session, line, textDocumentPosition) ||
       getFirewallFilterDefinition(session, line, textDocumentPosition) ||
-      getNatPoolDefinition(session, line, textDocumentPosition) ||
+      getServiceNatPoolDefinition(session, line, textDocumentPosition) ||
       getNatAddressDefinition(session, line, textDocumentPosition) ||
       getPoolAddressDefinition(session, line, textDocumentPosition) ||
       getGlobalAddressSetAddressDefinition(session, line, textDocumentPosition) ||
@@ -170,13 +170,13 @@ function getFirewallFilterDefinition(session: Session, line: string, textDocumen
   return session.definitions.get(textDocumentPosition.textDocument.uri, "firewall-filter", symbol);
 }
 
-function getNatPoolDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
+function getServiceNatPoolDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(
     line,
     textDocumentPosition.position.character,
     "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)",
   );
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "nat-pool", symbol);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "service-nat-pool", symbol);
 }
 
 function getNatAddressDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
@@ -267,7 +267,7 @@ export function updateDefinitions(session: Session, textDocument: TextDocument) 
   updateAsPathDefinitions(session, textDocument);
   updateAsPathGroupDefinitions(session, textDocument);
   updateFirewallFilterDefinitions(session, textDocument);
-  updateNatPoolDefinitions(session, textDocument);
+  updateServiceNatPoolDefinitions(session, textDocument);
   updateAddressDefinitions(session, textDocument);
 }
 
@@ -337,8 +337,8 @@ function updateFirewallFilterDefinitions(session: Session, textDocument: TextDoc
   insertDefinitions(session, textDocument, type, "firewall(?:\\s+family\\s+\\S+)?\\s+filter\\s+)(\\S+)", (m) => m[3]);
 }
 
-function updateNatPoolDefinitions(session: Session, textDocument: TextDocument) {
-  const type = "nat-pool";
+function updateServiceNatPoolDefinitions(session: Session, textDocument: TextDocument) {
+  const type = "service-nat-pool";
   insertDefinitions(session, textDocument, type, "services\\s+nat\\s+pool\\s+)(\\S+)", (m) => m[3]);
 }
 

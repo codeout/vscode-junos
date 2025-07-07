@@ -31,7 +31,7 @@ export function completion(session: Session) {
       ["as-path", /\s+from\s+as-path\s+$/],
       ["as-path-group", /\s+from\s+as-path-group\s+$/],
       ["firewall-filter", /\s+filter\s+(?:input|output|input-list|output-list)\s+$/],
-      ["nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
+      ["service-nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
       ["address:global:global", /\s+nat\s+.*\s+match\s+(?:source|destination)-address(?:-name)?\s+$/],
       ["address:global:global", /\s+pool\s+\S+\s+address-name\s+$/],
 
