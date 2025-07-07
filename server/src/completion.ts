@@ -1,10 +1,10 @@
-import { CompletionItem, CompletionItemKind, RequestHandler, TextDocumentPositionParams } from "vscode-languageserver";
+import { CompletionItem, CompletionItemKind, TextDocumentPositionParams } from "vscode-languageserver";
 
 import { prefixPattern } from "./parser";
 import { Session } from "./session";
 
-export function completion(session: Session): RequestHandler<TextDocumentPositionParams, CompletionItem[], void> {
-  return (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+export function completion(session: Session) {
+  return (textDocumentPosition: TextDocumentPositionParams) => {
     const uri = textDocumentPosition.textDocument.uri;
     const doc = session.documents.get(uri);
     if (!doc) {
@@ -104,8 +104,8 @@ function addReferences(definitions: object, keywords: string[]) {
   keywords.unshift(...Object.keys(definitions));
 }
 
-export function completionResolve(session: Session): RequestHandler<CompletionItem, CompletionItem, void> {
-  return (item: CompletionItem): CompletionItem => {
+export function completionResolve(session: Session) {
+  return (item: CompletionItem) => {
     item.detail = session.parser.description(item.data);
     return item;
   };

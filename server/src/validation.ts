@@ -6,7 +6,7 @@ import { Session } from "./session";
 
 const maxNumberOfProblems = 1000; // Just a guard
 
-export async function validateTextDocument(session: Session, textDocument: TextDocument): Promise<Diagnostic[]> {
+export async function validateTextDocument(session: Session, textDocument: TextDocument) {
   const text = textDocument.getText();
   const pattern = new RegExp(`(${prefixPattern.source}[\\t ]+)(.*)`, "gm");
   let m: RegExpExecArray | null;
@@ -121,13 +121,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
   return diagnostics;
 }
 
-function createDiagnostic(
-  session: Session,
-  textDocument: TextDocument,
-  start: number,
-  end: number,
-  message: string,
-): Diagnostic {
+function createDiagnostic(session: Session, textDocument: TextDocument, start: number, end: number, message: string) {
   return {
     severity: DiagnosticSeverity.Error,
     range: {
@@ -189,7 +183,7 @@ function validateReference(
   pattern: string,
   allowList?: string[] | ((arg: RegExpMatchArray) => string[]),
   denyList?: string[],
-): number[] | undefined {
+) {
   const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+))?.*\\s${pattern}\\s+)(?<arg>\\S+)`);
   if (!m) {
     return;
@@ -227,7 +221,7 @@ function validateReference(
  * @param string
  * @return string
  */
-function squashQuotedSpaces(string: string): string {
+function squashQuotedSpaces(string: string) {
   const pattern = /"[^"]*"/g;
   let match: RegExpExecArray | null;
   let cursor = 0;

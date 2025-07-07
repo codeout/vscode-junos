@@ -150,28 +150,28 @@ export class Node {
     }
   }
 
-  private argNode(key: string, rawChildren: SchemaObject | null): Node {
+  private argNode(key: string, rawChildren: SchemaObject | null) {
     const [, description] = this.extractKey(key);
     // name may be "arg_1"
     return new Node("arg", this, rawChildren, description, "arg");
   }
 
-  private argumentStringNode(name: string, args: string, description: string, rawChildren: SchemaObject | null): Node {
+  private argumentStringNode(name: string, args: string, description: string, rawChildren: SchemaObject | null) {
     const node = new Node(name, this, null, description);
 
     node.addArrayString(args, description, rawChildren);
     return node;
   }
 
-  private extractKey(key: string): string[] {
+  private extractKey(key: string) {
     return key.split(" | ");
   }
 
-  keywords(): string[] {
+  keywords() {
     return this.children.map((node) => node.name).sort();
   }
 
-  find(string: string): Node | null {
+  find(string: string) {
     return (
       this.children.find((node) => node.name === string) || this.children.find((node) => node.type === "arg") || null
     );
@@ -186,7 +186,7 @@ export class Parser {
     this.ast = ast;
   }
 
-  parse(string: string): Node | null {
+  parse(string: string) {
     let ast: Node | null | undefined = this.ast;
     string
       .trim()
@@ -208,7 +208,7 @@ export class Parser {
     return ast;
   }
 
-  keywords(string: string): string[] {
+  keywords(string: string) {
     let ast: Node | null = this.ast;
     string = string.trim();
     const defaultKeywords = ["apply-groups", "apply-groups-except"];
@@ -239,7 +239,7 @@ export class Parser {
     return [...new Set(keywords)]; // uniq
   }
 
-  description(string: string): string | undefined {
+  description(string: string) {
     if (!string) {
       return;
     }

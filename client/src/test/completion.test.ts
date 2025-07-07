@@ -352,7 +352,7 @@ suite("Should do completion", () => {
     for (const [line, character, address] of [
       [19, 79, "bar-address"],
       [20, 83, "bar-address-set"],
-    ] as Array<[number, number, string]>) {
+    ] as const) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [
           { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
@@ -366,7 +366,7 @@ suite("Should do completion", () => {
     for (const [line, character, address] of [
       [21, 91, "bar-address"],
       [22, 95, "bar-address-set"],
-    ] as Array<[number, number, string]>) {
+    ] as const) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [
           { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
@@ -383,7 +383,7 @@ suite("Should do completion", () => {
       [24, 91, "baz-address"],
       [25, 96],
       [26, 99],
-    ] as Array<[number, number, string]>) {
+    ] as const) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [
           { label: "any", kind: vscode.CompletionItemKind.Text },
@@ -435,11 +435,11 @@ async function testCompletion(
   await activate(docUri);
 
   // Executing the command `vscode.executeCompletionItemProvider` to simulate triggering completion
-  const actualCompletionList = (await vscode.commands.executeCommand(
+  const actualCompletionList = await vscode.commands.executeCommand<vscode.CompletionList>(
     "vscode.executeCompletionItemProvider",
     docUri,
     position,
-  )) as vscode.CompletionList;
+  );
 
   // assert.deepEqual(actualCompletionList.items, expectedCompletionList.items);
   assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
