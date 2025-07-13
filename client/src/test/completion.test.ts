@@ -272,28 +272,8 @@ suite("Should do completion", () => {
     });
   });
 
-  test("Completes defined policy-statement only in logical-systems", async () => {
-    await testCompletion(docUri, new vscode.Position(10, 62), {
-      items: [
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "foo-import", kind: vscode.CompletionItemKind.Text },
-      ],
-    });
-  });
-
-  test("Completes defined prefix-list only in logical-systems", async () => {
-    await testCompletion(docUri, new vscode.Position(11, 85), {
-      items: [
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "bar-prefix", kind: vscode.CompletionItemKind.Text },
-      ],
-    });
-  });
-
   test("Completes defined nat pool", async () => {
-    await testCompletion(docUri, new vscode.Position(12, 68), {
+    await testCompletion(docUri, new vscode.Position(10, 68), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -303,7 +283,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined interface-range", async () => {
-    await testCompletion(docUri, new vscode.Position(13, 29), {
+    await testCompletion(docUri, new vscode.Position(11, 29), {
       items: [
         { label: "all", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
@@ -313,6 +293,26 @@ suite("Should do completion", () => {
         { label: "xe-0/0/0.0", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/1", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/1.0", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
+  test("Completes defined policy-statement only in logical-systems", async () => {
+    await testCompletion(docUri, new vscode.Position(12, 62), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "foo-import", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
+  test("Completes defined prefix-list only in logical-systems", async () => {
+    await testCompletion(docUri, new vscode.Position(13, 85), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "bar-prefix", kind: vscode.CompletionItemKind.Text },
       ],
     });
   });
