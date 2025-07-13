@@ -94,6 +94,7 @@ export function definition(session: Session) {
       getGlobalAddressSetAddressDefinition(session, line, textDocumentPosition) ||
       getZoneSpecificAddressSetAddressDefinition(session, line, textDocumentPosition) ||
       getPoliciesAddressDefinition(session, line, textDocumentPosition) ||
+      getApplicationDefinition(session, line, textDocumentPosition) ||
       [];
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
@@ -272,6 +273,11 @@ function getPoliciesAddressDefinition(
     .flat();
 }
 
+function getApplicationDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "match\\s+application");
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "application", symbol);
+}
+
 export function updateDefinitions(session: Session, textDocument: TextDocument) {
   session.definitions.clear(textDocument.uri);
 
@@ -285,6 +291,7 @@ export function updateDefinitions(session: Session, textDocument: TextDocument) 
   updateServiceNatPoolDefinitions(session, textDocument);
   updateSecurityNatPoolDefinitions(session, textDocument);
   updateAddressDefinitions(session, textDocument);
+  updateApplicationDefinitions(session, textDocument);
 }
 
 function insertDefinitions(
@@ -408,4 +415,9 @@ function updateZoneSpecificAddressDefinitions(session: Session, textDocument: Te
       (m) => m[4],
     );
   }
+}
+
+function updateApplicationDefinitions(session: Session, textDocument: TextDocument) {
+  const type = "application";
+  insertDefinitions(session, textDocument, type, "applications\\s+application\\s+)(\\S+)", (m) => m[3]);
 }

@@ -417,15 +417,27 @@ suite("Should do completion", () => {
     }
   });
 
+  test("Completes defined application in security policies", async () => {
+    await testCompletion(docUri, new vscode.Position(30, 91), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "junos-defaults", kind: vscode.CompletionItemKind.Text },
+        { label: "tcp-app", kind: vscode.CompletionItemKind.Text },
+        { label: "word", kind: vscode.CompletionItemKind.Value },
+      ],
+    });
+  });
+
   suite("Completes groups section", async () => {
     test("name", async () => {
-      await testCompletion(docUri, new vscode.Position(29, 11), {
+      await testCompletion(docUri, new vscode.Position(32, 11), {
         items: [{ label: "word", kind: vscode.CompletionItemKind.Value }],
       });
     });
 
     test("after name", async () => {
-      await testCompletion(docUri, new vscode.Position(30, 15), {
+      await testCompletion(docUri, new vscode.Position(33, 15), {
         items: [...rootItems, { label: "when", kind: vscode.CompletionItemKind.Text }].sort((a, b) =>
           a.label.localeCompare(b.label),
         ),
@@ -433,7 +445,7 @@ suite("Should do completion", () => {
     });
 
     test("after when", async () => {
-      await testCompletion(docUri, new vscode.Position(31, 33), {
+      await testCompletion(docUri, new vscode.Position(34, 33), {
         items: [
           { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
           { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },

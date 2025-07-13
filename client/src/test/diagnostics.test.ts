@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 35; // lines for completion tests
+const offset = 38; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
@@ -84,21 +84,21 @@ suite("Should get diagnostics", () => {
       },
       {
         message: '"bar-import" is not defined',
-        range: toRange(36, 62, 72),
+        range: toRange(38, 62, 72),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
       ...(
         [
-          [47, 81, 93, "foo-address_"],
-          [49, 86, 98, "foo-address_"],
+          [49, 81, 93, "foo-address_"],
           [51, 86, 98, "foo-address_"],
-          [53, 91, 103, "foo-address_"],
-          [55, 51, 63, "foo-address_"],
-          [59, 79, 90, "foo-address"],
-          [61, 79, 91, "bar-address_"],
-          [62, 83, 98, "foo-address-set"],
-          [64, 83, 99, "bar-address-set_"],
+          [53, 86, 98, "foo-address_"],
+          [55, 91, 103, "foo-address_"],
+          [57, 51, 63, "foo-address_"],
+          [61, 79, 90, "foo-address"],
+          [63, 79, 91, "bar-address_"],
+          [64, 83, 98, "foo-address-set"],
+          [66, 83, 99, "bar-address-set_"],
         ] as Array<[number, number, number, string]>
       ).map(([line, sChar, eChar, address]) => ({
         message: `"${address}" is not defined`,
@@ -110,12 +110,12 @@ suite("Should get diagnostics", () => {
       // global address books
       ...(
         [
-          [77, 93, 104, "baz-address"],
-          [81, 98, 109, "bar-address"],
-          [87, 96, 107, "bar-address"],
-          [89, 96, 107, "baz-address"],
-          [93, 99, 110, "bar-address"],
-          [95, 99, 110, "baz-address"],
+          [79, 93, 104, "baz-address"],
+          [83, 98, 109, "bar-address"],
+          [89, 96, 107, "bar-address"],
+          [91, 96, 107, "baz-address"],
+          [95, 99, 110, "bar-address"],
+          [97, 99, 110, "baz-address"],
         ] as Array<[number, number, number, string]>
       )
         .map(([line, sChar, eChar, address]) => [
@@ -137,12 +137,12 @@ suite("Should get diagnostics", () => {
       // zone-specific address books
       ...(
         [
-          [107, 97, 108, "baz-address"],
-          [111, 102, 113, "bar-address"],
-          [117, 97, 108, "bar-address"],
-          [119, 97, 108, "baz-address"],
-          [123, 102, 113, "bar-address"],
-          [125, 102, 113, "baz-address"],
+          [109, 97, 108, "baz-address"],
+          [113, 102, 113, "bar-address"],
+          [119, 97, 108, "bar-address"],
+          [121, 97, 108, "baz-address"],
+          [125, 102, 113, "bar-address"],
+          [127, 102, 113, "baz-address"],
         ] as Array<[number, number, number, string]>
       )
         .map(([line, sChar, eChar, address]) => [

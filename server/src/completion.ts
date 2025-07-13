@@ -32,6 +32,7 @@ export function completion(session: Session) {
       ["as-path-group", /\s+from\s+as-path-group\s+$/],
       ["firewall-filter", /\s+filter\s+(?:input|output|input-list|output-list)\s+$/],
       ["service-nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
+      ["application", /\s+match\s+application\s+$/, true],
       [
         (m) => `security-nat-pool:${m[1]}`,
         /\s+security\s+nat\s+(?:source|destination)\s+.*\s+then\s+(source|destination)-nat\s+pool\s+$/,
