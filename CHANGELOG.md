@@ -1,10 +1,31 @@
+## [0.5.0] - 2025-07-XX
+
+### Added
+
+* Completion and validation support
+  * `security zones security-zone xxx address-book xxx`
+* Completion support
+  * `security nat (source|destination) ... then (source|destination)-nat pool`
+  * `match application`
+
+### Fixed
+
+* Rearrange syntax highlight
+  * Remove dependency on https://github.com/woodjme/vscode-junos-syntax
+  * Update color theme
+* Reset the config definitions on every file change so incomplete configurations aren't stored while typing
+* Ignore comment lines when searching for address book entries
+* Reference to global address book entries in `security policies ... match (source|destination)-address`
+* `security policies ... match (source|destination)-address (any|any-ipv4|any-ipv6)` was unexpectedly marked as invalid
+* `security nat ... match (source|destination)-address <ip-prefix>` was unexpectedly marked as invalid
+
+
 ## [0.4.1] - 2025-02-03
 
 ### Added
 
 * Newly supported syntax
   * `system services web-management http`
-
 
 
 ## [0.4.0] - 2024-12-20
