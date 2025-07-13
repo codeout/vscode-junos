@@ -4,7 +4,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { DefinitionStore } from "./definition";
 import { createParser, Parser } from "./parser";
-import { ZoneAddressBookStore } from "./zone_address_book";
+import { ZoneAddressBookStore } from "./zone-address-book";
 
 export class Session {
   public readonly connection: _Connection;

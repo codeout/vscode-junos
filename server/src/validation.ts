@@ -1,11 +1,12 @@
 import { Diagnostic, DiagnosticSeverity, TextDocument } from "vscode-languageserver";
 
+import { isIpPrefix } from "./ip";
 import { prefixPattern } from "./parser";
 import { Session } from "./session";
 
 const maxNumberOfProblems = 1000; // Just a guard
 
-export async function validateTextDocument(session: Session, textDocument: TextDocument): Promise<Diagnostic[]> {
+export async function validateTextDocument(session: Session, textDocument: TextDocument) {
   const text = textDocument.getText();
   const pattern = new RegExp(`(${prefixPattern.source}[\\t ]+)(.*)`, "gm");
   let m: RegExpExecArray | null;
@@ -39,20 +40,56 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       ["as-path", "from\\s+as-path"],
       ["as-path-group", "from\\s+as-path-group"],
       ["firewall-filter", "filter\\s+(?:input|output|input-list|output-list)"],
-      ["nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
-      ["address:global", "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?"],
-      ["address:global", "pool\\s+\\S+\\s+address-name"],
-      [(m) => `address:${m[3]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
-      [(m) => `address-set:${m[3]}`, "address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address-set"],
+      ["service-nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
+      [
+        "address:global:global",
+        "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
+        (m) => (isIpPrefix(m[3]) ? [m[3]] : []),
+      ],
+      ["address:global:global", "pool\\s+\\S+\\s+address-name"],
+
+      // global address books
+      [(m) => `address:global:${m[3]}`, "(?<=security\\s+)address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
+      [
+        (m) => `address-set:global:${m[3]}`,
+        "(?<=security\\s+)address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address-set",
+      ],
+
+      // zone-specific address books
+      [
+        (m) => `address:${m[3]}:global`,
+        "(?<=security\\s+)zones\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address",
+      ],
+      [
+        (m) => `address-set:${m[3]}:global`,
+        "(?<=security\\s+)zones\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address-set",
+      ],
+
       [
         (m) => {
           const zone = m[5] === "source" ? m[3] : m[4];
           const addressBooks = session.zoneAddressBooks.get(textDocument.uri, m.groups!.ls || "global", zone);
-          return [...addressBooks].map((a) => [`address:${a}`, `address-set:${a}`]).flat();
+          return [...addressBooks]
+            .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
+            .flat()
+            .concat([
+              "address:global:global",
+              `address:${zone}:global`,
+              "address-set:global:global",
+              `address-set:${zone}:global`,
+            ]);
         },
         "from-zone\\s+(\\S+)\\s+to-zone\\s+(\\S+)\\s+.*\\s+match\\s+(source|destination)-address",
+        ["any", "any-ipv4", "any-ipv6"],
       ],
-    ] as Array<[string | ((arg: RegExpMatchArray) => string | string[]), string, string[], string[]]>;
+    ] as Array<
+      [
+        string | ((arg: RegExpMatchArray) => string | string[]),
+        string,
+        string[] | ((arg: RegExpMatchArray) => string[]),
+        string[],
+      ]
+    >;
 
     // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
     rules.forEach(([symbolType, pattern, allowList, denyList]) => {
@@ -84,13 +121,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
   return diagnostics;
 }
 
-function createDiagnostic(
-  session: Session,
-  textDocument: TextDocument,
-  start: number,
-  end: number,
-  message: string,
-): Diagnostic {
+function createDiagnostic(session: Session, textDocument: TextDocument, start: number, end: number, message: string) {
   return {
     severity: DiagnosticSeverity.Error,
     range: {
@@ -150,11 +181,16 @@ function validateReference(
   uri: string,
   symbolType: string | ((arg: RegExpMatchArray) => string | string[]),
   pattern: string,
-  allowList?: string[],
+  allowList?: string[] | ((arg: RegExpMatchArray) => string[]),
   denyList?: string[],
-): number[] | undefined {
+) {
   const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+))?.*\\s${pattern}\\s+)(?<arg>\\S+)`);
-  if (!m || allowList?.includes(m.groups!.arg)) {
+  if (!m) {
+    return;
+  }
+
+  const list = typeof allowList === "function" ? allowList(m) : allowList;
+  if (list?.includes(m.groups!.arg)) {
     return;
   }
 
@@ -185,7 +221,7 @@ function validateReference(
  * @param string
  * @return string
  */
-function squashQuotedSpaces(string: string): string {
+function squashQuotedSpaces(string: string) {
   const pattern = /"[^"]*"/g;
   let match: RegExpExecArray | null;
   let cursor = 0;

@@ -1,4 +1,4 @@
-import { Definition, Location, Range, RequestHandler, TextDocumentPositionParams } from "vscode-languageserver";
+import { Location, Range, TextDocumentPositionParams } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { prefixPattern } from "./parser";
@@ -19,7 +19,7 @@ export class DefinitionStore {
     this.store = {};
   }
 
-  set(uri: string, logicalSystem: string, symbolType: string, symbol: string, definition: Range): void {
+  set(uri: string, logicalSystem: string, symbolType: string, symbol: string, definition: Range) {
     // initialize
     this.store[uri] ||= {};
     this.store[uri][logicalSystem] ||= {};
@@ -37,7 +37,7 @@ export class DefinitionStore {
    * @param symbolType
    * @param symbol
    */
-  get(uri: string, symbolType: string, symbol: PointedSymbol): Range[] | undefined {
+  get(uri: string, symbolType: string, symbol: PointedSymbol) {
     if (!symbol.symbol) {
       return;
     }
@@ -52,18 +52,16 @@ export class DefinitionStore {
    * @param logicalSystem
    * @param symbolType
    */
-  getDefinitions(uri: string, logicalSystem: string, symbolType: string): object {
+  getDefinitions(uri: string, logicalSystem: string, symbolType: string) {
     return this.store[uri]?.[logicalSystem]?.[symbolType] || {};
   }
 
-  clear(uri: string, symbolType: string): void {
+  clear(uri: string) {
     if (!this.store[uri]) {
       return;
     }
 
-    for (const logicalSystem in this.store[uri]) {
-      this.store[uri][logicalSystem][symbolType] = {};
-    }
+    this.store[uri] = {};
   }
 }
 
@@ -72,8 +70,8 @@ export type PointedSymbol = {
   symbol?: string;
 };
 
-export function definition(session: Session): RequestHandler<TextDocumentPositionParams, Definition, void> {
-  return (textDocumentPosition: TextDocumentPositionParams): Definition => {
+export function definition(session: Session) {
+  return (textDocumentPosition: TextDocumentPositionParams) => {
     const doc = session.documents.get(textDocumentPosition.textDocument.uri);
     if (!doc) {
       return [];
@@ -89,11 +87,14 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
       getAsPathDefinition(session, line, textDocumentPosition) ||
       getAsPathGroupDefinition(session, line, textDocumentPosition) ||
       getFirewallFilterDefinition(session, line, textDocumentPosition) ||
-      getNatPoolDefinition(session, line, textDocumentPosition) ||
+      getServiceNatPoolDefinition(session, line, textDocumentPosition) ||
+      getSecurityNatPoolDefinition(session, line, textDocumentPosition) ||
       getNatAddressDefinition(session, line, textDocumentPosition) ||
       getPoolAddressDefinition(session, line, textDocumentPosition) ||
-      getAddressSetAddressDefinition(session, line, textDocumentPosition) ||
+      getGlobalAddressSetAddressDefinition(session, line, textDocumentPosition) ||
+      getZoneSpecificAddressSetAddressDefinition(session, line, textDocumentPosition) ||
       getPoliciesAddressDefinition(session, line, textDocumentPosition) ||
+      getApplicationDefinition(session, line, textDocumentPosition) ||
       [];
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
@@ -107,7 +108,7 @@ export function definition(session: Session): RequestHandler<TextDocumentPositio
  * @param position
  * @param pattern
  */
-function getPointedSymbol(line: string, position: number, pattern: string): PointedSymbol {
+function getPointedSymbol(line: string, position: number, pattern: string) {
   const m = line.match(
     `(${prefixPattern.source}(?:\\s+logical-systems\\s+(\\S+))?(?:\\s+.*)?\\s+${pattern}\\s+)(\\S+)`,
   );
@@ -120,20 +121,12 @@ function getPointedSymbol(line: string, position: number, pattern: string): Poin
   }
 }
 
-function getInterfaceDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+function getInterfaceDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "interface");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "interface", symbol);
 }
 
-function getPrefixListDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+function getPrefixListDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(
     line,
     textDocumentPosition.position.character,
@@ -146,16 +139,12 @@ function getPolicyStatementDefinition(
   session: Session,
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+) {
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "(?:import|export)");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "policy-statement", symbol);
 }
 
-function getCommunityDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+function getCommunityDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(
     line,
     textDocumentPosition.position.character,
@@ -164,29 +153,17 @@ function getCommunityDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "community", symbol);
 }
 
-function getAsPathDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+function getAsPathDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "from\\s+as-path");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "as-path", symbol);
 }
 
-function getAsPathGroupDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+function getAsPathGroupDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "from\\s+as-path-group");
   return session.definitions.get(textDocumentPosition.textDocument.uri, "as-path-group", symbol);
 }
 
-function getFirewallFilterDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+function getFirewallFilterDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(
     line,
     textDocumentPosition.position.character,
@@ -195,60 +172,78 @@ function getFirewallFilterDefinition(
   return session.definitions.get(textDocumentPosition.textDocument.uri, "firewall-filter", symbol);
 }
 
-function getNatPoolDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+function getServiceNatPoolDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(
     line,
     textDocumentPosition.position.character,
     "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)",
   );
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "nat-pool", symbol);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "service-nat-pool", symbol);
 }
 
-function getNatAddressDefinition(
+function getSecurityNatPoolDefinition(
   session: Session,
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+) {
+  const m = line.match(/security\s+nat\s+(?:source|destination)\s+.*\s+then\s+(source|destination)-nat\s+pool/);
+  if (!m) {
+    return;
+  }
+
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "pool");
+  return session.definitions.get(textDocumentPosition.textDocument.uri, `security-nat-pool:${m[1]}`, symbol);
+}
+
+function getNatAddressDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(
     line,
     textDocumentPosition.position.character,
     "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
   );
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global:global", symbol);
 }
 
-function getPoolAddressDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+function getPoolAddressDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "pool\\s+\\S+\\s+address-name");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global", symbol);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global:global", symbol);
 }
 
-function getAddressSetAddressDefinition(
+function getGlobalAddressSetAddressDefinition(
   session: Session,
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
-  const m = line.match(/address-book\s+(\S+)\s+address-set\s+\S+\s+(address(?:-set))/);
+) {
+  const m = line.match(/security\s+address-book\s+(\S+)\s+address-set\s+\S+\s+(address(?:-set)?)/);
   if (!m) {
     return;
   }
 
   const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
-  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:${m[1]}`, symbol);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:global:${m[1]}`, symbol);
+}
+
+function getZoneSpecificAddressSetAddressDefinition(
+  session: Session,
+  line: string,
+  textDocumentPosition: TextDocumentPositionParams,
+) {
+  const m = line.match(
+    /security\s+zones\s+security-zone\s+(\S+)\s+address-book\s+address-set\s+\S+\s+(address(?:-set)?)/,
+  );
+  if (!m) {
+    return;
+  }
+
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
+  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:${m[1]}:global`, symbol);
 }
 
 function getPoliciesAddressDefinition(
   session: Session,
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
-): Range[] | undefined {
+) {
   const m = line.match(
     /(?:logical-systems\s+(\S+))?.*\s+policies\s+from-zone\s+(\S+)\s+to-zone\s+(\S+)\s+.*\s+match\s+(source|destination)-address/,
   );
@@ -265,14 +260,27 @@ function getPoliciesAddressDefinition(
 
   const addressBooks = session.zoneAddressBooks.get(textDocumentPosition.textDocument.uri, m[1] || "global", zone);
   return [...addressBooks]
-    .map((a) => [`address:${a}`, `address-set:${a}`])
+    .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
     .flat()
+    .concat([
+      "address:global:global",
+      `address:${zone}:global`,
+      "address-set:global:global",
+      `address-set:${zone}:global`,
+    ])
     .map((a) => session.definitions.get(textDocumentPosition.textDocument.uri, a, symbol))
-    .filter((i) => i)
-    .flat() as Range[];
+    .filter<Range[]>((i) => !!i)
+    .flat();
 }
 
-export function updateDefinitions(session: Session, textDocument: TextDocument): void {
+function getApplicationDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "match\\s+application");
+  return session.definitions.get(textDocumentPosition.textDocument.uri, "application", symbol);
+}
+
+export function updateDefinitions(session: Session, textDocument: TextDocument) {
+  session.definitions.clear(textDocument.uri);
+
   updateInterfaceDefinitions(session, textDocument);
   updatePrefixListDefinitions(session, textDocument);
   updatePolicyStatementDefinitions(session, textDocument);
@@ -280,8 +288,10 @@ export function updateDefinitions(session: Session, textDocument: TextDocument):
   updateAsPathDefinitions(session, textDocument);
   updateAsPathGroupDefinitions(session, textDocument);
   updateFirewallFilterDefinitions(session, textDocument);
-  updateNatPoolDefinitions(session, textDocument);
+  updateServiceNatPoolDefinitions(session, textDocument);
+  updateSecurityNatPoolDefinitions(session, textDocument);
   updateAddressDefinitions(session, textDocument);
+  updateApplicationDefinitions(session, textDocument);
 }
 
 function insertDefinitions(
@@ -290,7 +300,7 @@ function insertDefinitions(
   symbolType: string | ((arg: RegExpExecArray) => string),
   pattern: string,
   modifyFunction: (arg: RegExpExecArray) => string,
-): void {
+) {
   const text = textDocument.getText();
 
   // FIXME: We should have implemented with named captures, but avoid them due to performance consideration
@@ -307,9 +317,8 @@ function insertDefinitions(
   }
 }
 
-function updateInterfaceDefinitions(session: Session, textDocument: TextDocument): void {
+function updateInterfaceDefinitions(session: Session, textDocument: TextDocument) {
   const type = "interface";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "interfaces\\s+)((?!interface-range)\\S+)", (m) => m[3]);
   insertDefinitions(session, textDocument, type, "interfaces interface-range\\s+)(\\S+)", (m) => m[3]);
   insertDefinitions(
@@ -321,76 +330,94 @@ function updateInterfaceDefinitions(session: Session, textDocument: TextDocument
   );
 }
 
-function updatePrefixListDefinitions(session: Session, textDocument: TextDocument): void {
+function updatePrefixListDefinitions(session: Session, textDocument: TextDocument) {
   const type = "prefix-list";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+prefix-list\\s+)(\\S+)", (m) => m[3]);
 }
 
-function updatePolicyStatementDefinitions(session: Session, textDocument: TextDocument): void {
+function updatePolicyStatementDefinitions(session: Session, textDocument: TextDocument) {
   const type = "policy-statement";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+policy-statement\\s+)(\\S+)", (m) => m[3]);
 }
 
-function updateCommunityDefinitions(session: Session, textDocument: TextDocument): void {
+function updateCommunityDefinitions(session: Session, textDocument: TextDocument) {
   const type = "community";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+community\\s+)(\\S+)", (m) => m[3]);
 }
 
-function updateAsPathDefinitions(session: Session, textDocument: TextDocument): void {
+function updateAsPathDefinitions(session: Session, textDocument: TextDocument) {
   const type = "as-path";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+as-path\\s+)(\\S+)", (m) => m[3]);
 }
 
-function updateAsPathGroupDefinitions(session: Session, textDocument: TextDocument): void {
+function updateAsPathGroupDefinitions(session: Session, textDocument: TextDocument) {
   const type = "as-path-group";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "policy-options\\s+as-path-group\\s+)(\\S+)", (m) => m[3]);
 }
 
-function updateFirewallFilterDefinitions(session: Session, textDocument: TextDocument): void {
+function updateFirewallFilterDefinitions(session: Session, textDocument: TextDocument) {
   const type = "firewall-filter";
-  session.definitions.clear(textDocument.uri, type);
   insertDefinitions(session, textDocument, type, "firewall(?:\\s+family\\s+\\S+)?\\s+filter\\s+)(\\S+)", (m) => m[3]);
 }
 
-function updateNatPoolDefinitions(session: Session, textDocument: TextDocument): void {
-  const type = "nat-pool";
-  session.definitions.clear(textDocument.uri, type);
+function updateServiceNatPoolDefinitions(session: Session, textDocument: TextDocument) {
+  const type = "service-nat-pool";
   insertDefinitions(session, textDocument, type, "services\\s+nat\\s+pool\\s+)(\\S+)", (m) => m[3]);
 }
 
-function updateAddressDefinitions(session: Session, textDocument: TextDocument): void {
-  const text = textDocument.getText();
+function updateSecurityNatPoolDefinitions(session: Session, textDocument: TextDocument) {
+  insertDefinitions(
+    session,
+    textDocument,
+    (m) => `security-nat-pool:${m[3]}`,
+    "security\\s+nat\\s+(source|destination)\\s+pool\\s+)(\\S+)",
+    (m) => m[4],
+  );
+}
 
-  let pattern = /security\s+address-book\s+(\S+)/gm;
-  let m: RegExpExecArray | null;
-  while ((m = pattern.exec(text))) {
-    session.definitions.clear(textDocument.uri, `address:${m[1]}`);
-    session.definitions.clear(textDocument.uri, `address-set:${m[1]}`);
-  }
+function updateAddressDefinitions(session: Session, textDocument: TextDocument) {
+  session.zoneAddressBooks.clear(textDocument.uri);
+  updateGlobalAddressDefinitions(session, textDocument);
+  updateZoneSpecificAddressDefinitions(session, textDocument);
+}
+
+function updateGlobalAddressDefinitions(session: Session, textDocument: TextDocument) {
+  const text = textDocument.getText();
 
   for (const type of ["address", "address-set"]) {
     insertDefinitions(
       session,
       textDocument,
-      (m) => `${type}:${m[3]}`,
+      // <"address" or "address-set">:<zone>:<address-book-name>
+      (m) => `${type}:global:${m[3]}`,
       `security\\s+address-book\\s+(\\S+)\\s+${type}\\s+)(\\S+)`,
       (m) => m[4],
     );
   }
 
   // zone address book mapping
-  pattern = /(?:\s+logical-systems\s+(\S+))?\s+.*\s+address-book\s+(\S+)\s+attach\s+zone\s+(\S+)/gm;
-  while ((m = pattern.exec(text))) {
-    session.zoneAddressBooks.clear(textDocument.uri, m[2]);
-  }
+  const pattern = /^\s*set(?:\s+logical-systems\s+(\S+))?\s+.*\s+address-book\s+(\S+)\s+attach\s+zone\s+(\S+)/gm;
+  let m: RegExpExecArray | null;
 
-  // pattern = /address-book\s+\S+\s+attach\s+zone\s+(\S+)/gm;
   while ((m = pattern.exec(text))) {
     session.zoneAddressBooks.set(textDocument.uri, m[1] || "global", m[3], m[2]);
   }
+}
+
+function updateZoneSpecificAddressDefinitions(session: Session, textDocument: TextDocument) {
+  for (const type of ["address", "address-set"]) {
+    insertDefinitions(
+      session,
+      textDocument,
+      // <"address" or "address-set">:<zone>:<address-book-name>
+      (m) => `${type}:${m[3]}:global`,
+      `security\\s+zones\\s+security-zone\\s+(\\S+)\\s+address-book\\s+${type}\\s+)(\\S+)`,
+      (m) => m[4],
+    );
+  }
+}
+
+function updateApplicationDefinitions(session: Session, textDocument: TextDocument) {
+  const type = "application";
+  insertDefinitions(session, textDocument, type, "applications\\s+application\\s+)(\\S+)", (m) => m[3]);
 }

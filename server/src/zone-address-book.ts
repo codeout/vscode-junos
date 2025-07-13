@@ -11,7 +11,7 @@ export class ZoneAddressBookStore {
     this.store = {};
   }
 
-  set(uri: string, logicalSystem: string, zone: string, addressBook: string): void {
+  set(uri: string, logicalSystem: string, zone: string, addressBook: string) {
     // initialize
     this.store[uri] ||= {};
     this.store[uri][logicalSystem] ||= {};
@@ -20,17 +20,15 @@ export class ZoneAddressBookStore {
     this.store[uri][logicalSystem][zone].add(addressBook);
   }
 
-  get(uri: string, logicalSystem: string, zone: string): Set<string> {
+  get(uri: string, logicalSystem: string, zone: string) {
     return this.store[uri]?.[logicalSystem]?.[zone] || new Set(["global"]);
   }
 
-  clear(uri: string, zone: string): void {
+  clear(uri: string) {
     if (!this.store[uri]) {
       return;
     }
 
-    for (const logicalSystem in this.store[uri]) {
-      this.store[uri][logicalSystem][zone] = new Set();
-    }
+    this.store[uri] = {};
   }
 }

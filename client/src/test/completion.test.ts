@@ -272,28 +272,8 @@ suite("Should do completion", () => {
     });
   });
 
-  test("Completes defined policy-statement only in logical-systems", async () => {
-    await testCompletion(docUri, new vscode.Position(10, 62), {
-      items: [
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "foo-import", kind: vscode.CompletionItemKind.Text },
-      ],
-    });
-  });
-
-  test("Completes defined prefix-list only in logical-systems", async () => {
-    await testCompletion(docUri, new vscode.Position(11, 85), {
-      items: [
-        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
-        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-        { label: "bar-prefix", kind: vscode.CompletionItemKind.Text },
-      ],
-    });
-  });
-
   test("Completes defined nat pool", async () => {
-    await testCompletion(docUri, new vscode.Position(12, 68), {
+    await testCompletion(docUri, new vscode.Position(10, 68), {
       items: [
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -303,7 +283,7 @@ suite("Should do completion", () => {
   });
 
   test("Completes defined interface-range", async () => {
-    await testCompletion(docUri, new vscode.Position(13, 29), {
+    await testCompletion(docUri, new vscode.Position(11, 29), {
       items: [
         { label: "all", kind: vscode.CompletionItemKind.Text },
         { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
@@ -313,6 +293,26 @@ suite("Should do completion", () => {
         { label: "xe-0/0/0.0", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/1", kind: vscode.CompletionItemKind.Text },
         { label: "xe-0/0/1.0", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
+  test("Completes defined policy-statement only in logical-systems", async () => {
+    await testCompletion(docUri, new vscode.Position(12, 62), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "foo-import", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
+  test("Completes defined prefix-list only in logical-systems", async () => {
+    await testCompletion(docUri, new vscode.Position(13, 85), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "bar-prefix", kind: vscode.CompletionItemKind.Text },
       ],
     });
   });
@@ -347,11 +347,43 @@ suite("Should do completion", () => {
     }
   });
 
+  test("Completes defined pool name in nat", async () => {
+    // global address book
+    for (const [line, character, pools] of [
+      [19, 81, ["foo-pool", "persistent-nat"]],
+      [20, 91, ["bar-pool"]],
+    ] as const) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          ...pools.map((p: string) => ({ label: p, kind: vscode.CompletionItemKind.Text })),
+          { label: "word", kind: vscode.CompletionItemKind.Value },
+        ],
+      });
+    }
+  });
+
   test("Completes defined address-name in address-book", async () => {
+    // global address book
     for (const [line, character, address] of [
-      [19, 79, "bar-address"],
-      [20, 83, "bar-address-set"],
-    ] as Array<[number, number, string]>) {
+      [21, 79, "bar-address"],
+      [22, 83, "bar-address-set"],
+    ] as const) {
+      await testCompletion(docUri, new vscode.Position(line, character), {
+        items: [
+          { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+          { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+          { label: address, kind: vscode.CompletionItemKind.Text },
+        ],
+      });
+    }
+
+    // zone-specific address book
+    for (const [line, character, address] of [
+      [23, 91, "bar-address"],
+      [24, 95, "bar-address-set"],
+    ] as const) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [
           { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
@@ -364,11 +396,11 @@ suite("Should do completion", () => {
 
   test("Completes defined address / address-set in security policies", async () => {
     for (const [line, character, address] of [
-      [21, 86, "bar-address"],
-      [22, 91, "baz-address"],
-      [23, 96, "foo-address"],
-      [24, 99, "foo-address"],
-    ] as Array<[number, number, string]>) {
+      [25, 86, "bar-address"],
+      [26, 91, "baz-address"],
+      [27, 96],
+      [28, 99],
+    ] as const) {
       await testCompletion(docUri, new vscode.Position(line, character), {
         items: [
           { label: "any", kind: vscode.CompletionItemKind.Text },
@@ -376,22 +408,36 @@ suite("Should do completion", () => {
           { label: "any-ipv6", kind: vscode.CompletionItemKind.Text },
           { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
           { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
-          { label: address, kind: vscode.CompletionItemKind.Text },
-          { label: `${address}-set`, kind: vscode.CompletionItemKind.Text },
+          ...(address ? [{ label: address, kind: vscode.CompletionItemKind.Text }] : []),
+          ...(address ? [{ label: `${address}-set`, kind: vscode.CompletionItemKind.Text }] : []),
+          { label: "foo-address", kind: vscode.CompletionItemKind.Text },
+          { label: "foo-address-set", kind: vscode.CompletionItemKind.Text },
         ],
       });
     }
   });
 
+  test("Completes defined application in security policies", async () => {
+    await testCompletion(docUri, new vscode.Position(30, 91), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "junos-defaults", kind: vscode.CompletionItemKind.Text },
+        { label: "tcp-app", kind: vscode.CompletionItemKind.Text },
+        { label: "word", kind: vscode.CompletionItemKind.Value },
+      ],
+    });
+  });
+
   suite("Completes groups section", async () => {
     test("name", async () => {
-      await testCompletion(docUri, new vscode.Position(25, 11), {
+      await testCompletion(docUri, new vscode.Position(32, 11), {
         items: [{ label: "word", kind: vscode.CompletionItemKind.Value }],
       });
     });
 
     test("after name", async () => {
-      await testCompletion(docUri, new vscode.Position(26, 15), {
+      await testCompletion(docUri, new vscode.Position(33, 15), {
         items: [...rootItems, { label: "when", kind: vscode.CompletionItemKind.Text }].sort((a, b) =>
           a.label.localeCompare(b.label),
         ),
@@ -399,7 +445,7 @@ suite("Should do completion", () => {
     });
 
     test("after when", async () => {
-      await testCompletion(docUri, new vscode.Position(27, 33), {
+      await testCompletion(docUri, new vscode.Position(34, 33), {
         items: [
           { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
           { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
@@ -418,11 +464,11 @@ async function testCompletion(
   await activate(docUri);
 
   // Executing the command `vscode.executeCompletionItemProvider` to simulate triggering completion
-  const actualCompletionList = (await vscode.commands.executeCommand(
+  const actualCompletionList = await vscode.commands.executeCommand<vscode.CompletionList>(
     "vscode.executeCompletionItemProvider",
     docUri,
     position,
-  )) as vscode.CompletionList;
+  );
 
   // assert.deepEqual(actualCompletionList.items, expectedCompletionList.items);
   assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
