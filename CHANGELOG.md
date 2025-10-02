@@ -1,4 +1,12 @@
-## [0.5.0] - 2025-07-XX
+## [0.5.1] - 2025-10-02
+
+### Added
+
+* Newly supported syntax
+  * `chassis high-availability`
+
+
+## [0.5.0] - 2025-07-14
 
 ### Added
 
