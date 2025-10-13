@@ -24,7 +24,7 @@
   "activationEvents": [
     "onLanguage:junos"
   ],
-  "icon": "docs/images/junos.jpg",
+  "icon": "docs/images/logo.png",
   "main": "./client/out/extension",
   "contributes": {
     "languages": [
