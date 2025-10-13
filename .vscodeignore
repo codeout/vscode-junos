@@ -17,7 +17,7 @@ client/node_modules/**
 
 # docs
 docs/images/
-!docs/images/junos.jpg
+!docs/images/logo.png
 
 # development
 commitlint.config.js
