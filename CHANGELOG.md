@@ -1,3 +1,10 @@
+## [0.5.2] - 2025-10-13
+
+### Fixed
+
+* Change the extention logo
+
+
 ## [0.5.1] - 2025-10-02
 
 ### Added
