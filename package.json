@@ -106,6 +106,7 @@
     "check": "npm run type-check && npm run lint",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "update": "npm update && cd client && npm update && cd ../server && npm update && cd ..",
+    "ncu": "ncu -u && cd client && ncu -u && cd ../server && ncu -u && cd ..",
     "test": "sh ./scripts/e2e.sh",
     "clean": "rm -rf node_modules */node_modules */out"
   },
