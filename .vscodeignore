@@ -4,7 +4,6 @@
 .gitignore
 **/tsconfig.json
 **/tsconfig.base.json
-**/tsconfig.tsbuildinfo
 contributing.md
 .travis.yml
 client/node_modules/**
@@ -20,8 +19,10 @@ docs/images/
 !docs/images/logo.png
 
 # development
+**/tsconfig.tsbuildinfo
 commitlint.config.js
 eslint.config.mjs
+.ncurc.mjs
 .gitmodules
 .idea/**
 .ignore
