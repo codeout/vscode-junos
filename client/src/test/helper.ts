@@ -1,8 +1,8 @@
-import * as path from "path";
+import * as path from "node:path";
+
 import * as vscode from "vscode";
 
-export let doc: vscode.TextDocument;
-export let editor: vscode.TextEditor;
+export const state: { doc?: vscode.TextDocument; editor?: vscode.TextEditor } = {};
 export let documentEol: string;
 export let platformEol: string;
 
@@ -14,11 +14,11 @@ export async function activate(docUri: vscode.Uri) {
   const ext = vscode.extensions.getExtension("codeout.vscode-junos")!;
   await ext.activate();
   try {
-    doc = await vscode.workspace.openTextDocument(docUri);
-    editor = await vscode.window.showTextDocument(doc);
+    state.doc = await vscode.workspace.openTextDocument(docUri);
+    state.editor = await vscode.window.showTextDocument(state.doc);
     await sleep(2000); // Wait for server activation
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -34,6 +34,8 @@ export const getDocUri = (p: string) => {
 };
 
 export async function setTestContent(content: string) {
+  const doc = state.doc!;
   const all = new vscode.Range(doc.positionAt(0), doc.positionAt(doc.getText().length));
-  return editor.edit((eb) => eb.replace(all, content));
+  // eslint-disable-next-line unicorn/no-unsafe-string-replacement -- TextEditorEdit#replace, not String#replace
+  return state.editor!.edit((eb) => eb.replace(all, content));
 }

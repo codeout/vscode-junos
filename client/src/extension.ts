@@ -1,8 +1,11 @@
-import * as path from "path";
-import { ExtensionContext, workspace } from "vscode";
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
+import * as path from "node:path";
 
-let client: LanguageClient;
+import type { ExtensionContext } from "vscode";
+import { workspace } from "vscode";
+import type { LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
+import { LanguageClient, TransportKind } from "vscode-languageclient/node";
+
+const state: { client?: LanguageClient } = {};
 
 export function activate(context: ExtensionContext) {
   // The server is implemented in node
@@ -29,15 +32,15 @@ export function activate(context: ExtensionContext) {
   };
 
   // Create the language client and start the client.
-  client = new LanguageClient("JunoslanguageServer", "Language Server for Junos", serverOptions, clientOptions);
+  state.client = new LanguageClient("JunoslanguageServer", "Language Server for Junos", serverOptions, clientOptions);
 
   // Start the client. This will also launch the server
-  client.start();
+  state.client.start();
 }
 
 export function deactivate() {
-  if (!client) {
-    return undefined;
+  if (!state.client) {
+    return;
   }
-  return client.stop();
+  return state.client.stop();
 }

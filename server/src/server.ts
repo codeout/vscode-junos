@@ -1,4 +1,5 @@
-import { DocumentDiagnosticReport, DocumentDiagnosticReportKind } from "vscode-languageserver";
+import type { DocumentDiagnosticReport } from "vscode-languageserver";
+import { DocumentDiagnosticReportKind } from "vscode-languageserver";
 import { TextDocumentSyncKind } from "vscode-languageserver/node";
 
 import { completion, completionResolve } from "./completion";
@@ -36,14 +37,13 @@ session.connection.languages.diagnostics.on(async (params) => {
       kind: DocumentDiagnosticReportKind.Full,
       items: await validateTextDocument(session, document),
     } satisfies DocumentDiagnosticReport;
-  } else {
-    // We don't know the document. We can either try to read it from disk
-    // or we don't report problems for it.
-    return {
-      kind: DocumentDiagnosticReportKind.Full,
-      items: [],
-    } satisfies DocumentDiagnosticReport;
   }
+  // We don't know the document. We can either try to read it from disk
+  // or we don't report problems for it.
+  return {
+    kind: DocumentDiagnosticReportKind.Full,
+    items: [],
+  } satisfies DocumentDiagnosticReport;
 });
 
 session.documents.onDidChangeContent((change) => {

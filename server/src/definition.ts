@@ -1,8 +1,9 @@
-import { Location, Range, TextDocumentPositionParams } from "vscode-languageserver";
-import { TextDocument } from "vscode-languageserver-textdocument";
+import type { Range, TextDocumentPositionParams } from "vscode-languageserver";
+import { Location } from "vscode-languageserver";
+import type { TextDocument } from "vscode-languageserver-textdocument";
 
 import { prefixPattern } from "./parser";
-import { Session } from "./session";
+import type { Session } from "./session";
 
 export class DefinitionStore {
   private readonly store: {
@@ -116,9 +117,8 @@ function getPointedSymbol(line: string, position: number, pattern: string) {
   // Return nothing when the cursor doesn't point at the keyword
   if (!m || m[0].length < position || m[1].length > position) {
     return { logicalSystem: "global" };
-  } else {
-    return { logicalSystem: m[2] || "global", symbol: m[3] };
   }
+  return { logicalSystem: m[2] || "global", symbol: m[3] };
 }
 
 function getInterfaceDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
@@ -259,15 +259,13 @@ function getPoliciesAddressDefinition(
   );
 
   const addressBooks = session.zoneAddressBooks.get(textDocumentPosition.textDocument.uri, m[1] || "global", zone);
-  return [...addressBooks]
-    .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
-    .flat()
-    .concat([
-      "address:global:global",
-      `address:${zone}:global`,
-      "address-set:global:global",
-      `address-set:${zone}:global`,
-    ])
+  return [
+    ...[...addressBooks].flatMap((a) => [`address:global:${a}`, `address-set:global:${a}`]),
+    "address:global:global",
+    `address:${zone}:global`,
+    "address-set:global:global",
+    `address-set:${zone}:global`,
+  ]
     .map((a) => session.definitions.get(textDocumentPosition.textDocument.uri, a, symbol))
     .filter<Range[]>((i) => !!i)
     .flat();

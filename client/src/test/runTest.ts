@@ -1,5 +1,6 @@
+import * as path from "node:path";
+
 import { runTests } from "@vscode/test-electron";
-import * as path from "path";
 
 async function main() {
   try {
@@ -15,8 +16,9 @@ async function main() {
     await runTests({ extensionDevelopmentPath, extensionTestsPath });
   } catch {
     console.error("Failed to run tests");
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await -- the client compiles to CommonJS (tsconfig module: commonjs)
 main();

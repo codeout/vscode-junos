@@ -1,7 +1,8 @@
-import { CompletionItem, CompletionItemKind, TextDocumentPositionParams } from "vscode-languageserver";
+import type { CompletionItem, TextDocumentPositionParams } from "vscode-languageserver";
+import { CompletionItemKind } from "vscode-languageserver";
 
 import { prefixPattern } from "./parser";
-import { Session } from "./session";
+import type { Session } from "./session";
 
 export function completion(session: Session) {
   return (textDocumentPosition: TextDocumentPositionParams) => {
@@ -12,7 +13,7 @@ export function completion(session: Session) {
     }
 
     let line = doc.getText().split("\n")[textDocumentPosition.position.line];
-    if (!line.match(prefixPattern)) {
+    if (!prefixPattern.test(line)) {
       return [];
     }
 
@@ -59,15 +60,13 @@ export function completion(session: Session) {
         (m) => {
           const zone = m[3] === "source" ? m[1] : m[2];
           const addressBooks = session.zoneAddressBooks.get(uri, logicalSystem, zone);
-          return [...addressBooks]
-            .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
-            .flat()
-            .concat([
-              "address:global:global",
-              `address:${zone}:global`,
-              "address-set:global:global",
-              `address-set:${zone}:global`,
-            ]);
+          return [
+            ...[...addressBooks].flatMap((a) => [`address:global:${a}`, `address-set:global:${a}`]),
+            "address:global:global",
+            `address:${zone}:global`,
+            "address-set:global:global",
+            `address-set:${zone}:global`,
+          ];
         },
         /\s+policies\s+from-zone\s+(\S+)\s+to-zone\s+(\S+)\s+.*\s+match\s+(source|destination)-address\s+$/,
       ],
@@ -83,7 +82,7 @@ export function completion(session: Session) {
 
         addReferences(
           Object.fromEntries(
-            types.map((type) => Object.entries(session.definitions.getDefinitions(uri, logicalSystem, type))).flat(),
+            types.flatMap((type) => Object.entries(session.definitions.getDefinitions(uri, logicalSystem, type))),
           ),
           keywords,
           keepWord,
@@ -104,7 +103,7 @@ export function completion(session: Session) {
 // replace "word" in `keywords` array with all definitions keys
 function addReferences(definitions: object, keywords: string[], keepWord = false) {
   const index = keywords.indexOf("word");
-  if (index < 0) {
+  if (index === -1) {
     return;
   }
 

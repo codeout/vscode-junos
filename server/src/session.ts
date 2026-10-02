@@ -1,9 +1,10 @@
-import { _Connection } from "vscode-languageserver/lib/common/server"; // This is probably internal
+import type { _Connection } from "vscode-languageserver/lib/common/server"; // This is probably internal
 import { createConnection, ProposedFeatures, TextDocuments } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { DefinitionStore } from "./definition";
-import { createParser, Parser } from "./parser";
+import type { Parser } from "./parser";
+import { createParser } from "./parser";
 import { ZoneAddressBookStore } from "./zone-address-book";
 
 export class Session {
