@@ -1,3 +1,11 @@
+## [0.5.3] - 2026-10-03
+
+### Fixed
+
+* Require VS Code 1.100.0 or later, matching the baseline of [microsoft/vscode-extension-samples/lsp-sample](https://github.com/microsoft/vscode-extension-samples/tree/main/lsp-sample)
+* Update dependencies
+
+
 ## [0.5.2] - 2025-10-13
 
 ### Fixed
