@@ -1,6 +1,7 @@
+import * as path from "node:path";
+
 import { glob } from "glob";
 import * as Mocha from "mocha";
-import * as path from "path";
 
 export function run() {
   // Create the mocha test
@@ -8,13 +9,15 @@ export function run() {
     ui: "tdd",
     color: true,
   });
-  mocha.timeout(100000);
+  mocha.timeout(100_000);
 
   const testsRoot = __dirname;
 
   return glob.glob("**.test.js", { cwd: testsRoot }).then(async (files) => {
     // Add files to the test suite
-    files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)));
+    for (const f of files) {
+      mocha.addFile(path.resolve(testsRoot, f));
+    }
 
     try {
       // Run the mocha test
@@ -27,9 +30,9 @@ export function run() {
           }
         });
       });
-    } catch (err) {
-      console.error(err);
-      throw err;
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   });
 }

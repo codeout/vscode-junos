@@ -1,6 +1,18 @@
-import { Enumeration, JunosSchema, Repeatable, SchemaObject, Sequence } from "../src/junos"; // './junos' breaks debugging on vscode
+import type { SchemaObject } from "../src/junos";
+import { Enumeration, JunosSchema, Repeatable, Sequence } from "../src/junos"; // './junos' breaks debugging on vscode
 
 export const prefixPattern = /^[\t ]*(?:set|delete|activate|deactivate)/;
+
+// explicit comparator reproducing the default sort order (UTF-16 code units)
+function compareStrings(a: string, b: string) {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
+}
 
 export class Node {
   name: string;
@@ -30,7 +42,7 @@ export class Node {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   load(rawChildren: string[] | Enumeration | Repeatable | Sequence | SchemaObject | Function) {
     switch (typeof rawChildren) {
-      case "object":
+      case "object": {
         if (Array.isArray(rawChildren)) {
           this.loadArray(rawChildren);
         } else if (rawChildren instanceof Enumeration) {
@@ -43,23 +55,26 @@ export class Node {
           this.loadObject(rawChildren);
         }
         break;
-      case "string":
+      }
+      case "string": {
         this.loadString(rawChildren);
         break;
-      case "function":
+      }
+      case "function": {
         this.load(rawChildren());
         break;
-      case "undefined":
+      }
+      case "undefined": {
         break;
-      default:
+      }
+      default: {
         throw new Error("Not implemented");
+      }
     }
   }
 
   private loadObject(obj: SchemaObject) {
-    Object.keys(obj).forEach((key: string) => {
-      const val = obj[key];
-
+    for (const [key, val] of Object.entries(obj)) {
       if (val === false) {
         // Only the "set groups" has the value false, like:
         // "groups(arg) | Configuration groups": opts?.groups !== false && { ... }
@@ -71,15 +86,15 @@ export class Node {
       } else if (typeof key === "string") {
         this.addStringNode(key, val);
       } else {
-        throw new Error("Not implemented");
+        throw new TypeError("Not implemented");
       }
-    });
+    }
   }
 
   private loadArray(array: string[]) {
-    array.forEach((child) => {
+    for (const child of array) {
       this.addStringNode(child, null);
-    });
+    }
   }
 
   loadSequence(sequence: Sequence, depth: number) {
@@ -88,26 +103,28 @@ export class Node {
     // This is actually complicated, might be buggy
     if (this.children.length === 0) {
       this.load(raw);
-      this.children.forEach((child) => {
+      for (const child of this.children) {
         child.loadSequence(sequence, depth + 1);
-      });
+      }
     } else {
-      this.children.forEach((child) => {
+      for (const child of this.children) {
         child.load(raw);
-        child.children.forEach((grandChild) => {
+        for (const grandChild of child.children) {
           grandChild.loadSequence(sequence, depth + 1);
-        });
-      });
+        }
+      }
     }
   }
 
   private loadString(string: string) {
     switch (string) {
-      case "arg":
+      case "arg": {
         this.add(new Node("arg", this, null, undefined, "arg"));
         break;
-      default:
+      }
+      default: {
         throw new Error("Not implemented");
+      }
     }
   }
 
@@ -121,12 +138,13 @@ export class Node {
   }
 
   addArrayString(args: string, description: string, rawChildren: SchemaObject | null) {
-    args
-      .split(/\s*\|\s*/)
-      .filter((arg) => !arg.startsWith("$"))
-      .forEach((arg) => {
-        this.load({ [arg]: rawChildren });
-      });
+    for (const arg of args.split(/\s*\|\s*/)) {
+      if (arg.startsWith("$")) {
+        continue;
+      }
+
+      this.load({ [arg]: rawChildren });
+    }
   }
 
   // This is a bit hacky, but migrates null node, which is originally nested choice element,
@@ -168,7 +186,7 @@ export class Node {
   }
 
   keywords() {
-    return this.children.map((node) => node.name).sort();
+    return this.children.map((node) => node.name).toSorted(compareStrings);
   }
 
   find(string: string) {
@@ -188,34 +206,31 @@ export class Parser {
 
   parse(string: string) {
     let ast: Node | null | undefined = this.ast;
-    string
-      .trim()
-      .split(/\s+/)
-      .forEach((word) => {
-        ast = ast?.find(word);
+    for (const word of string.trim().split(/\s+/)) {
+      ast = ast?.find(word);
 
-        // Remember repeatable node matched to the substring
-        if (ast?.repeatable) {
-          this.repeatableNode = ast;
-        }
+      // Remember repeatable node matched to the substring
+      if (ast?.repeatable) {
+        this.repeatableNode = ast;
+      }
 
-        // If it has no child, use the repeatable node instead
-        if (ast?.children.length === 0) {
-          ast = this.repeatableNode;
-        }
-      });
+      // If it has no child, use the repeatable node instead
+      if (ast?.children.length === 0) {
+        ast = this.repeatableNode;
+      }
+    }
 
     return ast;
   }
 
   keywords(string: string) {
-    let ast: Node | null = this.ast;
+    let ast: Node | null | undefined = this.ast;
     string = string.trim();
     const defaultKeywords = ["apply-groups", "apply-groups-except"];
 
     // Hack for "groups" statement
     if (string) {
-      if (string.match(/^groups\s*$|\s*apply-groups(-except)?$/)) {
+      if (/^groups\s*$|\s*apply-groups(-except)?$/.test(string)) {
         return ["word"];
       }
       string = string.replace(/apply-groups(-except)?\s+\S+$/, "");
@@ -230,11 +245,10 @@ export class Parser {
       ast = this.parse(string);
     }
 
-    const keywords =
-      ast
-        ?.keywords()
-        .map((k) => (k === "arg" ? "word" : k)) // replace "arg" with "word"
-        .concat(defaultKeywords) || [];
+    const keywords = ast
+      ? // replace "arg" with "word"
+        [...ast.keywords().map((k) => (k === "arg" ? "word" : k)), ...defaultKeywords]
+      : [];
 
     return [...new Set(keywords)]; // uniq
   }

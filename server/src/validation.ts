@@ -1,8 +1,9 @@
-import { Diagnostic, DiagnosticSeverity, TextDocument } from "vscode-languageserver";
+import type { Diagnostic, TextDocument } from "vscode-languageserver";
+import { DiagnosticSeverity } from "vscode-languageserver";
 
 import { isIpPrefix } from "./ip";
 import { prefixPattern } from "./parser";
-import { Session } from "./session";
+import type { Session } from "./session";
 
 const maxNumberOfProblems = 1000; // Just a guard
 
@@ -16,7 +17,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
   while ((m = pattern.exec(text)) && problems < maxNumberOfProblems) {
     // Validate with AST based syntax
     const invalidPosition = validateLine(session, m[2]);
-    if (typeof invalidPosition !== "undefined") {
+    if (invalidPosition !== undefined) {
       problems++;
 
       diagnostics.push(
@@ -69,15 +70,13 @@ export async function validateTextDocument(session: Session, textDocument: TextD
         (m) => {
           const zone = m[5] === "source" ? m[3] : m[4];
           const addressBooks = session.zoneAddressBooks.get(textDocument.uri, m.groups!.ls || "global", zone);
-          return [...addressBooks]
-            .map((a) => [`address:global:${a}`, `address-set:global:${a}`])
-            .flat()
-            .concat([
-              "address:global:global",
-              `address:${zone}:global`,
-              "address-set:global:global",
-              `address-set:${zone}:global`,
-            ]);
+          return [
+            ...[...addressBooks].flatMap((a) => [`address:global:${a}`, `address-set:global:${a}`]),
+            "address:global:global",
+            `address:${zone}:global`,
+            "address-set:global:global",
+            `address-set:${zone}:global`,
+          ];
         },
         "from-zone\\s+(\\S+)\\s+to-zone\\s+(\\S+)\\s+.*\\s+match\\s+(source|destination)-address",
         ["any", "any-ipv4", "any-ipv6"],
@@ -92,7 +91,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     >;
 
     // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
-    rules.forEach(([symbolType, pattern, allowList, denyList]) => {
+    for (const [symbolType, pattern, allowList, denyList] of rules) {
       const invalidRange = validateReference(
         session,
         match[2],
@@ -102,20 +101,22 @@ export async function validateTextDocument(session: Session, textDocument: TextD
         allowList,
         denyList,
       );
-      if (typeof invalidRange !== "undefined") {
-        problems++;
-
-        diagnostics.push(
-          createDiagnostic(
-            session,
-            textDocument,
-            match.index + match[1].length + invalidRange[0],
-            match.index + match[1].length + invalidRange[1],
-            `"${match[2].slice(...invalidRange)}" is not defined`,
-          ),
-        );
+      if (invalidRange === undefined) {
+        continue;
       }
-    });
+
+      problems++;
+
+      diagnostics.push(
+        createDiagnostic(
+          session,
+          textDocument,
+          match.index + match[1].length + invalidRange[0],
+          match.index + match[1].length + invalidRange[1],
+          `"${match[2].slice(...invalidRange)}" is not defined`,
+        ),
+      );
+    }
   }
 
   return diagnostics;
@@ -128,7 +129,7 @@ function createDiagnostic(session: Session, textDocument: TextDocument, start: n
       start: textDocument.positionAt(start),
       end: textDocument.positionAt(end),
     },
-    message: message,
+    message,
   };
 }
 
@@ -160,7 +161,7 @@ function validateLine(session: Session, line: string): number | undefined {
   }
 
   const shorter = validateLine(session, m[1]);
-  return typeof shorter === "undefined" ? m[1].length + 1 : shorter;
+  return shorter === undefined ? m[1].length + 1 : shorter;
 }
 
 /**
@@ -229,7 +230,7 @@ function squashQuotedSpaces(string: string) {
 
   while ((match = pattern.exec(string))) {
     buffer += string.slice(cursor, match.index);
-    buffer += match[0].replace(/ /g, "_");
+    buffer += match[0].replaceAll(" ", "_");
     cursor += match.index + match[0].length;
   }
   buffer += string.slice(cursor);

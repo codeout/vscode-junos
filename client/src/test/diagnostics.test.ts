@@ -1,4 +1,5 @@
-import * as assert from "assert";
+import * as assert from "node:assert";
+
 import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
@@ -117,22 +118,20 @@ suite("Should get diagnostics", () => {
           [95, 99, 110, "bar-address"],
           [97, 99, 110, "baz-address"],
         ] as Array<[number, number, number, string]>
-      )
-        .map(([line, sChar, eChar, address]) => [
-          {
-            message: `"${address}" is not defined`,
-            range: toRange(line, sChar, eChar),
-            severity: vscode.DiagnosticSeverity.Error,
-            source: "ex",
-          },
-          {
-            message: `"${address}-set" is not defined`,
-            range: toRange(line + 1, sChar, eChar + 4),
-            severity: vscode.DiagnosticSeverity.Error,
-            source: "ex",
-          },
-        ])
-        .flat(),
+      ).flatMap(([line, sChar, eChar, address]) => [
+        {
+          message: `"${address}" is not defined`,
+          range: toRange(line, sChar, eChar),
+          severity: vscode.DiagnosticSeverity.Error,
+          source: "ex",
+        },
+        {
+          message: `"${address}-set" is not defined`,
+          range: toRange(line + 1, sChar, eChar + 4),
+          severity: vscode.DiagnosticSeverity.Error,
+          source: "ex",
+        },
+      ]),
 
       // zone-specific address books
       ...(
@@ -144,22 +143,20 @@ suite("Should get diagnostics", () => {
           [125, 102, 113, "bar-address"],
           [127, 102, 113, "baz-address"],
         ] as Array<[number, number, number, string]>
-      )
-        .map(([line, sChar, eChar, address]) => [
-          {
-            message: `"${address}" is not defined`,
-            range: toRange(line, sChar, eChar),
-            severity: vscode.DiagnosticSeverity.Error,
-            source: "ex",
-          },
-          {
-            message: `"${address}-set" is not defined`,
-            range: toRange(line + 1, sChar, eChar + 4),
-            severity: vscode.DiagnosticSeverity.Error,
-            source: "ex",
-          },
-        ])
-        .flat(),
+      ).flatMap(([line, sChar, eChar, address]) => [
+        {
+          message: `"${address}" is not defined`,
+          range: toRange(line, sChar, eChar),
+          severity: vscode.DiagnosticSeverity.Error,
+          source: "ex",
+        },
+        {
+          message: `"${address}-set" is not defined`,
+          range: toRange(line + 1, sChar, eChar + 4),
+          severity: vscode.DiagnosticSeverity.Error,
+          source: "ex",
+        },
+      ]),
     ]);
   });
 });
@@ -177,10 +174,10 @@ async function testDiagnostics(docUri: vscode.Uri, expectedDiagnostics: vscode.D
 
   assert.equal(actualDiagnostics.length, expectedDiagnostics.length);
 
-  expectedDiagnostics.forEach((expectedDiagnostic, i) => {
+  for (const [i, expectedDiagnostic] of expectedDiagnostics.entries()) {
     const actualDiagnostic = actualDiagnostics[i];
     assert.equal(actualDiagnostic.message, expectedDiagnostic.message);
     assert.deepEqual(actualDiagnostic.range, expectedDiagnostic.range);
     assert.equal(actualDiagnostic.severity, expectedDiagnostic.severity);
-  });
+  }
 }

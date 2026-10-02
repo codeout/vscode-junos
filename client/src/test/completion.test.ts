@@ -1,4 +1,5 @@
-import * as assert from "assert";
+import * as assert from "node:assert";
+
 import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
@@ -73,7 +74,7 @@ suite("Should do completion", () => {
 
   test("Completes root config section", async () => {
     await testCompletion(docUri, new vscode.Position(2, 4), {
-      items: [...rootItems, { label: "groups", kind: vscode.CompletionItemKind.Text }].sort((a, b) =>
+      items: [...rootItems, { label: "groups", kind: vscode.CompletionItemKind.Text }].toSorted((a, b) =>
         a.label.localeCompare(b.label),
       ),
     });
@@ -438,7 +439,7 @@ suite("Should do completion", () => {
 
     test("after name", async () => {
       await testCompletion(docUri, new vscode.Position(33, 15), {
-        items: [...rootItems, { label: "when", kind: vscode.CompletionItemKind.Text }].sort((a, b) =>
+        items: [...rootItems, { label: "when", kind: vscode.CompletionItemKind.Text }].toSorted((a, b) =>
           a.label.localeCompare(b.label),
         ),
       });
@@ -472,9 +473,9 @@ async function testCompletion(
 
   // assert.deepEqual(actualCompletionList.items, expectedCompletionList.items);
   assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
-  expectedCompletionList.items.forEach((expectedItem, i) => {
+  for (const [i, expectedItem] of expectedCompletionList.items.entries()) {
     const actualItem = actualCompletionList.items[i];
     assert.equal(actualItem.label, expectedItem.label);
     assert.equal(actualItem.kind, expectedItem.kind);
-  });
+  }
 }

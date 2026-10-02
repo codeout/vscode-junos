@@ -1,23 +1,23 @@
 {
-	"name": "junos-lsp-client",
-	"description": "VSCode part of a language server",
-	"author": "Shintaro Kojima",
-	"license": "MIT",
-	"version": "0.5.2",
-	"publisher": "vscode",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/codeout/vscode-junos"
-	},
-	"engines": {
-		"vscode": "^1.75.0"
-	},
-	"dependencies": {
-		"glob": "^11.0.3",
-		"vscode-languageclient": "^9.0.1"
-	},
-	"devDependencies": {
-		"@types/vscode": "^1.104.0",
-		"@vscode/test-electron": "^2.5.2"
-	}
+  "name": "junos-lsp-client",
+  "description": "VSCode part of a language server",
+  "author": "Shintaro Kojima",
+  "license": "MIT",
+  "version": "0.5.2",
+  "publisher": "vscode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codeout/vscode-junos"
+  },
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "dependencies": {
+    "glob": "^13.0.6",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.138.0",
+    "@vscode/test-electron": "^3.1.0"
+  }
 }

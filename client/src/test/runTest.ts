@@ -1,22 +1,24 @@
-import {runTests} from "@vscode/test-electron";
-import * as path from "path";
+import * as path from "node:path";
+
+import { runTests } from "@vscode/test-electron";
 
 async function main() {
-    try {
-        // The folder containing the Extension Manifest package.json
-        // Passed to `--extensionDevelopmentPath`
-        const extensionDevelopmentPath = path.resolve(__dirname, "../../../");
+  try {
+    // The folder containing the Extension Manifest package.json
+    // Passed to `--extensionDevelopmentPath`
+    const extensionDevelopmentPath = path.resolve(__dirname, "../../../");
 
-        // The path to test runner
-        // Passed to --extensionTestsPath
-        const extensionTestsPath = path.resolve(__dirname, "./index");
+    // The path to test runner
+    // Passed to --extensionTestsPath
+    const extensionTestsPath = path.resolve(__dirname, "./index");
 
-        // Download VS Code, unzip it and run the integration test
-        await runTests({extensionDevelopmentPath, extensionTestsPath});
-    } catch {
-        console.error("Failed to run tests");
-        process.exit(1);
-    }
+    // Download VS Code, unzip it and run the integration test
+    await runTests({ extensionDevelopmentPath, extensionTestsPath });
+  } catch {
+    console.error("Failed to run tests");
+    process.exitCode = 1;
+  }
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await -- the client compiles to CommonJS (tsconfig module: commonjs)
 main();
