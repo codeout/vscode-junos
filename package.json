@@ -25,7 +25,7 @@
     "onLanguage:junos"
   ],
   "icon": "docs/images/logo.png",
-  "main": "./client/out/extension",
+  "main": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
@@ -98,22 +98,27 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -b",
-    "watch": "tsc -b -w",
+    "vscode:prepublish": "npm run package",
+    "package": "npm run type-check && node esbuild.mjs --production",
+    "compile": "npm run type-check && node esbuild.mjs",
+    "compile:tests": "tsc -b client",
+    "watch": "node esbuild.mjs --watch & tsc -b -w --noEmit & wait",
+    "watch:esbuild": "node esbuild.mjs --watch",
+    "watch:tsc": "tsc -b -w --noEmit",
     "lint": "npx eslint .",
     "type-check": "tsc --pretty --noEmit --project server/tsconfig.json && tsc --pretty --noEmit --project client/tsconfig.json",
     "check": "npm run type-check && npm run lint",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "update": "npm update && cd client && npm update && cd ../server && npm update && cd ..",
     "ncu": "ncu -u && cd client && ncu -u && cd ../server && ncu -u && cd ..",
-    "test": "sh ./scripts/e2e.sh",
-    "clean": "rm -rf node_modules */node_modules */out"
+    "test": "npm run compile:tests && sh ./scripts/e2e.sh",
+    "clean": "rm -rf dist node_modules */node_modules */out"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.20.4",
+    "esbuild": "^0.28.2",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",

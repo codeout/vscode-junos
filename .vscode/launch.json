@@ -12,14 +12,8 @@
         "${workspaceRoot}/junos.conf",
         "${workspaceRoot}/client/testFixture/junos.conf"
       ],
-      "outFiles": [
-        "${workspaceRoot}/client/out/**/*.js",
-        "${workspaceRoot}/server/out/**/*.js"
-      ],
-      "preLaunchTask": {
-        "type": "npm",
-        "script": "watch"
-      }
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"],
+      "preLaunchTask": "watch"
     },
     {
       "name": "Language Server E2E Test",
@@ -31,9 +25,7 @@
         "--extensionTestsPath=${workspaceRoot}/client/out/test/index",
         "${workspaceRoot}/client/testFixture"
       ],
-      "outFiles": [
-        "${workspaceRoot}/client/out/test/**/*.js"
-      ]
+      "outFiles": ["${workspaceRoot}/client/out/test/**/*.js"]
     }
   ]
 }
