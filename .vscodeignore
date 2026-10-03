@@ -1,32 +1,31 @@
 .vscode/**
+node_modules/**
+client/**
+server/**
+scripts/**
 **/*.ts
 **/*.map
 .gitignore
 **/tsconfig.json
 **/tsconfig.base.json
-**/tsconfig.tsbuildinfo
 contributing.md
 .travis.yml
-client/node_modules/**
-!client/node_modules/vscode-jsonrpc/**
-!client/node_modules/vscode-languageclient/**
-!client/node_modules/vscode-languageserver-protocol/**
-!client/node_modules/vscode-languageserver-types/**
-!client/node_modules/{minimatch,brace-expansion,concat-map,balanced-match}/**
-!client/node_modules/{semver,lru-cache,yallist}/**
 
 # docs
 docs/images/
 !docs/images/logo.png
 
 # development
-commitlint.config.js
-eslint.config.mjs
+**/tsconfig.tsbuildinfo
+*.conf
+*.js
 .gitmodules
 .idea/**
 .ignore
+.ncurc.mjs
 .pre-commit-config.yaml
-*.js
-*.conf
+commitlint.config.js
+esbuild.mjs
+eslint.config.mjs
 others/**
 pkgs/**
