@@ -231,31 +231,12 @@
     "quote": {
       "patterns": [
         {
-          "include": "#single_quote"
-        },
-        {
           "include": "#double_quote"
         },
         {
           "include": "#description"
         }
       ]
-    },
-    "single_quote": {
-      "comment": "Single quoted string",
-      "begin": "'",
-      "end": "'",
-      "beginCaptures": {
-        "0": {
-          "name": "punctuation.definition.string.begin.junos"
-        }
-      },
-      "endCaptures": {
-        "0": {
-          "name": "punctuation.definition.string.end.junos"
-        }
-      },
-      "name": "string.quoted.single.junos"
     },
     "double_quote": {
       "comment": "Double quoted string",
@@ -271,11 +252,18 @@
           "name": "punctuation.definition.string.end.junos"
         }
       },
-      "name": "string.quoted.double.junos"
+      "name": "string.quoted.double.junos",
+      "patterns": [
+        {
+          "comment": "Junos escapes \" and newline inside quotes",
+          "match": "\\\\.",
+          "name": "constant.character.escape.junos"
+        }
+      ]
     },
     "description": {
       "comment": "Descriptions should always look like strings, even if no quotations are needed",
-      "match": "(?<=(?:^|\\s)description\\s+)([-\\w<>:\\./\\[\\]']+)",
+      "match": "(?<=(?:^|\\s)description\\s+)([-\\w<>:\\./*,=+]+)",
       "name": "string.quoted.double.junos"
     },
     "value": {
