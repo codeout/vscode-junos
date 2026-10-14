@@ -23,8 +23,11 @@ export function activate(context: ExtensionContext) {
 
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
-    documentSelector: [{ scheme: "file", language: "junos" }],
+    // Saved files and unsaved (untitled) editors in Junos mode
+    documentSelector: [
+      { scheme: "file", language: "junos" },
+      { scheme: "untitled", language: "junos" },
+    ],
     synchronize: {
       // Notify the server about file changes to '.clientrc files contained in the workspace
       fileEvents: workspace.createFileSystemWatcher("**/.clientrc"),

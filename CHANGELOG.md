@@ -9,6 +9,7 @@
 * Go to definition for an element of a bracket list like `import [ a b ]`
 * Go to definition, validation and completion for policies in `vrf-import`, `vrf-export` and other `*-import` / `*-export` statements, and for communities in `aggregate-label`, `l2circuit`, `l2vpn` and `vpls`
 * Indent with 4 spaces and indentation rules for `{` / `}`
+* Unsaved (untitled) editors in Junos mode get completion, validation and go to definition
 
 ### Fixed
 
