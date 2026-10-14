@@ -16,6 +16,15 @@ suite("Should handle curly-brace format", () => {
       ["PS-MISSING", '"PS-MISSING" is not defined'],
       ["ge-0/0/9.0", '"ge-0/0/9.0" is not defined'],
       ["PL-MISSING", '"PL-MISSING" is not defined'],
+      [
+        "^target:65000:.*$",
+        '"^target:65000:.*$" is a regular expression on an extended community, which vrf-import policies do not support (used by vrf-import PS-RE)',
+      ],
+      [
+        "PS-RE",
+        'Policy "PS-RE" matches extended communities by regular expression (RT-RE), which vrf-import does not support',
+        "last",
+      ],
       ["addr-missing", '"addr-missing" is not defined'],
       ["}\n", 'Unexpected "}"', "last"],
     ].map(([needle, message, which]) => ({ range: rangeOf(needle, which === "last"), message }));

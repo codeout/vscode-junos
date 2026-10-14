@@ -6,6 +6,7 @@ import { findInvalidToken, tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
 import { collectReferences, isDefined } from "./references";
 import type { Session } from "./session";
+import { vrfImportProblems } from "./vrf-import";
 
 const maxNumberOfProblems = 1000; // Just a guard
 
@@ -74,6 +75,10 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     if (!ref.allowed && (ref.denied || !isDefined(session, textDocument.uri, ref))) {
       reportSource(ref.start, ref.end, `"${ref.name}" is not defined`);
     }
+  }
+
+  for (const problem of vrfImportProblems(session, textDocument)) {
+    reportSource(problem.start, problem.end, problem.message);
   }
 
   return diagnostics.toSorted(
