@@ -418,7 +418,13 @@ function insertDefinitions(
   const text = view.text;
 
   // FIXME: We should have implemented with named captures, but avoid them due to performance consideration
-  const fullPattern = new RegExp(`(${prefixPattern.source}(?:\\s+logical-systems\\s+(\\S+))?\\s+${pattern}`, "gm");
+  // A match must not run into the next line: "set routing-instances" (from "routing-instances {") would
+  // otherwise take the "set" of the following line as an instance name
+  const source = `(${prefixPattern.source}(?:\\s+logical-systems\\s+(\\S+))?\\s+${pattern}`.replaceAll(
+    "\\s",
+    "[^\\S\\n]",
+  );
+  const fullPattern = new RegExp(source, "gm");
   let m: RegExpExecArray | null;
 
   while ((m = fullPattern.exec(text))) {
