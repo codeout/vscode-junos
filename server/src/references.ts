@@ -151,6 +151,8 @@ export function collectReferences(session: Session, doc: TextDocument): Referenc
  * References of `rule` in a "set" line (without the command); offsets relative to `line`.
  */
 function matchRule(line: string, rule: Rule): Reference[] {
+  // Spaces inside quoted strings do not separate words (same length, so offsets stay valid)
+  line = line.replaceAll(/"(?:[^"\\]|\\.)*"/g, (q) => q.replaceAll(/\s/g, "_"));
   const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+))?.*\\s${rule.pattern}\\s+)(?<arg>\\S+)`);
   if (!m) {
     return [];
@@ -177,7 +179,15 @@ function matchRule(line: string, rule: Rule): Reference[] {
   }
 
   const out: Reference[] = [];
-  for (const { arg, start } of args) {
+  for (const { arg: word, start: wordStart } of args) {
+    // a quoted name refers to the name without quotes
+    const quoted = word.length > 1 && word.startsWith('"') && word.endsWith('"');
+    const arg = quoted ? word.slice(1, -1) : word;
+    // dynamic-profile variables ($junos-interface-name, ...) are filled in at runtime
+    if (arg.startsWith("$")) {
+      continue;
+    }
+    const start = wordStart + (quoted ? 1 : 0);
     const symbol = rule.symbol ? rule.symbol(arg) : { name: arg, offset: 0 };
     if (!symbol) {
       continue;

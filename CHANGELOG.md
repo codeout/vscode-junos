@@ -19,6 +19,7 @@
 * Quoted strings containing `\"` broke validation and highlighting
 * `description` values with `* , = +` were partly highlighted, and `'` started a string
 * Highlight statement prefixes such as `inactive:`, `protect:` and `atomic:`
+* Words inside quoted strings and dynamic-profile variables (`$junos-...`) were taken for references
 * Quoted keywords like `family "inet6"` were reported as invalid
 
 
