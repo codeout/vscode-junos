@@ -12,14 +12,16 @@
     ["{", "}"],
     ["[", "]"],
     ["(", ")"],
-    ["\"", "\""],
-    ["'", "'"]
+    { "open": "\"", "close": "\"", "notIn": ["string", "comment"] }
   ],
   "surroundingPairs": [
     ["{", "}"],
     ["[", "]"],
     ["(", ")"],
-    ["\"", "\""],
-    ["'", "'"]
-  ]
+    ["\"", "\""]
+  ],
+  "indentationRules": {
+    "increaseIndentPattern": "^[^#\"]*\\{\\s*(?:#.*|/\\*.*\\*/\\s*)?$",
+    "decreaseIndentPattern": "^\\s*\\}"
+  }
 }

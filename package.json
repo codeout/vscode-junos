@@ -89,6 +89,12 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "configurationDefaults": {
+      "[junos]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+      }
+    },
     "grammars": [
       {
         "language": "junos",
