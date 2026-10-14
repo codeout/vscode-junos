@@ -14,7 +14,7 @@ const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
 export default defineConfig(
   includeIgnoreFile(gitignorePath, "Imported .gitignore patterns"),
   {
-    ignores: ["server/src/junos.js"],
+    ignores: ["server/src/junos.js", "server/src/junos.local.js"],
   },
 
   {

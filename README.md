@@ -30,6 +30,21 @@ Completion, validation and go to definition work for both `set` commands and the
   * `routing-instance`, also as part of a routing table (`next-table VRF1.inet.0`, `import-rib`, `export-rib`)
 
 
+## Junos schema
+
+The extension's knowledge of Junos statements comes from `server/src/junos.js`, built by
+[junoser](https://github.com/codeout/junoser) from Juniper's configuration XSD.
+
+To build the extension with another schema in the same format, e.g. one built from the compiled DDL files
+of Junos images with [junos-ddl-schema](../junos-ddl-schema), put it at `server/src/junos.local.js` (git
+ignores it) or point `JUNOS_SCHEMA` at it, then run `npm run compile` or `npm run package`:
+
+```
+cp ../junos-ddl-schema/build/junos.js server/src/junos.local.js
+npm run compile    # prints "using Junos schema .../junos.local.js"
+```
+
+
 ## Screen Shot
 
 ![Screen Shot](https://raw.githubusercontent.com/codeout/vscode-junos/refs/heads/main/docs/images/screen_shot01.gif)

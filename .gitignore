@@ -4,6 +4,9 @@ node_modules
 client/server
 .vscode-test
 
+# a local Junos schema (see README)
+server/src/junos.local.js
+
 # typescript
 *.tsbuildinfo
 

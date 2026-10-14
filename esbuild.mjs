@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import * as path from "node:path";
+
 import * as esbuild from "esbuild";
 
 const production = process.argv.includes("--production");
@@ -26,6 +29,33 @@ const esbuildProblemMatcherPlugin = {
   },
 };
 
+// The Junos schema: server/src/junos.js (built by junoser from Juniper's XSD, checked in), unless a local schema
+// is present, e.g. one built from Junos DDL files with junos-ddl-schema. JUNOS_SCHEMA=path overrides both.
+const localSchema = path.resolve("server/src/junos.local.js");
+let schema;
+if (process.env.JUNOS_SCHEMA) {
+  schema = path.resolve(process.env.JUNOS_SCHEMA);
+} else if (existsSync(localSchema)) {
+  schema = localSchema;
+}
+
+/**
+ * @type {import('esbuild').Plugin}
+ */
+const junosSchemaPlugin = {
+  name: "junos-schema",
+
+  setup(build) {
+    if (!schema) {
+      return;
+    }
+    console.log(`using Junos schema ${schema}`);
+    build.onResolve({ filter: /\/junos$/ }, (args) =>
+      args.importer.endsWith(path.join("server", "src", "parser.ts")) ? { path: schema } : undefined,
+    );
+  },
+};
+
 // The client and the server are separate node entry points, so each one is bundled on its own.
 const bundles = [
   { entryPoints: ["client/src/extension.ts"], outfile: "dist/extension.js" },
@@ -45,7 +75,7 @@ const contexts = await Promise.all(
       external: ["vscode"],
       logLevel: "warning",
       // add to the end of plugins array
-      plugins: [esbuildProblemMatcherPlugin],
+      plugins: [...(bundle.outfile.endsWith("server.js") ? [junosSchemaPlugin] : []), esbuildProblemMatcherPlugin],
     }),
   ),
 );
