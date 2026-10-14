@@ -3,6 +3,7 @@ import { CompletionItemKind } from "vscode-languageserver";
 
 import type { Token } from "./config";
 import { contextAt, pathWord, tokenizeLine } from "./config";
+import { communityReference, policyStatementReference } from "./definition";
 import { prefixPattern } from "./parser";
 import type { Session } from "./session";
 
@@ -40,8 +41,8 @@ export function completion(session: Session) {
     const rules = [
       ["interface", /\s+interface\s+$/],
       ["prefix-list", /\s+from\s+(?:source-|destination-)?prefix-list\s+$/],
-      ["policy-statement", /\s+(?:import|export)\s+$/],
-      ["community", /\s+(?:from\s+community|then\s+community\s+(?:add|delete|set))\s+$/],
+      ["policy-statement", new RegExp(`\\s+${policyStatementReference}\\s+$`)],
+      ["community", new RegExp(`\\s+${communityReference}\\s+$`)],
       ["as-path", /\s+from\s+as-path\s+$/],
       ["as-path-group", /\s+from\s+as-path-group\s+$/],
       ["firewall-filter", /\s+filter\s+(?:input|output|input-list|output-list)\s+$/],

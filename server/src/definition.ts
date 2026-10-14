@@ -79,6 +79,23 @@ export class DefinitionStore {
   }
 }
 
+/**
+ * Statements whose argument is a policy-statement name.
+ * Shared by go to definition, validation and completion.
+ * "vrf-target import target:..." takes a community value, not a policy.
+ */
+export const policyStatementReference =
+  "(?<!vrf-target\\s+)(?:(?:(?:vrf|instance|network-summary|inter-area-prefix|bootstrap)-)?(?:import|export)" +
+  "|(?:keep|inet|inet6|iso|inetcolor|inet6color)-import)";
+
+/**
+ * Statements whose argument is a policy-options community name.
+ * "route-attributes community" in EVPN ip-prefix-routes is not a reference.
+ */
+export const communityReference =
+  "(?:from\\s+community|then\\s+community\\s+(?:add|delete|set)|aggregate-label\\s+community" +
+  "|(?<=protocols\\s+)(?:l2circuit|l2vpn|vpls)(?:\\s+.*)?\\s+(?<!route-attributes\\s+)community)";
+
 export type PointedSymbol = {
   logicalSystem: string;
   symbol?: string;
@@ -207,16 +224,12 @@ function getPolicyStatementDefinition(
   line: string,
   textDocumentPosition: TextDocumentPositionParams,
 ) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "(?:import|export)");
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, policyStatementReference);
   return session.definitions.get(textDocumentPosition.textDocument.uri, "policy-statement", symbol);
 }
 
 function getCommunityDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(
-    line,
-    textDocumentPosition.position.character,
-    "(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))",
-  );
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, communityReference);
   return session.definitions.get(textDocumentPosition.textDocument.uri, "community", symbol);
 }
 

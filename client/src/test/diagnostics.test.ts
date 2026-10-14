@@ -165,6 +165,21 @@ suite("Should get diagnostics", () => {
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
+
+      // vrf-import / vrf-export and community references
+      ...(
+        [
+          ["foo-statement_", 141, 57, 71],
+          ["foo-statement_", 142, 36, 50],
+          ["foo-community_", 145, 73, 87],
+          ["foo-community_", 147, 73, 87],
+        ] as const
+      ).map(([symbol, line, sChar, eChar]) => ({
+        message: `"${symbol}" is not defined`,
+        range: toRange(line, sChar, eChar),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      })),
     ]);
   });
 });

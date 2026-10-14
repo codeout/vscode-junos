@@ -241,6 +241,26 @@ suite("Should do completion", () => {
     });
   });
 
+  test("Completes defined policy-statement in vrf-import", async () => {
+    await testCompletion(docUri, new vscode.Position(186, 41), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "foo-statement", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
+  test("Completes defined community in l2circuit", async () => {
+    await testCompletion(docUri, new vscode.Position(187, 73), {
+      items: [
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "foo-community", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
   test("Completes defined as-path", async () => {
     await testCompletion(docUri, new vscode.Position(7, 63), {
       items: [

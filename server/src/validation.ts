@@ -2,6 +2,7 @@ import type { Diagnostic, TextDocument } from "vscode-languageserver";
 import { DiagnosticSeverity } from "vscode-languageserver";
 
 import { findInvalidToken, tokenizeLine } from "./config";
+import { communityReference, policyStatementReference } from "./definition";
 import { isIpPrefix } from "./ip";
 import { prefixPattern } from "./parser";
 import type { Session } from "./session";
@@ -69,8 +70,8 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     const rules = [
       ["interface", "interface", ["all"], ["interface-range"]],
       ["prefix-list", "from\\s+(?:source-|destination-)?prefix-list"],
-      ["policy-statement", "(?:import|export)"],
-      ["community", "(?:from\\s+community|then\\s+community\\s+(?:add|delete|set))"],
+      ["policy-statement", policyStatementReference],
+      ["community", communityReference],
       ["as-path", "from\\s+as-path"],
       ["as-path-group", "from\\s+as-path-group"],
       ["firewall-filter", "filter\\s+(?:input|output|input-list|output-list)"],
