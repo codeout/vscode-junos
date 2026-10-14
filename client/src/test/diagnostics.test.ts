@@ -157,6 +157,14 @@ suite("Should get diagnostics", () => {
           source: "ex",
         },
       ]),
+
+      // bracket lists
+      {
+        message: '"bogus ]" is invalid',
+        range: toRange(133, 41, 48),
+        severity: vscode.DiagnosticSeverity.Error,
+        source: "ex",
+      },
     ]);
   });
 });

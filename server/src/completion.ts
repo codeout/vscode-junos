@@ -1,6 +1,8 @@
 import type { CompletionItem, TextDocumentPositionParams } from "vscode-languageserver";
 import { CompletionItemKind } from "vscode-languageserver";
 
+import type { Token } from "./config";
+import { pathWord, tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
 import type { Session } from "./session";
 
@@ -18,6 +20,9 @@ export function completion(session: Session) {
     }
 
     line = line.replace(prefixPattern, "");
+    if (line.includes("[")) {
+      line = toLine(tokenizeLine(line));
+    }
     const keywords = session.parser.keywords(line);
 
     let m = line.match(/\s*logical-systems\s+(\S+)/);
@@ -98,6 +103,12 @@ export function completion(session: Session) {
       data: `${line} ${keyword}`,
     }));
   };
+}
+
+// Words joined like a "set" line after the command, with a trailing space for the reference rules
+function toLine(tokens: Token[]) {
+  const words = tokens.filter((t) => !t.unclosed).map((t) => pathWord(t));
+  return ` ${words.join(" ")} `;
 }
 
 // replace "word" in `keywords` array with all definitions keys

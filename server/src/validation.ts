@@ -1,6 +1,7 @@
 import type { Diagnostic, TextDocument } from "vscode-languageserver";
 import { DiagnosticSeverity } from "vscode-languageserver";
 
+import { findInvalidToken, tokenizeLine } from "./config";
 import { isIpPrefix } from "./ip";
 import { prefixPattern } from "./parser";
 import type { Session } from "./session";
@@ -141,27 +142,7 @@ function createDiagnostic(session: Session, textDocument: TextDocument, start: n
  * @return number or undefined
  */
 function validateLine(session: Session, line: string): number | undefined {
-  const m = squashQuotedSpaces(line).match(/(?:(.*)\s+)?(\S+)/);
-  if (!m) {
-    return;
-  }
-
-  // There is an invalid keyword in the beginning like "set foo"
-  if (!m[1]) {
-    return 0;
-  }
-
-  const keywords = session.parser.keywords(m[1]);
-
-  if (
-    keywords.includes("word") || // 'word' means wildcard
-    keywords.includes(m[2])
-  ) {
-    return;
-  }
-
-  const shorter = validateLine(session, m[1]);
-  return shorter === undefined ? m[1].length + 1 : shorter;
+  return findInvalidToken(session.parser, tokenizeLine(line))?.start;
 }
 
 /**
@@ -191,49 +172,35 @@ function validateReference(
   }
 
   const list = typeof allowList === "function" ? allowList(m) : allowList;
-  if (list?.includes(m.groups!.arg)) {
-    return;
-  }
-
-  const stmtLength = (m.index || 0) + m.groups!.stmt.length;
-  const range = [stmtLength, stmtLength + m.groups!.arg.length];
-
-  if (denyList?.includes(m.groups!.arg)) {
-    return range;
-  }
-
   let types = typeof symbolType === "function" ? symbolType(m) : symbolType;
   if (!Array.isArray(types)) {
     types = [types];
   }
+  const definitions = types.map((type) => session.definitions.getDefinitions(uri, m.groups!.ls || "global", type));
 
-  for (const type of types) {
-    if (m.groups!.arg in session.definitions.getDefinitions(uri, m.groups!.ls || "global", type)) {
-      return;
+  const stmtLength = (m.index || 0) + m.groups!.stmt.length;
+  let args = [{ arg: m.groups!.arg, start: stmtLength }];
+
+  // A bracket list "[ a b ]" refers to each element
+  if (m.groups!.arg === "[") {
+    args = [];
+    const elements = line.slice(stmtLength + 1).matchAll(/\S+/g);
+    for (const e of elements) {
+      if (e[0] === "]") {
+        break;
+      }
+      args.push({ arg: e[0], start: stmtLength + 1 + e.index });
     }
   }
 
-  return range;
-}
+  for (const { arg, start } of args) {
+    if (list?.includes(arg)) {
+      continue;
+    }
 
-/**
- * Replace quoted ' ' with '_' for easy tokenization
- *
- * @param string
- * @return string
- */
-function squashQuotedSpaces(string: string) {
-  const pattern = /"[^"]*"/g;
-  let match: RegExpExecArray | null;
-  let cursor = 0;
-  let buffer = "";
-
-  while ((match = pattern.exec(string))) {
-    buffer += string.slice(cursor, match.index);
-    buffer += match[0].replaceAll(" ", "_");
-    cursor += match.index + match[0].length;
+    const range = [start, start + arg.length];
+    if (denyList?.includes(arg) || definitions.every((d) => !(arg in d))) {
+      return range;
+    }
   }
-  buffer += string.slice(cursor);
-
-  return buffer;
 }
