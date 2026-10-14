@@ -5,6 +5,7 @@ import type { Token } from "./config";
 import { contextAt, pathWord, tokenizeLine } from "./config";
 import { communityReference, policyStatementReference } from "./definition";
 import { prefixPattern } from "./parser";
+import { routingInstanceReference, routingTableReference } from "./references";
 import type { Session } from "./session";
 
 export function completion(session: Session) {
@@ -48,6 +49,14 @@ export function completion(session: Session) {
       ["firewall-filter", /\s+filter\s+(?:input|output|input-list|output-list)\s+$/],
       ["service-nat-pool", /\s+then\s+translated\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)\s+$/],
       ["application", /\s+match\s+application\s+$/, true],
+      ["routing-instance", new RegExp(`\\s+${routingInstanceReference}\\s+$`), true],
+      // a routing table of an instance
+      [
+        "routing-instance",
+        new RegExp(`\\s+${routingTableReference}\\s+$`),
+        true,
+        (name: string) => [`${name}.inet.0`, `${name}.inet6.0`],
+      ],
       [
         (m) => `security-nat-pool:${m[1]}`,
         /\s+security\s+nat\s+(?:source|destination)\s+.*\s+then\s+(source|destination)-nat\s+pool\s+$/,
@@ -84,9 +93,16 @@ export function completion(session: Session) {
         },
         /\s+policies\s+from-zone\s+(\S+)\s+to-zone\s+(\S+)\s+.*\s+match\s+(source|destination)-address\s+$/,
       ],
-    ] as Array<[string | ((arg: RegExpMatchArray) => string | string[]), RegExp, boolean]>;
+    ] as Array<
+      [
+        string | ((arg: RegExpMatchArray) => string | string[]),
+        RegExp,
+        boolean,
+        ((name: string) => string[]) | undefined,
+      ]
+    >;
 
-    for (const [symbolType, pattern, keepWord] of rules) {
+    for (const [symbolType, pattern, keepWord, expand] of rules) {
       m = line.match(pattern);
       if (m) {
         let types = typeof symbolType === "function" ? symbolType(m) : symbolType;
@@ -94,13 +110,13 @@ export function completion(session: Session) {
           types = [types];
         }
 
-        addReferences(
-          Object.fromEntries(
-            types.flatMap((type) => Object.entries(session.definitions.getDefinitions(uri, logicalSystem, type))),
+        // a name may be defined under several of the types
+        const names = [
+          ...new Set(
+            types.flatMap((type) => Object.keys(session.definitions.getDefinitions(uri, logicalSystem, type))),
           ),
-          keywords,
-          keepWord,
-        );
+        ];
+        addReferences(expand ? names.flatMap((n) => expand(n)) : names, keywords, keepWord);
 
         break;
       }
@@ -122,8 +138,8 @@ function toLine(tokens: Token[]) {
   return ` ${words.join(" ")} `;
 }
 
-// replace "word" in `keywords` array with all definitions keys
-function addReferences(definitions: object, keywords: string[], keepWord = false) {
+// replace "word" in `keywords` array with the defined names
+function addReferences(names: string[], keywords: string[], keepWord = false) {
   const index = keywords.indexOf("word");
   if (index === -1) {
     return;
@@ -133,7 +149,7 @@ function addReferences(definitions: object, keywords: string[], keepWord = false
     keywords.splice(index, 1);
   }
 
-  keywords.unshift(...Object.keys(definitions));
+  keywords.unshift(...names);
 }
 
 export function completionResolve(session: Session) {

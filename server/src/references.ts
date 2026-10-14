@@ -27,6 +27,8 @@ type Rule = {
   deny?: string[];
   // the referenced name inside the argument, or undefined when the argument refers to nothing
   symbol?: (arg: string) => { name: string; offset: number } | undefined;
+  // the statement also has sub-statements: an argument that is one of its keywords is no reference
+  skipKeywords?: boolean;
 };
 
 /**
@@ -34,6 +36,19 @@ type Rule = {
  * Tables of the master instance ("inet.0", "bgp.l3vpn.0") and internal ones ("__...") refer to nothing.
  */
 export const routingTableReference = "(?:next-table|import-rib|export-rib)";
+
+/**
+ * "routing-instance <name>" (syslog host, ntp server, firewall then, ...). Not after "logical-system <ls>",
+ * where the instance belongs to that logical system, and not the routing-instances hierarchy itself.
+ */
+export const routingInstanceReference = "(?<!logical-system\\s+\\S+\\s+)routing-instance";
+
+// Instances that exist without being configured
+export const builtinRoutingInstances = ["default", "master", "mgmt_junos"];
+
+function routingInstanceName(name: string) {
+  return name.startsWith("__") ? undefined : { name, offset: 0 };
+}
 
 export function routingInstanceOfTable(table: string) {
   const m = table.match(/^(.+)\.[\w-]+\.\d+$/);
@@ -57,6 +72,13 @@ function rules(session: Session, uri: string): Rule[] {
       pattern: "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)",
     },
     { type: "routing-instance", pattern: routingTableReference, symbol: routingInstanceOfTable },
+    {
+      type: "routing-instance",
+      pattern: routingInstanceReference,
+      allow: builtinRoutingInstances,
+      symbol: routingInstanceName,
+      skipKeywords: true,
+    },
     {
       type: "address:global:global",
       pattern: "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
@@ -128,7 +150,7 @@ export function collectReferences(session: Session, doc: TextDocument): Referenc
   while ((m = pattern.exec(view.text))) {
     const lineStart = m.index + m[1].length;
     for (const rule of ruleList) {
-      const matched = matchRule(m[2], rule);
+      const matched = matchRule(session, m[2], rule);
       for (const ref of matched) {
         const start = view.toSourceOffset(lineStart + ref.start);
         const end = view.toSourceOffset(lineStart + ref.end);
@@ -150,14 +172,16 @@ export function collectReferences(session: Session, doc: TextDocument): Referenc
 /**
  * References of `rule` in a "set" line (without the command); offsets relative to `line`.
  */
-function matchRule(line: string, rule: Rule): Reference[] {
+function matchRule(session: Session, line: string, rule: Rule): Reference[] {
   // Spaces inside quoted strings do not separate words (same length, so offsets stay valid)
   line = line.replaceAll(/"(?:[^"\\]|\\.)*"/g, (q) => q.replaceAll(/\s/g, "_"));
   const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+))?.*\\s${rule.pattern}\\s+)(?<arg>\\S+)`);
   if (!m) {
     return [];
   }
-
+  if (rule.skipKeywords && session.parser.keywords(m.groups!.stmt).includes(m.groups!.arg)) {
+    return [];
+  }
   const allowList = typeof rule.allow === "function" ? rule.allow(m) : rule.allow;
   const typeOrTypes = typeof rule.type === "function" ? rule.type(m) : rule.type;
   const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes];

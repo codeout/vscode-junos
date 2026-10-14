@@ -10,6 +10,7 @@ suite("Should handle curly-brace format", () => {
     await activate(docUri);
 
     const expected = [
+      ["VRF-GONE", '"VRF-GONE" is not defined'],
       ["mtuu 9000", '"mtuu 9000" is invalid'],
       ["VRF-MISSING", '"VRF-MISSING" is not defined'],
       ["PS-MISSING", '"PS-MISSING" is not defined'],
@@ -42,6 +43,7 @@ suite("Should handle curly-brace format", () => {
       ["aggregate-label community", "community C1;", "community C1 members", "C1"],
       ["l2circuit community", "community C3;", "community C3 members", "C3"],
       ["routing-instance of a next-table", "next-table VRF1", "    VRF1 {", "VRF1"],
+      ["routing-instance statement", "routing-instance VRF1", "    VRF1 {", "VRF1"],
     ]) {
       test(title, async () => {
         await activate(docUri);
@@ -68,7 +70,7 @@ suite("Should handle curly-brace format", () => {
       ["from a community definition", "community C1 members", "C1", ["community C1;", "community add C1"]],
       ["from a community reference", "community add C1", "C1", ["community C1;", "community add C1"]],
       ["from a policy-statement definition", "policy-statement PS1 {", "PS1", ["import PS1", "export [ PS1"]],
-      ["from a routing-instance definition", "    VRF1 {", "VRF1", ["next-table VRF1"]],
+      ["from a routing-instance definition", "    VRF1 {", "VRF1", ["next-table VRF1", "routing-instance VRF1"]],
     ] as Array<[string, string, string, string[]]>) {
       test(title, async () => {
         await activate(docUri);
@@ -114,6 +116,12 @@ suite("Should handle curly-brace format", () => {
       const labels = await completionLabels(docUri, new vscode.Position(19, 0));
       assert.ok(labels.includes("interfaces"));
       assert.ok(labels.includes("policy-options"));
+    });
+
+    test("Completes routing tables of defined instances", async () => {
+      const labels = await completionLabels(docUri, new vscode.Position(27, 36));
+      assert.ok(labels.includes("VRF7.inet.0"));
+      assert.ok(labels.includes("VRF7.inet6.0"));
     });
 
     test("Completes values in a bracket list", async () => {

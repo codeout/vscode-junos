@@ -27,7 +27,7 @@ Completion, validation and go to definition work for both `set` commands and the
   * `firewall-filter`
   * NAT pool (`source-pool`, `destination-pool`, `dns-alg-pool`, `overload-pool`)
   * address book entries, `application`
-  * routing-instance of a routing table (`next-table VRF1.inet.0`, `import-rib`, `export-rib`)
+  * `routing-instance`, also as part of a routing table (`next-table VRF1.inet.0`, `import-rib`, `export-rib`)
 
 
 ## Screen Shot
