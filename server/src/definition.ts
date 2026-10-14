@@ -2,6 +2,8 @@ import type { Range, TextDocumentPositionParams } from "vscode-languageserver";
 import { Location } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 
+import type { Token } from "./config";
+import { tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
 import type { Session } from "./session";
 
@@ -89,7 +91,15 @@ export function definition(session: Session) {
       return [];
     }
 
-    const line = doc.getText().split("\n")[textDocumentPosition.position.line];
+    const pointed = pointedLine(session, doc, textDocumentPosition);
+    if (!pointed) {
+      return [];
+    }
+    const { line } = pointed;
+    textDocumentPosition = {
+      ...textDocumentPosition,
+      position: { line: textDocumentPosition.position.line, character: pointed.character },
+    };
 
     const definition =
       getInterfaceDefinition(session, line, textDocumentPosition) ||
@@ -111,6 +121,52 @@ export function definition(session: Session) {
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
   };
+}
+
+/**
+ * The cursor's statement as a "set" line, and the cursor position in it.
+ * A curly-brace statement is prefixed with its hierarchy, and a bracket list is replaced with the pointed element.
+ */
+function pointedLine(session: Session, doc: TextDocument, textDocumentPosition: TextDocumentPositionParams) {
+  const { line: lineNumber, character } = textDocumentPosition.position;
+  const text = doc.getText().split("\n")[lineNumber];
+
+  let tokens: Token[];
+  let cursor: number;
+  if (prefixPattern.test(text)) {
+    if (!text.includes("[")) {
+      return { line: text, character };
+    }
+
+    const prefix = text.match(prefixPattern)![0];
+    tokens = tokenizeLine(text.slice(prefix.length), prefix.length);
+    cursor = character;
+  } else {
+    cursor = doc.offsetAt(textDocumentPosition.position);
+    const contains = (t: Token) => t.start <= cursor && cursor <= t.end;
+    const statement = session.analyze(doc).braces.statements.find((s) => s.words.some((t) => contains(t)));
+    if (!statement) {
+      return;
+    }
+    tokens = [...statement.context, ...statement.words];
+  }
+
+  let line = "set";
+  let pointed = -1;
+  for (const token of tokens) {
+    const word = token.group ? token.group.find((g) => g.start <= cursor && cursor <= g.end) || token.group[0] : token;
+    if (!word) {
+      continue;
+    }
+
+    line += " ";
+    if (word.start <= cursor && cursor <= word.end) {
+      pointed = line.length + cursor - word.start;
+    }
+    line += word.text;
+  }
+
+  return { line, character: pointed };
 }
 
 /**

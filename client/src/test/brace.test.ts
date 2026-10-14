@@ -27,6 +27,33 @@ suite("Should handle curly-brace format", () => {
     );
   });
 
+  suite("Go to definition", () => {
+    const docUri = getDocUri("junos-brace.conf");
+
+    for (const [title, reference, definition, symbol] of [
+      ["policy-statement", "import PS1", "policy-statement PS1", "PS1"],
+      ["policy-statement in a bracket list", "export [ PS1", "policy-statement PS1", "PS1"],
+      ["prefix-list", "prefix-list RFC1918;", "prefix-list RFC1918 {", "RFC1918"],
+      ["interface unit", "interface ge-0/0/0.0", "    ge-0/0/0 {", "ge-0/0/0"],
+    ]) {
+      test(title, async () => {
+        await activate(docUri);
+        const text = state.doc!.getText();
+        const position = state.doc!.positionAt(text.indexOf(reference) + reference.lastIndexOf(" ") + 2);
+
+        const locations = await vscode.commands.executeCommand<vscode.Location[]>(
+          "vscode.executeDefinitionProvider",
+          docUri,
+          position,
+        );
+
+        const expected = state.doc!.positionAt(text.indexOf(definition) + definition.indexOf(symbol));
+        assert.equal(locations.length, 1);
+        assert.deepEqual(locations[0].range.start, expected);
+      });
+    }
+  });
+
   suite("Completion", () => {
     const docUri = getDocUri("junos-brace-completion.conf");
 
