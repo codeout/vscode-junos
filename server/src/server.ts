@@ -4,6 +4,7 @@ import { TextDocumentSyncKind } from "vscode-languageserver/node";
 
 import { completion, completionResolve } from "./completion";
 import { definition, updateDefinitions } from "./definition";
+import { hover } from "./hover";
 import { forgetReferences, prepareRename, references, rename } from "./references";
 import { Session } from "./session";
 import { validateTextDocument } from "./validation";
@@ -23,6 +24,7 @@ session.connection.onInitialize(() => {
         workspaceDiagnostics: false,
       },
       definitionProvider: true,
+      hoverProvider: true,
       referencesProvider: true,
       renameProvider: { prepareProvider: true },
     },
@@ -32,6 +34,7 @@ session.connection.onInitialize(() => {
 session.connection.onCompletion(completion(session));
 session.connection.onCompletionResolve(completionResolve(session));
 session.connection.onDefinition(definition(session));
+session.connection.onHover(hover(session));
 session.connection.onReferences(references(session));
 session.connection.onPrepareRename(prepareRename(session));
 session.connection.onRenameRequest(rename(session));

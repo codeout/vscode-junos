@@ -10,6 +10,7 @@ The language server has the following language features:
 * Completion
 * Syntax validation
 * Syntax highlighting
+* Help texts on hover
 
 Completion, validation and go to definition work for both `set` commands and the curly-brace format of `show configuration`.
 

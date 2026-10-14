@@ -111,6 +111,37 @@ suite("Should handle curly-brace format", () => {
     }
   });
 
+  suite("Hover", () => {
+    const docUri = getDocUri("junos-brace.conf");
+
+    const hoverText = async (needle: string, word: string) => {
+      await activate(docUri);
+      const doc = state.doc!;
+      const position = doc.positionAt(doc.getText().indexOf(needle) + needle.indexOf(word) + 1);
+      const hovers = await vscode.commands.executeCommand<vscode.Hover[]>(
+        "vscode.executeHoverProvider",
+        docUri,
+        position,
+      );
+      return hovers
+        .flatMap((h) => h.contents)
+        .map((c) => (typeof c === "string" ? c : c.value))
+        .join("\n");
+    };
+
+    test("shows the help text of a keyword", async () => {
+      assert.match(await hoverText("vrf-import [ PS1", "vrf-import"), /^\*\*vrf-import\*\* — \S/);
+      assert.match(
+        await hoverText("route-distinguisher 65000:1", "route-distinguisher"),
+        /^\*\*route-distinguisher\*\*/,
+      );
+    });
+
+    test("shows nothing in a comment", async () => {
+      assert.equal(await hoverText("/* annotation */", "annotation"), "");
+    });
+  });
+
   suite("Rename", () => {
     const docUri = getDocUri("junos-brace.conf");
 
