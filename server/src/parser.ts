@@ -1,7 +1,7 @@
 import type { SchemaObject } from "../src/junos";
 import { Enumeration, JunosSchema, Repeatable, Sequence } from "../src/junos"; // './junos' breaks debugging on vscode
 
-export const prefixPattern = /^[\t ]*(?:set|delete|activate|deactivate)/;
+export const prefixPattern = /^[\t ]*(?:set|delete|activate|deactivate)(?=[\t ]|$)/;
 
 // explicit comparator reproducing the default sort order (UTF-16 code units)
 function compareStrings(a: string, b: string) {
