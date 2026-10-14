@@ -56,6 +56,9 @@
   ],
   "patterns": [
     {
+      "include": "#modifier"
+    },
+    {
       "include": "#command"
     },
     {
@@ -75,9 +78,14 @@
     }
   ],
   "repository": {
+    "modifier": {
+      "comment": "Statement prefixes in show configuration output and load files, eg: inactive: protect: interfaces {",
+      "match": "(?<=^|\\s)(?:inactive|active|protect|unprotect|atomic|replace|delete|update):(?=\\s)",
+      "name": "keyword.control.junos"
+    },
     "command": {
       "comment": "keywords captured without a major/minor section attached",
-      "match": "(?<=^|\\s)(set|request|delete|edit|show|protect:?|inactive:|unprotect|deactivate|activate)\\s+([-\\w<>:\\./]+)",
+      "match": "(?<=^|\\s)(set|request|delete|edit|show|protect|unprotect|deactivate|activate)\\s+([-\\w<>:\\./]+)",
       "captures": {
         "1": {
           "name": "keyword.control.junos"

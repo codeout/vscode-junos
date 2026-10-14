@@ -14,6 +14,7 @@
 * Bracket lists like `authentication-order [ radius password ]` were reported as invalid
 * Quoted strings containing `\"` broke validation and highlighting
 * `description` values with `* , = +` were partly highlighted, and `'` started a string
+* Highlight statement prefixes such as `inactive:`, `protect:` and `atomic:`
 
 
 ## [0.5.3] - 2026-10-03
