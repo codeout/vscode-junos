@@ -1,10 +1,10 @@
-import type { Diagnostic, TextDocument } from "vscode-languageserver";
+import type { Diagnostic } from "vscode-languageserver";
 import { DiagnosticSeverity } from "vscode-languageserver";
+import type { TextDocument } from "vscode-languageserver-textdocument";
 
 import { findInvalidToken, tokenizeLine } from "./config";
-import { communityReference, policyStatementReference } from "./definition";
-import { isIpPrefix } from "./ip";
 import { prefixPattern } from "./parser";
+import { collectReferences, isDefined } from "./references";
 import type { Session } from "./session";
 
 const maxNumberOfProblems = 1000; // Just a guard
@@ -19,9 +19,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
   let problems = 0;
   const diagnostics: Diagnostic[] = [];
   const seen = new Set<string>();
-  const report = (start: number, end: number, message: string) => {
-    const from = view.toSourceOffset(start);
-    const to = view.toSourceOffset(end);
+  const reportSource = (from: number, to: number, message: string) => {
     const key = `${from}:${to}:${message}`;
     if (seen.has(key)) {
       return;
@@ -31,6 +29,8 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     problems++;
     diagnostics.push(createDiagnostic(session, textDocument, from, to, message));
   };
+  const report = (start: number, end: number, message: string) =>
+    reportSource(view.toSourceOffset(start), view.toSourceOffset(end), message);
 
   // Curly-brace structure and syntax
   for (const error of braces.errors) {
@@ -64,86 +64,15 @@ export async function validateTextDocument(session: Session, textDocument: TextD
         `"${m[2].slice(invalidPosition)}" is invalid`,
       );
     }
+  }
 
-    // Validate symbol reference
-    const match = m;
-    const rules = [
-      ["interface", "interface", ["all"], ["interface-range"]],
-      ["prefix-list", "from\\s+(?:source-|destination-)?prefix-list"],
-      ["policy-statement", policyStatementReference],
-      ["community", communityReference],
-      ["as-path", "from\\s+as-path"],
-      ["as-path-group", "from\\s+as-path-group"],
-      ["firewall-filter", "filter\\s+(?:input|output|input-list|output-list)"],
-      ["service-nat-pool", "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)"],
-      [
-        "address:global:global",
-        "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
-        (m) => (isIpPrefix(m[3]) ? [m[3]] : []),
-      ],
-      ["address:global:global", "pool\\s+\\S+\\s+address-name"],
-
-      // global address books
-      [(m) => `address:global:${m[3]}`, "(?<=security\\s+)address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address"],
-      [
-        (m) => `address-set:global:${m[3]}`,
-        "(?<=security\\s+)address-book\\s+(\\S+)\\s+address-set\\s+\\S+\\s+address-set",
-      ],
-
-      // zone-specific address books
-      [
-        (m) => `address:${m[3]}:global`,
-        "(?<=security\\s+)zones\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address",
-      ],
-      [
-        (m) => `address-set:${m[3]}:global`,
-        "(?<=security\\s+)zones\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address-set",
-      ],
-
-      [
-        (m) => {
-          const zone = m[5] === "source" ? m[3] : m[4];
-          const addressBooks = session.zoneAddressBooks.get(textDocument.uri, m.groups!.ls || "global", zone);
-          return [
-            ...[...addressBooks].flatMap((a) => [`address:global:${a}`, `address-set:global:${a}`]),
-            "address:global:global",
-            `address:${zone}:global`,
-            "address-set:global:global",
-            `address-set:${zone}:global`,
-          ];
-        },
-        "from-zone\\s+(\\S+)\\s+to-zone\\s+(\\S+)\\s+.*\\s+match\\s+(source|destination)-address",
-        ["any", "any-ipv4", "any-ipv6"],
-      ],
-    ] as Array<
-      [
-        string | ((arg: RegExpMatchArray) => string | string[]),
-        string,
-        string[] | ((arg: RegExpMatchArray) => string[]),
-        string[],
-      ]
-    >;
-
-    // Type guards ignored in closure. See https://github.com/microsoft/TypeScript/issues/38755
-    for (const [symbolType, pattern, allowList, denyList] of rules) {
-      const invalidRange = validateReference(
-        session,
-        match[2],
-        textDocument.uri,
-        symbolType,
-        pattern,
-        allowList,
-        denyList,
-      );
-      if (invalidRange === undefined) {
-        continue;
-      }
-
-      report(
-        match.index + match[1].length + invalidRange[0],
-        match.index + match[1].length + invalidRange[1],
-        `"${match[2].slice(...invalidRange)}" is not defined`,
-      );
+  // Symbol references
+  for (const ref of collectReferences(session, textDocument)) {
+    if (problems >= maxNumberOfProblems) {
+      break;
+    }
+    if (!ref.allowed && (ref.denied || !isDefined(session, textDocument.uri, ref))) {
+      reportSource(ref.start, ref.end, `"${ref.name}" is not defined`);
     }
   }
 
@@ -172,64 +101,4 @@ function createDiagnostic(session: Session, textDocument: TextDocument, start: n
  */
 function validateLine(session: Session, line: string): number | undefined {
   return findInvalidToken(session.parser, tokenizeLine(line))?.start;
-}
-
-/**
- * Return undefined when validation is succeeded, or position range of invalid statement
- *
- * @param session
- * @param line String to validate
- * @param uri TextDocument's URI
- * @param symbolType string A key of session.definitions (eg: 'interface')
- * @param pattern string A line pattern to kick the validation
- * @param allowList string[] Keywords to pass the validation
- * @param denyList string[] Keywords to fail the validation
- * @return number[] or undefined [startPosition, endPosition]
- */
-function validateReference(
-  session: Session,
-  line: string,
-  uri: string,
-  symbolType: string | ((arg: RegExpMatchArray) => string | string[]),
-  pattern: string,
-  allowList?: string[] | ((arg: RegExpMatchArray) => string[]),
-  denyList?: string[],
-) {
-  const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+))?.*\\s${pattern}\\s+)(?<arg>\\S+)`);
-  if (!m) {
-    return;
-  }
-
-  const list = typeof allowList === "function" ? allowList(m) : allowList;
-  let types = typeof symbolType === "function" ? symbolType(m) : symbolType;
-  if (!Array.isArray(types)) {
-    types = [types];
-  }
-  const definitions = types.map((type) => session.definitions.getDefinitions(uri, m.groups!.ls || "global", type));
-
-  const stmtLength = (m.index || 0) + m.groups!.stmt.length;
-  let args = [{ arg: m.groups!.arg, start: stmtLength }];
-
-  // A bracket list "[ a b ]" refers to each element
-  if (m.groups!.arg === "[") {
-    args = [];
-    const elements = line.slice(stmtLength + 1).matchAll(/\S+/g);
-    for (const e of elements) {
-      if (e[0] === "]") {
-        break;
-      }
-      args.push({ arg: e[0], start: stmtLength + 1 + e.index });
-    }
-  }
-
-  for (const { arg, start } of args) {
-    if (list?.includes(arg)) {
-      continue;
-    }
-
-    const range = [start, start + arg.length];
-    if (denyList?.includes(arg) || definitions.every((d) => !(arg in d))) {
-      return range;
-    }
-  }
 }

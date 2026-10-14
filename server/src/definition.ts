@@ -1,10 +1,11 @@
-import type { Range, TextDocumentPositionParams } from "vscode-languageserver";
+import type { Position, Range, TextDocumentPositionParams } from "vscode-languageserver";
 import { Location } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 
 import type { Token } from "./config";
 import { tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
+import { definitionsOfReferenceAt } from "./references";
 import type { Session } from "./session";
 
 export class DefinitionStore {
@@ -70,6 +71,32 @@ export class DefinitionStore {
     return this.store[uri]?.[logicalSystem]?.[symbolType] || {};
   }
 
+  /**
+   * The definition whose range contains `position`; the innermost one when ranges nest
+   * (an interface name inside the "xe-0/0/0 unit 0" range of "xe-0/0/0.0").
+   */
+  at(uri: string, position: Position) {
+    const inside = (r: Range) =>
+      (r.start.line < position.line || (r.start.line === position.line && r.start.character <= position.character)) &&
+      (r.end.line > position.line || (r.end.line === position.line && r.end.character >= position.character));
+    const size = (r: Range) => (r.end.line - r.start.line) * 1e6 + r.end.character - r.start.character;
+
+    let best: { logicalSystem: string; type: string; symbol: string; range: Range } | undefined;
+    const logicalSystems = Object.entries(this.store[uri] || {});
+    for (const [logicalSystem, types] of logicalSystems) {
+      for (const [type, symbols] of Object.entries(types)) {
+        for (const [symbol, ranges] of Object.entries(symbols)) {
+          for (const range of ranges) {
+            if (inside(range) && (!best || size(range) < size(best.range))) {
+              best = { logicalSystem, type, symbol, range };
+            }
+          }
+        }
+      }
+    }
+    return best;
+  }
+
   clear(uri: string) {
     if (!this.store[uri]) {
       return;
@@ -113,6 +140,7 @@ export function definition(session: Session) {
       return [];
     }
     const { line } = pointed;
+    const offset = doc.offsetAt(textDocumentPosition.position);
     textDocumentPosition = {
       ...textDocumentPosition,
       position: { line: textDocumentPosition.position.line, character: pointed.character },
@@ -134,7 +162,9 @@ export function definition(session: Session) {
       getZoneSpecificAddressSetAddressDefinition(session, line, textDocumentPosition) ||
       getPoliciesAddressDefinition(session, line, textDocumentPosition) ||
       getApplicationDefinition(session, line, textDocumentPosition) ||
-      [];
+      definitionsOfReferenceAt(session, doc, offset) ||
+      // On a definition itself: VS Code then shows its references (editor.gotoLocation.alternativeDefinitionCommand)
+      [session.definitions.at(doc.uri, doc.positionAt(offset))?.range].filter((r) => r !== undefined);
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
   };

@@ -59,6 +59,44 @@ suite("Should handle curly-brace format", () => {
     }
   });
 
+  suite("Find all references", () => {
+    const docUri = getDocUri("junos-brace.conf");
+
+    for (const [title, from, symbol, uses] of [
+      ["from a community definition", "community C1 members", "C1", ["community C1;", "community add C1"]],
+      ["from a community reference", "community add C1", "C1", ["community C1;", "community add C1"]],
+      ["from a policy-statement definition", "policy-statement PS1 {", "PS1", ["import PS1", "export [ PS1"]],
+    ] as Array<[string, string, string, string[]]>) {
+      test(title, async () => {
+        await activate(docUri);
+        const doc = state.doc!;
+        const text = doc.getText();
+        const at = (needle: string) => {
+          const i = text.indexOf(needle);
+          assert.ok(i !== -1, `"${needle}" not found`);
+          return doc.positionAt(i + needle.lastIndexOf(symbol));
+        };
+
+        const locations = await vscode.commands.executeCommand<vscode.Location[]>(
+          "vscode.executeReferenceProvider",
+          docUri,
+          at(from).translate(0, 1),
+        );
+
+        const found = locations.map((l) => l.range.start);
+        for (const use of uses) {
+          assert.ok(
+            found.some((p) => p.isEqual(at(use))),
+            `${use} missing in ${JSON.stringify(found)}`,
+          );
+        }
+        for (const l of locations) {
+          assert.equal(doc.getText(l.range), symbol);
+        }
+      });
+    }
+  });
+
   suite("Completion", () => {
     const docUri = getDocUri("junos-brace-completion.conf");
 
