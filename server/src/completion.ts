@@ -9,7 +9,7 @@ import { routingInstanceReference, routingTableReference } from "./references";
 import type { Session } from "./session";
 
 export function completion(session: Session) {
-  return (textDocumentPosition: TextDocumentPositionParams) => {
+  return async (textDocumentPosition: TextDocumentPositionParams) => {
     const uri = textDocumentPosition.textDocument.uri;
     const doc = session.documents.get(uri);
     if (!doc) {
@@ -33,7 +33,8 @@ export function completion(session: Session) {
       line = toLine(context.words);
     }
 
-    const keywords = session.parser.keywords(line);
+    const hidden = await completeHiddenStatements(session, uri);
+    const keywords = session.parser.keywords(line, hidden);
 
     let m = line.match(/\s*logical-systems\s+(\S+)/);
     const logicalSystem = m?.[1] || "global";
@@ -122,11 +123,17 @@ export function completion(session: Session) {
       }
     }
 
-    return keywords.map((keyword) => ({
-      label: keyword,
-      kind: keyword === "word" ? CompletionItemKind.Value : CompletionItemKind.Text,
-      data: `${line} ${keyword}`,
-    }));
+    return keywords.map((keyword) => {
+      const item: CompletionItem = {
+        label: keyword,
+        kind: keyword === "word" ? CompletionItemKind.Value : CompletionItemKind.Text,
+        data: `${line} ${keyword}`,
+      };
+      if (session.parser.node(item.data)?.hidden) {
+        item.labelDetails = { description: "hidden" };
+      }
+      return item;
+    });
   };
 }
 
@@ -154,7 +161,22 @@ function addReferences(names: string[], keywords: string[], keepWord = false) {
 
 export function completionResolve(session: Session) {
   return (item: CompletionItem) => {
-    item.detail = session.parser.description(item.data);
+    item.detail = session.parser.node(item.data)?.description;
     return item;
   };
+}
+
+/**
+ * Setting junos.completion.hiddenStatements: offer statements the CLI hides (default true)
+ */
+async function completeHiddenStatements(session: Session, uri: string) {
+  try {
+    const value = await session.connection.workspace.getConfiguration({
+      scopeUri: uri,
+      section: "junos.completion.hiddenStatements",
+    });
+    return value !== false;
+  } catch {
+    return true; // a client without workspace/configuration
+  }
 }

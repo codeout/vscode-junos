@@ -162,6 +162,22 @@ suite("Should handle curly-brace format", () => {
   suite("Completion", () => {
     const docUri = getDocUri("junos-brace-completion.conf");
 
+    test("Leaves out hidden statements when junos.completion.hiddenStatements is off", async () => {
+      const position = new vscode.Position(31, 4);
+      const config = vscode.workspace.getConfiguration("junos");
+      const all = await completionLabels(docUri, position);
+      await config.update("completion.hiddenStatements", false, vscode.ConfigurationTarget.Global);
+      try {
+        const visible = await completionLabels(docUri, position);
+        assert.ok(visible.includes("static"));
+        assert.ok(visible.every((label) => all.includes(label)));
+        // hidden in the CLI; only schemas built from DDL have it at all
+        assert.ok(!visible.includes("chained-multi-family-lookup"));
+      } finally {
+        await config.update("completion.hiddenStatements", undefined, vscode.ConfigurationTarget.Global);
+      }
+    });
+
     test("Completes inside a hierarchy", async () => {
       const labels = await completionLabels(docUri, new vscode.Position(2, 8));
       assert.ok(labels.includes("unit"));

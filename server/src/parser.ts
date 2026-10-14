@@ -1,6 +1,9 @@
 import type { SchemaObject } from "../src/junos";
 import { Enumeration, JunosSchema, Repeatable, Sequence } from "../src/junos"; // './junos' breaks debugging on vscode
 
+// Help texts of statements the Junos CLI hides start with this (schemas built from DDL by junos-ddl-schema)
+const hiddenMark = "[hidden]";
+
 export const prefixPattern = /^[\t ]*(?:set|delete|activate|deactivate)(?=[\t ]|$)/;
 
 // explicit comparator reproducing the default sort order (UTF-16 code units)
@@ -21,6 +24,7 @@ export class Node {
   description?: string; // Can be undefined according to CompletionItem.detail
   type: string | null = null;
   repeatable? = false;
+  hidden = false;
 
   constructor(
     name: string,
@@ -31,6 +35,10 @@ export class Node {
   ) {
     this.name = name;
     this.parent = parent;
+    if (description?.startsWith(hiddenMark)) {
+      this.hidden = true;
+      description = description.slice(hiddenMark.length).trim() || undefined;
+    }
     this.description = description;
     this.type = type || null;
 
@@ -185,8 +193,11 @@ export class Node {
     return key.split(" | ");
   }
 
-  keywords() {
-    return this.children.map((node) => node.name).toSorted(compareStrings);
+  keywords(hidden = true) {
+    return this.children
+      .filter((node) => hidden || !node.hidden)
+      .map((node) => node.name)
+      .toSorted(compareStrings);
   }
 
   find(string: string) {
@@ -223,7 +234,12 @@ export class Parser {
     return ast;
   }
 
-  keywords(string: string) {
+  /**
+   * Keywords that may follow `string`; "word" stands for a value.
+   *
+   * @param hidden include statements the CLI hides (always accepted, but optional in completion)
+   */
+  keywords(string: string, hidden = true) {
     let ast: Node | null | undefined = this.ast;
     string = string.trim();
     const defaultKeywords = ["apply-groups", "apply-groups-except"];
@@ -247,10 +263,29 @@ export class Parser {
 
     const keywords = ast
       ? // replace "arg" with "word"
-        [...ast.keywords().map((k) => (k === "arg" ? "word" : k)), ...defaultKeywords]
+        [...ast.keywords(hidden).map((k) => (k === "arg" ? "word" : k)), ...defaultKeywords]
       : [];
 
     return [...new Set(keywords)]; // uniq
+  }
+
+  /**
+   * The schema node of the last word of `string` (a keyword, or "arg" for a value), unlike parse() which
+   * continues at the enclosing repeatable statement after a statement without children.
+   */
+  node(string: string) {
+    let ast: Node | null | undefined = this.ast;
+    let repeatable: Node | undefined;
+    for (const word of string.trim().split(/\s+/)) {
+      if (ast?.children.length === 0) {
+        ast = repeatable;
+      }
+      ast = ast?.find(word);
+      if (ast?.repeatable) {
+        repeatable = ast;
+      }
+    }
+    return ast ?? undefined;
   }
 
   description(string: string) {

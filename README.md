@@ -44,6 +44,10 @@ cp ../junos-ddl-schema/build/junos.js server/src/junos.local.js
 npm run compile    # prints "using Junos schema .../junos.local.js"
 ```
 
+A schema built from DDL also covers statements the Junos CLI hides (internal, unsupported, deprecated).
+Validation always accepts them; the setting `junos.completion.hiddenStatements` (on by default) decides
+whether completion offers them.
+
 
 ## Screen Shot
 

@@ -12,6 +12,7 @@
 * Unsaved (untitled) editors in Junos mode get completion, validation and go to definition
 * Find all references for every symbol that supports go to definition; go to definition on a definition shows its references
 * Rename symbols (F2) across their definitions and references; interfaces are not renamed
+* Setting `junos.completion.hiddenStatements` (default on): offer statements the Junos CLI hides in completion; they are marked "hidden". Needs a schema built from DDL (see README)
 * Report extended-community regular expressions (e.g. `members "^target:65000:.*$"`) in communities used by a `vrf-import` policy, which Junos does not support
 * Go to definition, validation and completion for routing-instances: routing tables such as `next-table VRF1.inet.0` (also `import-rib`, `export-rib`) and `routing-instance <name>` statements (syslog, ntp, firewall, ...)
 

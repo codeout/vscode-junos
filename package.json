@@ -89,6 +89,16 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "configuration": {
+      "title": "Junos",
+      "properties": {
+        "junos.completion.hiddenStatements": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Offer statements that the Junos CLI hides (internal, unsupported, deprecated) in completion. Validation accepts them either way. Only schemas built from DDL mark hidden statements."
+        }
+      }
+    },
     "configurationDefaults": {
       "[junos]": {
         "editor.tabSize": 4,
