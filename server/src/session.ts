@@ -2,6 +2,8 @@ import type { _Connection } from "vscode-languageserver/lib/common/server"; // T
 import { createConnection, ProposedFeatures, TextDocuments } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
+import type { BraceParse } from "./config";
+import { ConfigView, parseBraces } from "./config";
 import { DefinitionStore } from "./definition";
 import type { Parser } from "./parser";
 import { createParser } from "./parser";
@@ -13,6 +15,7 @@ export class Session {
   public readonly parser: Parser;
   public readonly definitions: DefinitionStore;
   public readonly zoneAddressBooks: ZoneAddressBookStore;
+  private readonly views = new Map<string, { version: number; braces: BraceParse; view: ConfigView }>();
 
   constructor() {
     this.connection = createConnection(ProposedFeatures.all);
@@ -20,6 +23,26 @@ export class Session {
     this.parser = createParser();
     this.definitions = new DefinitionStore();
     this.zoneAddressBooks = new ZoneAddressBookStore();
+  }
+
+  /**
+   * Curly-brace statements of the document, and its text with those statements appended as "set" lines
+   */
+  analyze(document: { uri: string; version: number; getText(): string }) {
+    const cached = this.views.get(document.uri);
+    if (cached?.version === document.version) {
+      return cached;
+    }
+
+    const text = document.getText();
+    const braces = parseBraces(text);
+    const entry = { version: document.version, braces, view: new ConfigView(text, braces.statements) };
+    this.views.set(document.uri, entry);
+    return entry;
+  }
+
+  forget(uri: string) {
+    this.views.delete(uri);
   }
 
   listen() {

@@ -2,7 +2,7 @@ import type { CompletionItem, TextDocumentPositionParams } from "vscode-language
 import { CompletionItemKind } from "vscode-languageserver";
 
 import type { Token } from "./config";
-import { pathWord, tokenizeLine } from "./config";
+import { contextAt, pathWord, tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
 import type { Session } from "./session";
 
@@ -14,15 +14,23 @@ export function completion(session: Session) {
       return [];
     }
 
-    let line = doc.getText().split("\n")[textDocumentPosition.position.line];
-    if (!prefixPattern.test(line)) {
-      return [];
+    const text = doc.getText();
+    let line = text.split("\n")[textDocumentPosition.position.line];
+    if (prefixPattern.test(line)) {
+      line = line.replace(prefixPattern, "");
+      if (line.includes("[")) {
+        line = toLine(tokenizeLine(line));
+      }
+    } else {
+      // Curly-brace format: the enclosing hierarchy plus the statement typed so far.
+      // At the top level of a "set" style file, keep completing "set" lines only.
+      const context = contextAt(text, doc.offsetAt(textDocumentPosition.position));
+      if (!context || (context.depth === 0 && setLinePattern.test(text))) {
+        return [];
+      }
+      line = toLine(context.words);
     }
 
-    line = line.replace(prefixPattern, "");
-    if (line.includes("[")) {
-      line = toLine(tokenizeLine(line));
-    }
     const keywords = session.parser.keywords(line);
 
     let m = line.match(/\s*logical-systems\s+(\S+)/);
@@ -104,6 +112,8 @@ export function completion(session: Session) {
     }));
   };
 }
+
+const setLinePattern = new RegExp(prefixPattern.source, "m");
 
 // Words joined like a "set" line after the command, with a trailing space for the reference rules
 function toLine(tokens: Token[]) {

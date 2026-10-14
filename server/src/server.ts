@@ -51,4 +51,8 @@ session.documents.onDidChangeContent((change) => {
   validateTextDocument(session, change.document);
 });
 
+session.documents.onDidClose((event) => {
+  session.forget(event.document.uri);
+});
+
 session.listen();

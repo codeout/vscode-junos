@@ -27,7 +27,18 @@ export class DefinitionStore {
     this.store[uri][logicalSystem][symbolType] ||= {};
     this.store[uri][logicalSystem][symbolType][symbol] ||= [];
 
-    this.store[uri][logicalSystem][symbolType][symbol].push(definition);
+    const definitions = this.store[uri][logicalSystem][symbolType][symbol];
+    // A curly-brace statement is seen once per nested statement below it
+    const isDuplicate = definitions.some(
+      (d) =>
+        d.start.line === definition.start.line &&
+        d.start.character === definition.start.character &&
+        d.end.line === definition.end.line &&
+        d.end.character === definition.end.character,
+    );
+    if (!isDuplicate) {
+      definitions.push(definition);
+    }
   }
 
   /**
@@ -299,7 +310,8 @@ function insertDefinitions(
   pattern: string,
   modifyFunction: (arg: RegExpExecArray) => string,
 ) {
-  const text = textDocument.getText();
+  const { view } = session.analyze(textDocument);
+  const text = view.text;
 
   // FIXME: We should have implemented with named captures, but avoid them due to performance consideration
   const fullPattern = new RegExp(`(${prefixPattern.source}(?:\\s+logical-systems\\s+(\\S+))?\\s+${pattern}`, "gm");
@@ -309,8 +321,8 @@ function insertDefinitions(
     const type = typeof symbolType === "function" ? symbolType(m) : symbolType;
     const symbol = modifyFunction(m);
     session.definitions.set(textDocument.uri, m[2] || "global", type, symbol, {
-      start: textDocument.positionAt(m.index + m[1].length),
-      end: textDocument.positionAt(m.index + m[0].length),
+      start: textDocument.positionAt(view.toSourceOffset(m.index + m[1].length)),
+      end: textDocument.positionAt(view.toSourceOffset(m.index + m[0].length)),
     });
   }
 }
@@ -380,7 +392,7 @@ function updateAddressDefinitions(session: Session, textDocument: TextDocument) 
 }
 
 function updateGlobalAddressDefinitions(session: Session, textDocument: TextDocument) {
-  const text = textDocument.getText();
+  const text = session.analyze(textDocument).view.text;
 
   for (const type of ["address", "address-set"]) {
     insertDefinitions(

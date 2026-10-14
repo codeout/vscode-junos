@@ -9,26 +9,58 @@ import type { Session } from "./session";
 const maxNumberOfProblems = 1000; // Just a guard
 
 export async function validateTextDocument(session: Session, textDocument: TextDocument) {
-  const text = textDocument.getText();
+  const { braces, view } = session.analyze(textDocument);
+  const text = view.text;
+  const source = textDocument.getText();
   const pattern = new RegExp(`(${prefixPattern.source}[\\t ]+)(.*)`, "gm");
   let m: RegExpExecArray | null;
 
   let problems = 0;
   const diagnostics: Diagnostic[] = [];
-  while ((m = pattern.exec(text)) && problems < maxNumberOfProblems) {
-    // Validate with AST based syntax
-    const invalidPosition = validateLine(session, m[2]);
-    if (invalidPosition !== undefined) {
-      problems++;
+  const seen = new Set<string>();
+  const report = (start: number, end: number, message: string) => {
+    const from = view.toSourceOffset(start);
+    const to = view.toSourceOffset(end);
+    const key = `${from}:${to}:${message}`;
+    if (seen.has(key)) {
+      return;
+    }
 
-      diagnostics.push(
-        createDiagnostic(
-          session,
-          textDocument,
-          m.index + m[1].length + invalidPosition,
-          m.index + m[0].length,
-          `"${m[2].slice(invalidPosition)}" is invalid`,
-        ),
+    seen.add(key);
+    problems++;
+    diagnostics.push(createDiagnostic(session, textDocument, from, to, message));
+  };
+
+  // Curly-brace structure and syntax
+  for (const error of braces.errors) {
+    if (problems >= maxNumberOfProblems) {
+      break;
+    }
+    report(error.start, error.end, error.message);
+  }
+  for (const { context, words } of braces.statements) {
+    if (problems >= maxNumberOfProblems) {
+      break;
+    }
+
+    const invalid = findInvalidToken(session.parser, [...context, ...words], true);
+    // An error in the enclosing hierarchy is reported at its own statement
+    if (invalid === undefined || invalid.end <= words[0].start) {
+      continue;
+    }
+
+    const end = words.at(-1)!.end;
+    report(invalid.start, end, `"${source.slice(invalid.start, end)}" is invalid`);
+  }
+
+  while ((m = pattern.exec(text)) && problems < maxNumberOfProblems) {
+    // Validate with AST based syntax. Appended lines from curly-brace statements are validated above.
+    const invalidPosition = view.isSource(m.index) ? validateLine(session, m[2]) : undefined;
+    if (invalidPosition !== undefined) {
+      report(
+        m.index + m[1].length + invalidPosition,
+        m.index + m[0].length,
+        `"${m[2].slice(invalidPosition)}" is invalid`,
       );
     }
 
@@ -106,21 +138,17 @@ export async function validateTextDocument(session: Session, textDocument: TextD
         continue;
       }
 
-      problems++;
-
-      diagnostics.push(
-        createDiagnostic(
-          session,
-          textDocument,
-          match.index + match[1].length + invalidRange[0],
-          match.index + match[1].length + invalidRange[1],
-          `"${match[2].slice(...invalidRange)}" is not defined`,
-        ),
+      report(
+        match.index + match[1].length + invalidRange[0],
+        match.index + match[1].length + invalidRange[1],
+        `"${match[2].slice(...invalidRange)}" is not defined`,
       );
     }
   }
 
-  return diagnostics;
+  return diagnostics.toSorted(
+    (a, b) => a.range.start.line - b.range.start.line || a.range.start.character - b.range.start.character,
+  );
 }
 
 function createDiagnostic(session: Session, textDocument: TextDocument, start: number, end: number, message: string) {
