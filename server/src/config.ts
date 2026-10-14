@@ -41,7 +41,7 @@ export type BraceParse = {
 const delimiters = new Set(["{", "}", ";", "[", "]"]);
 
 // Statement prefixes in "load merge/replace" files and in "show configuration" output
-const modifierPattern = /^(?:inactive|active|protect|unprotect|replace|delete|update):$/;
+const modifierPattern = /^(?:inactive|active|protect|unprotect|atomic|replace|delete|update):$/;
 
 // Lines which are not configuration statements in a curly-brace file
 const skipLinePatterns = [
