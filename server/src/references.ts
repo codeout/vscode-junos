@@ -1,4 +1,12 @@
-import type { Location, ReferenceParams } from "vscode-languageserver";
+import type {
+  Location,
+  PrepareRenameParams,
+  ReferenceParams,
+  RenameParams,
+  TextEdit,
+  WorkspaceEdit,
+} from "vscode-languageserver";
+import { ErrorCodes, ResponseError } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 
 import { communityReference, policyStatementReference } from "./definition";
@@ -182,6 +190,7 @@ function matchRule(session: Session, line: string, rule: Rule): Reference[] {
   if (rule.skipKeywords && session.parser.keywords(m.groups!.stmt).includes(m.groups!.arg)) {
     return [];
   }
+
   const allowList = typeof rule.allow === "function" ? rule.allow(m) : rule.allow;
   const typeOrTypes = typeof rule.type === "function" ? rule.type(m) : rule.type;
   const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes];
@@ -251,54 +260,136 @@ export function definitionsOfReferenceAt(session: Session, doc: TextDocument, of
   );
 }
 
+type Target = { name: string; logicalSystem: string; types: string[]; range: { start: number; end: number } };
+
+/**
+ * The symbol under the cursor: a reference, or a definition.
+ */
+function targetAt(session: Session, doc: TextDocument, offset: number): Target | undefined {
+  const ref = referenceAt(session, doc, offset);
+  if (ref) {
+    const defined = ref.types.filter(
+      (type) => session.definitions.get(doc.uri, type, { logicalSystem: ref.logicalSystem, symbol: ref.name })?.length,
+    );
+    return {
+      name: ref.name,
+      logicalSystem: ref.logicalSystem,
+      types: defined.length > 0 ? defined : ref.types,
+      range: { start: ref.start, end: ref.end },
+    };
+  }
+
+  const def = session.definitions.at(doc.uri, doc.positionAt(offset));
+  if (def) {
+    return {
+      name: def.symbol,
+      logicalSystem: def.logicalSystem,
+      types: [def.type],
+      range: { start: doc.offsetAt(def.range.start), end: doc.offsetAt(def.range.end) },
+    };
+  }
+}
+
+function referencesOf(session: Session, doc: TextDocument, target: Target) {
+  return collectReferences(session, doc).filter(
+    (r) =>
+      r.name === target.name &&
+      r.logicalSystem === target.logicalSystem &&
+      r.types.some((t) => target.types.includes(t)),
+  );
+}
+
+function definitionsOf(session: Session, doc: TextDocument, target: Target) {
+  return target.types.flatMap(
+    (type) =>
+      session.definitions.get(doc.uri, type, { logicalSystem: target.logicalSystem, symbol: target.name }) || [],
+  );
+}
+
 export function references(session: Session) {
   return (params: ReferenceParams): Location[] => {
     const doc = session.documents.get(params.textDocument.uri);
-    if (!doc) {
+    const target = doc && targetAt(session, doc, doc.offsetAt(params.position));
+    if (!doc || !target) {
       return [];
     }
 
-    const offset = doc.offsetAt(params.position);
-    const refs = collectReferences(session, doc);
-
-    // The symbol: a reference under the cursor, or a definition under the cursor
-    let target: { name: string; logicalSystem: string; types: string[] } | undefined;
-    const ref = refs.find((r) => r.start <= offset && offset <= r.end);
-    if (ref) {
-      const defined = ref.types.filter(
-        (type) =>
-          session.definitions.get(doc.uri, type, { logicalSystem: ref.logicalSystem, symbol: ref.name })?.length,
-      );
-      target = { name: ref.name, logicalSystem: ref.logicalSystem, types: defined.length > 0 ? defined : ref.types };
-    } else {
-      const def = session.definitions.at(doc.uri, params.position);
-      if (def) {
-        target = { name: def.symbol, logicalSystem: def.logicalSystem, types: [def.type] };
-      }
-    }
-    if (!target) {
-      return [];
-    }
-
-    const locations: Location[] = refs
-      .filter(
-        (r) =>
-          r.name === target.name &&
-          r.logicalSystem === target.logicalSystem &&
-          r.types.some((t) => target.types.includes(t)),
-      )
-      .map((r) => ({ uri: doc.uri, range: { start: doc.positionAt(r.start), end: doc.positionAt(r.end) } }));
-
+    const locations: Location[] = referencesOf(session, doc, target).map((r) => ({
+      uri: doc.uri,
+      range: { start: doc.positionAt(r.start), end: doc.positionAt(r.end) },
+    }));
     if (params.context.includeDeclaration) {
-      for (const type of target.types) {
-        const ranges = session.definitions.get(doc.uri, type, {
-          logicalSystem: target.logicalSystem,
-          symbol: target.name,
-        });
-        locations.push(...(ranges || []).map((range) => ({ uri: doc.uri, range })));
-      }
+      locations.push(...definitionsOf(session, doc, target).map((range) => ({ uri: doc.uri, range })));
+    }
+    return locations;
+  };
+}
+
+// An interface definition covers "xe-0/0/0 unit 0" while references say "xe-0/0/0.0": not renamed here
+const notRenamed = new Set(["interface"]);
+
+// A name Junos would print without quotes (see needs_quotes in report 09): only those can replace a name as-is
+const plainName = /^[^\s!"#$%&'();?@[\\\]^`{|}~]+$/;
+
+/**
+ * Ranges holding the target's name: its definitions and references. Ranges whose text is not the name
+ * (such as the interface-unit definition "xe-0/0/0 unit 0") are left out.
+ */
+function renameRanges(session: Session, doc: TextDocument, target: Target) {
+  const text = doc.getText();
+  const ranges = [
+    ...definitionsOf(session, doc, target).map((r) => ({ start: doc.offsetAt(r.start), end: doc.offsetAt(r.end) })),
+    ...referencesOf(session, doc, target),
+  ].filter((r) => text.slice(r.start, r.end) === target.name);
+
+  const seen = new Set<string>();
+  return ranges.filter((r) => {
+    const key = `${r.start}:${r.end}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+function renameTarget(session: Session, doc: TextDocument, offset: number) {
+  const target = targetAt(session, doc, offset);
+  if (!target || target.types.some((t) => notRenamed.has(t))) {
+    return;
+  }
+  return target;
+}
+
+export function prepareRename(session: Session) {
+  return (params: PrepareRenameParams) => {
+    const doc = session.documents.get(params.textDocument.uri);
+    const target = doc && renameTarget(session, doc, doc.offsetAt(params.position));
+    if (!doc || !target) {
+      return null;
+    }
+    return {
+      range: { start: doc.positionAt(target.range.start), end: doc.positionAt(target.range.end) },
+      placeholder: target.name,
+    };
+  };
+}
+
+export function rename(session: Session) {
+  return (params: RenameParams): WorkspaceEdit | null => {
+    const doc = session.documents.get(params.textDocument.uri);
+    const target = doc && renameTarget(session, doc, doc.offsetAt(params.position));
+    if (!doc || !target) {
+      return null;
+    }
+    if (!plainName.test(params.newName)) {
+      throw new ResponseError(ErrorCodes.InvalidParams, `"${params.newName}" is not a valid name`);
     }
 
-    return locations;
+    const edits: TextEdit[] = renameRanges(session, doc, target).map((r) => ({
+      range: { start: doc.positionAt(r.start), end: doc.positionAt(r.end) },
+      newText: params.newName,
+    }));
+    return { changes: { [doc.uri]: edits } };
   };
 }

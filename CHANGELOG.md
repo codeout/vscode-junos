@@ -11,6 +11,7 @@
 * Indent with 4 spaces and indentation rules for `{` / `}`
 * Unsaved (untitled) editors in Junos mode get completion, validation and go to definition
 * Find all references for every symbol that supports go to definition; go to definition on a definition shows its references
+* Rename symbols (F2) across their definitions and references; interfaces are not renamed
 * Go to definition, validation and completion for routing-instances: routing tables such as `next-table VRF1.inet.0` (also `import-rib`, `export-rib`) and `routing-instance <name>` statements (syslog, ntp, firewall, ...)
 
 ### Fixed

@@ -102,6 +102,54 @@ suite("Should handle curly-brace format", () => {
     }
   });
 
+  suite("Rename", () => {
+    const docUri = getDocUri("junos-brace.conf");
+
+    for (const [title, from, symbol, newName, places] of [
+      ["a community", "community add C1", "C1", "C9", ["community C1 members", "community C1;", "community add C1"]],
+      [
+        "a routing-instance",
+        "routing-instance VRF1",
+        "VRF1",
+        "BLUE",
+        ["    VRF1 {", "next-table VRF1", "routing-instance VRF1"],
+      ],
+    ] as Array<[string, string, string, string, string[]]>) {
+      test(title, async () => {
+        await activate(docUri);
+        const doc = state.doc!;
+        const text = doc.getText();
+        const at = (needle: string) => doc.positionAt(text.indexOf(needle) + needle.lastIndexOf(symbol));
+
+        const edit = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
+          "vscode.executeDocumentRenameProvider",
+          docUri,
+          at(from).translate(0, 1),
+          newName,
+        );
+
+        const edits = edit.get(docUri);
+        for (const e of edits) {
+          assert.equal(doc.getText(e.range), symbol);
+          assert.equal(e.newText, newName);
+        }
+        for (const place of places) {
+          assert.ok(
+            edits.some((e) => e.range.start.isEqual(at(place))),
+            `${place} not renamed`,
+          );
+        }
+      });
+    }
+
+    test("refuses interfaces", async () => {
+      await activate(docUri);
+      const text = state.doc!.getText();
+      const position = state.doc!.positionAt(text.indexOf("interface ge-0/0/9.0") + 12);
+      await assert.rejects(Promise.resolve(vscode.commands.executeCommand("vscode.prepareRename", docUri, position)));
+    });
+  });
+
   suite("Completion", () => {
     const docUri = getDocUri("junos-brace-completion.conf");
 

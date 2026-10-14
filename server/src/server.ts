@@ -4,7 +4,7 @@ import { TextDocumentSyncKind } from "vscode-languageserver/node";
 
 import { completion, completionResolve } from "./completion";
 import { definition, updateDefinitions } from "./definition";
-import { forgetReferences, references } from "./references";
+import { forgetReferences, prepareRename, references, rename } from "./references";
 import { Session } from "./session";
 import { validateTextDocument } from "./validation";
 
@@ -24,6 +24,7 @@ session.connection.onInitialize(() => {
       },
       definitionProvider: true,
       referencesProvider: true,
+      renameProvider: { prepareProvider: true },
     },
   };
 });
@@ -32,6 +33,8 @@ session.connection.onCompletion(completion(session));
 session.connection.onCompletionResolve(completionResolve(session));
 session.connection.onDefinition(definition(session));
 session.connection.onReferences(references(session));
+session.connection.onPrepareRename(prepareRename(session));
+session.connection.onRenameRequest(rename(session));
 
 session.connection.languages.diagnostics.on(async (params) => {
   const document = session.documents.get(params.textDocument.uri);

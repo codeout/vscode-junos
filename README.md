@@ -17,7 +17,7 @@ Completion, validation and go to definition work for both `set` commands and the
 
 ⚠️ These features may work, but still under development. The behavior might be changed ⚠️
 
-* Go To Definition and Find All References
+* Go To Definition, Find All References and Rename (except `interface`)
   * `interface`
   * `prefix-list`
   * `policy-statement`
