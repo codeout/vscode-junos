@@ -183,7 +183,11 @@ export function tokenizeLine(line: string, offset = 0): Token[] {
  * The word used to walk the schema. Quoted spaces are squashed, and a bracket list stands for its first element.
  */
 export function pathWord(token: Token): string {
-  const text = token.group ? token.group[0]?.text || "" : token.text;
+  let text = token.group ? token.group[0]?.text || "" : token.text;
+  // Junos accepts any word quoted, keywords too: internal-value "disable"
+  if (text.length > 2 && text.startsWith('"') && text.endsWith('"')) {
+    text = text.slice(1, -1);
+  }
   return text.replaceAll(/\s/g, "_");
 }
 

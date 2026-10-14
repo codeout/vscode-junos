@@ -17,6 +17,7 @@
 * Quoted strings containing `\"` broke validation and highlighting
 * `description` values with `* , = +` were partly highlighted, and `'` started a string
 * Highlight statement prefixes such as `inactive:`, `protect:` and `atomic:`
+* Quoted keywords like `family "inet6"` were reported as invalid
 
 
 ## [0.5.3] - 2026-10-03
