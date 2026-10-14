@@ -29,6 +29,20 @@ type Rule = {
   symbol?: (arg: string) => { name: string; offset: number } | undefined;
 };
 
+/**
+ * Statements that take a routing table name; a table "<instance>.<family>.<n>" refers to a routing-instance.
+ * Tables of the master instance ("inet.0", "bgp.l3vpn.0") and internal ones ("__...") refer to nothing.
+ */
+export const routingTableReference = "(?:next-table|import-rib|export-rib)";
+
+export function routingInstanceOfTable(table: string) {
+  const m = table.match(/^(.+)\.[\w-]+\.\d+$/);
+  if (!m || m[1] === "bgp" || m[1].startsWith("__")) {
+    return;
+  }
+  return { name: m[1], offset: 0 };
+}
+
 function rules(session: Session, uri: string): Rule[] {
   return [
     { type: "interface", pattern: "interface", allow: ["all"], deny: ["interface-range"] },
@@ -42,6 +56,7 @@ function rules(session: Session, uri: string): Rule[] {
       type: "service-nat-pool",
       pattern: "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)",
     },
+    { type: "routing-instance", pattern: routingTableReference, symbol: routingInstanceOfTable },
     {
       type: "address:global:global",
       pattern: "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",

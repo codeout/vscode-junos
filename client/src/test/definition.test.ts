@@ -14,6 +14,7 @@ suite("Should go to definition", () => {
     ["from community", "from community foo-community", "community foo-community members"],
     ["l2circuit community", "xe-0/0/0.0 community foo-community\n", "community foo-community members"],
     ["aggregate-label community", "aggregate-label community foo-community", "community foo-community members"],
+    ["routing-instance of a next-table", "next-table foo-instance", "routing-instances foo-instance instance-type"],
   ]) {
     test(title, async () => {
       await activate(docUri);

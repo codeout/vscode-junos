@@ -11,6 +11,7 @@
 * Indent with 4 spaces and indentation rules for `{` / `}`
 * Unsaved (untitled) editors in Junos mode get completion, validation and go to definition
 * Find all references for every symbol that supports go to definition; go to definition on a definition shows its references
+* Go to definition and validation for the routing-instance of a routing table, e.g. `next-table VRF1.inet.0`, `import-rib`, `export-rib`
 
 ### Fixed
 

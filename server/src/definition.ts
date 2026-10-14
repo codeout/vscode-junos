@@ -400,6 +400,11 @@ export function updateDefinitions(session: Session, textDocument: TextDocument) 
   updateSecurityNatPoolDefinitions(session, textDocument);
   updateAddressDefinitions(session, textDocument);
   updateApplicationDefinitions(session, textDocument);
+  updateRoutingInstanceDefinitions(session, textDocument);
+}
+
+function updateRoutingInstanceDefinitions(session: Session, textDocument: TextDocument) {
+  insertDefinitions(session, textDocument, "routing-instance", "routing-instances\\s+)(\\S+)", (m) => m[3]);
 }
 
 function insertDefinitions(
