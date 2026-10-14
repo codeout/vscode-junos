@@ -12,6 +12,19 @@ The language server has the following language features:
 * Syntax highlighting
 * Help texts on hover
 
+### Highlighting
+
+`junos.highlighting` selects how configurations are coloured:
+
+* `semantic` (default): the language server colours each word by its role, using your theme's semantic
+  colours: statements (`keyword`), values from a fixed set such as `vrf` or `accept` (`enumMember`), names
+  you define and their uses (`variable`, with `declaration` where the name is defined), numbers, addresses
+  and prefixes (`number`), other values (`string`), and `set` / `delete` / `inactive:` / `protect:`
+  (`macro`). Comments and brackets keep the grammar's colours.
+* `classic`: the pattern-based TextMate grammar only.
+
+Colours can be adjusted per role with `editor.semanticTokenColorCustomizations`.
+
 Completion, validation and go to definition work for both `set` commands and the curly-brace format of `show configuration`.
 
 ### Experimental Features

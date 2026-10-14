@@ -25,6 +25,7 @@ export class Node {
   type: string | null = null;
   repeatable? = false;
   hidden = false;
+  value = false; // one of a fixed set of values (e.g. "vrf" of instance-type), not a statement
 
   constructor(
     name: string,
@@ -100,8 +101,17 @@ export class Node {
   }
 
   private loadArray(array: string[]) {
+    const first = this.children.length;
     for (const child of array) {
       this.addStringNode(child, null);
+    }
+    this.markValues(first);
+  }
+
+  // children added from `first` on are values of a choice, except the free-form "arg"
+  private markValues(first: number) {
+    for (const child of this.children.slice(first)) {
+      child.value = child.type !== "arg";
     }
   }
 
@@ -146,6 +156,7 @@ export class Node {
   }
 
   addArrayString(args: string, description: string, rawChildren: SchemaObject | null) {
+    const first = this.children.length;
     for (const arg of args.split(/\s*\|\s*/)) {
       if (arg.startsWith("$")) {
         continue;
@@ -153,6 +164,7 @@ export class Node {
 
       this.load({ [arg]: rawChildren });
     }
+    this.markValues(first);
   }
 
   // This is a bit hacky, but migrates null node, which is originally nested choice element,

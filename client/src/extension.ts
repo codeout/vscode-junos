@@ -29,6 +29,8 @@ export function activate(context: ExtensionContext) {
       { scheme: "untitled", language: "junos" },
     ],
     synchronize: {
+      // Tell the server when junos.* settings change
+      configurationSection: "junos",
       // Notify the server about file changes to '.clientrc files contained in the workspace
       fileEvents: workspace.createFileSystemWatcher("**/.clientrc"),
     },

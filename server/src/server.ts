@@ -6,6 +6,7 @@ import { completion, completionResolve } from "./completion";
 import { definition, updateDefinitions } from "./definition";
 import { hover } from "./hover";
 import { forgetReferences, prepareRename, references, rename } from "./references";
+import { legend, semanticTokens } from "./semantic";
 import { Session } from "./session";
 import { validateTextDocument } from "./validation";
 
@@ -25,6 +26,7 @@ session.connection.onInitialize(() => {
       },
       definitionProvider: true,
       hoverProvider: true,
+      semanticTokensProvider: { legend, full: true },
       referencesProvider: true,
       renameProvider: { prepareProvider: true },
     },
@@ -35,6 +37,12 @@ session.connection.onCompletion(completion(session));
 session.connection.onCompletionResolve(completionResolve(session));
 session.connection.onDefinition(definition(session));
 session.connection.onHover(hover(session));
+session.connection.languages.semanticTokens.on(semanticTokens(session));
+
+// junos.highlighting may have switched between semantic and classic highlighting
+session.connection.onDidChangeConfiguration(() => {
+  session.connection.languages.semanticTokens.refresh();
+});
 session.connection.onReferences(references(session));
 session.connection.onPrepareRename(prepareRename(session));
 session.connection.onRenameRequest(rename(session));

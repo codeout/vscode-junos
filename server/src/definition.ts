@@ -97,6 +97,14 @@ export class DefinitionStore {
     return best;
   }
 
+  /**
+   * Every definition range of the document
+   */
+  ranges(uri: string): Range[] {
+    const logicalSystems = Object.values(this.store[uri] || {});
+    return logicalSystems.flatMap((types) => Object.values(types).flatMap((symbols) => Object.values(symbols).flat()));
+  }
+
   clear(uri: string) {
     if (!this.store[uri]) {
       return;
