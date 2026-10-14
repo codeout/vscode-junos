@@ -1,3 +1,21 @@
+## [Unreleased]
+
+### Added
+
+* Completion and validation for curly-brace (`show configuration`) format
+  * Structure errors: unmatched `}` and missing `}`
+  * References defined in curly-brace format are completed and validated in both formats
+  * Go to definition
+* Go to definition for an element of a bracket list like `import [ a b ]`
+* Indent with 4 spaces and indentation rules for `{` / `}`
+
+### Fixed
+
+* Bracket lists like `authentication-order [ radius password ]` were reported as invalid
+* Quoted strings containing `\"` broke validation and highlighting
+* `description` values with `* , = +` were partly highlighted, and `'` started a string
+
+
 ## [0.5.3] - 2026-10-03
 
 ### Fixed

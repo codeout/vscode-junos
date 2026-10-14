@@ -11,6 +11,8 @@ The language server has the following language features:
 * Syntax validation
 * Syntax highlighting
 
+Completion, validation and go to definition work for both `set` commands and the curly-brace format of `show configuration`.
+
 ### Experimental Features
 
 ⚠️ These features may work, but still under development. The behavior might be changed ⚠️
