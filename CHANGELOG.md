@@ -1,4 +1,4 @@
-## [Unreleased]
+## [0.6.0] - 2026-10-15
 
 ### Added
 
@@ -18,8 +18,13 @@
 * Report extended-community regular expressions (e.g. `members "^target:65000:.*$"`) in communities used by a `vrf-import` policy, which Junos does not support
 * Go to definition, validation and completion for routing-instances: routing tables such as `next-table VRF1.inet.0` (also `import-rib`, `export-rib`) and `routing-instance <name>` statements (syslog, ntp, firewall, ...)
 
+### Changed
+
+* The Junos schema is built from the compiled DDL files of Junos 26.2 images (MX, SRX, cJunosEvolved) instead of the 22.4 XSD, so current statements are known
+
 ### Fixed
 
+* Statements that take several values in a row (`port-range 0 3`, `mpls priority 7 0`) lost all but one value in the schema
 * Bracket lists like `authentication-order [ radius password ]` were reported as invalid
 * Quoted strings containing `\"` broke validation and highlighting
 * `description` values with `* , = +` were partly highlighted, and `'` started a string
