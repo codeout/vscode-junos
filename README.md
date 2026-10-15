@@ -46,11 +46,12 @@ Completion, validation and go to definition work for both `set` commands and the
 
 ## Junos schema
 
-The extension's knowledge of Junos statements comes from `server/src/junos.js`, built by
-[junoser](https://github.com/codeout/junoser) from Juniper's configuration XSD.
+The extension's knowledge of Junos statements comes from `server/src/junos.js`, built from the compiled DDL
+files of Junos 26.2 images (MX, SRX and cJunosEvolved) with [junos-ddl-schema](../junos-ddl-schema), which
+produces junoser's format.
 
-To build the extension with another schema in the same format, e.g. one built from the compiled DDL files
-of Junos images with [junos-ddl-schema](../junos-ddl-schema), put it at `server/src/junos.local.js` (git
+To build the extension with another schema in the same format, e.g. one built from other images or
+junoser's XSD build, put it at `server/src/junos.local.js` (git
 ignores it) or point `JUNOS_SCHEMA` at it, then run `npm run compile` or `npm run package`:
 
 ```
