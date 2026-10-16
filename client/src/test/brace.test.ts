@@ -133,6 +133,40 @@ suite("Should handle curly-brace format", () => {
     }
   });
 
+  test("Show incoming calls: uses with the statements they are in", async () => {
+    const docUri = getDocUri("junos-brace.conf");
+    await activate(docUri);
+    const doc = state.doc!;
+    const text = doc.getText();
+    const position = doc.positionAt(text.indexOf("prefix-list RFC1918 {") + "prefix-list ".length + 1);
+
+    const [item] = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
+      "vscode.prepareCallHierarchy",
+      docUri,
+      position,
+    );
+    assert.equal(item.name, "RFC1918");
+    const calls = await vscode.commands.executeCommand<vscode.CallHierarchyIncomingCall[]>(
+      "vscode.provideIncomingCalls",
+      item,
+    );
+    const callers = calls.map((c) => `${c.from.name} | ${c.from.detail}`);
+    assert.deepEqual(callers, [
+      "policy-statement PS1 › term rf | from prefix-list",
+      "policy-statement PS1 › term rf | from prefix-list-filter",
+    ]);
+
+    // expanding a use inside policy-statement PS1 lists the uses of PS1
+    const next = await vscode.commands.executeCommand<vscode.CallHierarchyIncomingCall[]>(
+      "vscode.provideIncomingCalls",
+      calls[0].from,
+    );
+    assert.ok(
+      next.some((c) => c.from.name === "RG1" || c.from.name.endsWith("RG1")),
+      JSON.stringify(next.map((c) => c.from.name)),
+    );
+  });
+
   suite("Hover", () => {
     const docUri = getDocUri("junos-brace.conf");
 

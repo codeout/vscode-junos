@@ -4,6 +4,10 @@
 
 * Go to definition, find all references, rename, validation and completion for prefix-lists in `prefix-list-filter` and `ipv6-source-prefix-list` / `ipv6-destination-prefix-list`
 * Go to definition, find all references, rename, validation and completion for configuration groups in `apply-groups` and `apply-groups-except`
+* Go to definition, find all references and validation for security NAT pools, applications and application sets, zone address sets and `import-policy` (rib-groups)
+* Semantic highlighting: interface names and address families (`family inet`, ...) get their own colours
+* Statements annotated with `## Warning:` (unsupported platform, license) are reported as warnings covering the `##` block and the statement
+* Show Incoming Calls (Shift+Alt+H) lists the uses of a name with the statement they are in (`policy-statement PS1 › term rf`); Show Outgoing Calls lists the names a definition uses
 
 ### Fixed
 

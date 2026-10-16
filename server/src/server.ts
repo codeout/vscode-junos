@@ -4,6 +4,7 @@ import { TextDocumentSyncKind } from "vscode-languageserver/node";
 
 import { completion, completionResolve } from "./completion";
 import { definition, updateDefinitions } from "./definition";
+import { incomingCalls, outgoingCalls, prepareCallHierarchy } from "./hierarchy";
 import { hover } from "./hover";
 import { forgetReferences, prepareRename, references, rename } from "./references";
 import { legend, semanticTokens } from "./semantic";
@@ -29,6 +30,7 @@ session.connection.onInitialize(() => {
       semanticTokensProvider: { legend, full: true },
       referencesProvider: true,
       renameProvider: { prepareProvider: true },
+      callHierarchyProvider: true,
     },
   };
 });
@@ -45,6 +47,9 @@ session.connection.onDidChangeConfiguration(() => {
 });
 session.connection.onReferences(references(session));
 session.connection.onPrepareRename(prepareRename(session));
+session.connection.languages.callHierarchy.onPrepare(prepareCallHierarchy(session));
+session.connection.languages.callHierarchy.onIncomingCalls(incomingCalls(session));
+session.connection.languages.callHierarchy.onOutgoingCalls(outgoingCalls(session));
 session.connection.onRenameRequest(rename(session));
 
 session.connection.languages.diagnostics.on(async (params) => {

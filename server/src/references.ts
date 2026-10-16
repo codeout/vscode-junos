@@ -25,6 +25,7 @@ export type Reference = {
   types: string[]; // symbol types (keys of session.definitions) the name may refer to
   allowed: boolean; // a keyword such as "all" or "any", not a reference
   denied: boolean; // never valid here
+  statement: { text: string; start: number }; // the "set" line (without the command) up to the name, in the view
 };
 
 type SymbolType = string | ((m: RegExpMatchArray) => string | string[]);
@@ -195,7 +196,7 @@ export function collectReferences(session: Session, doc: TextDocument): Referenc
           continue;
         }
         seen.add(key);
-        references.push({ ...ref, start, end });
+        references.push({ ...ref, start, end, statement: { text: m[2].slice(0, ref.start), start: lineStart } });
       }
     }
   }
@@ -207,7 +208,7 @@ export function collectReferences(session: Session, doc: TextDocument): Referenc
 /**
  * References of `rule` in a "set" line (without the command); offsets relative to `line`.
  */
-function matchRule(session: Session, line: string, rule: Rule): Reference[] {
+function matchRule(session: Session, line: string, rule: Rule): Omit<Reference, "statement">[] {
   // Spaces inside quoted strings do not separate words (same length, so offsets stay valid)
   line = line.replaceAll(/"(?:[^"\\]|\\.)*"/g, (q) => q.replaceAll(/\s/g, "_"));
   const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+)\\s+)?(?:.*\\s)?${rule.pattern}\\s+)(?<arg>\\S+)`);
@@ -238,7 +239,7 @@ function matchRule(session: Session, line: string, rule: Rule): Reference[] {
     }
   }
 
-  const out: Reference[] = [];
+  const out: Omit<Reference, "statement">[] = [];
   for (const { arg: word, start: wordStart } of args) {
     // a quoted name refers to the name without quotes
     const quoted = word.length > 1 && word.startsWith('"') && word.endsWith('"');
@@ -287,12 +288,12 @@ export function definitionsOfReferenceAt(session: Session, doc: TextDocument, of
   );
 }
 
-type Target = { name: string; logicalSystem: string; types: string[]; range: { start: number; end: number } };
+export type Target = { name: string; logicalSystem: string; types: string[]; range: { start: number; end: number } };
 
 /**
  * The symbol under the cursor: a reference, or a definition.
  */
-function targetAt(session: Session, doc: TextDocument, offset: number): Target | undefined {
+export function targetAt(session: Session, doc: TextDocument, offset: number): Target | undefined {
   const ref = referenceAt(session, doc, offset);
   if (ref) {
     const defined = ref.types.filter(
@@ -317,7 +318,7 @@ function targetAt(session: Session, doc: TextDocument, offset: number): Target |
   }
 }
 
-function referencesOf(session: Session, doc: TextDocument, target: Target) {
+export function referencesOf(session: Session, doc: TextDocument, target: Target) {
   return collectReferences(session, doc).filter(
     (r) =>
       r.name === target.name &&
