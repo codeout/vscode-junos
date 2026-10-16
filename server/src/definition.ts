@@ -96,11 +96,17 @@ export class DefinitionStore {
   }
 
   /**
-   * Every definition range of the document
+   * Every definition range of the document, with its symbol type
    */
-  ranges(uri: string): Range[] {
+  ranges(uri: string): { type: string; range: Range }[] {
     const logicalSystems = Object.values(this.store[uri] || {});
-    return logicalSystems.flatMap((types) => Object.values(types).flatMap((symbols) => Object.values(symbols).flat()));
+    return logicalSystems.flatMap((types) =>
+      Object.entries(types).flatMap(([type, symbols]) =>
+        Object.values(symbols)
+          .flat()
+          .map((range) => ({ type, range })),
+      ),
+    );
   }
 
   clear(uri: string) {

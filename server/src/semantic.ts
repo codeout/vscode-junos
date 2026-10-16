@@ -14,15 +14,17 @@ import type { Session } from "./session";
  *   macro       set / delete / activate / deactivate, inactive: / protect: / ...
  *   keyword     statements (system, interfaces, vrf-import, ...)
  *   enumMember  values from a fixed set (instance-type vrf, then accept, ...)
- *   variable    names you define (policies, communities, interfaces, instances, terms, ...) and their uses;
+ *   variable    names you define (policies, communities, instances, terms, ...) and their uses;
  *               the definition has the "declaration" modifier
+ *   interface   interface names, defined and used (xe-0/0/0, xe-0/0/0.0, ae0, ...)
+ *   family      the address family of "family inet", "family inet6", ...
  *   number      numbers, addresses and prefixes
  *   string      other values
  *
  * Colours come from the user's theme. Comments and punctuation keep the TextMate grammar's colours.
  */
 export const legend: SemanticTokensLegend = {
-  tokenTypes: ["macro", "keyword", "enumMember", "variable", "number", "string"],
+  tokenTypes: ["macro", "keyword", "enumMember", "variable", "number", "string", "interface", "family"],
   tokenModifiers: ["declaration"],
 };
 
@@ -62,22 +64,26 @@ export function semanticTokens(session: Session) {
   };
 }
 
+function nameType(symbolTypes: string[]) {
+  return symbolTypes.includes("interface") ? type.interface : type.variable;
+}
+
 export function classify(session: Session, doc: TextDocument): Entry[] {
   const text = doc.getText();
   const entries: Entry[] = [];
 
   // Names: definitions and references, by source range
   const names = new Map<number, Entry>();
-  for (const range of session.definitions.ranges(doc.uri)) {
+  for (const { type: symbolType, range } of session.definitions.ranges(doc.uri)) {
     const start = doc.offsetAt(range.start);
     const end = doc.offsetAt(range.end);
     if (!/\s/.test(text.slice(start, end))) {
-      names.set(start, { start, end, type: type.variable, modifiers: DECLARATION });
+      names.set(start, { start, end, type: nameType([symbolType]), modifiers: DECLARATION });
     }
   }
   for (const ref of collectReferences(session, doc)) {
-    if (!names.has(ref.start)) {
-      names.set(ref.start, { start: ref.start, end: ref.end, type: type.variable, modifiers: 0 });
+    if (!names.has(ref.start) && !ref.allowed) {
+      names.set(ref.start, { start: ref.start, end: ref.end, type: nameType(ref.types), modifiers: 0 });
     }
   }
 
@@ -103,6 +109,8 @@ export function classify(session: Session, doc: TextDocument): Entry[] {
       } else {
         tokenType = type.string;
       }
+    } else if (path.endsWith(` family ${pathWord(t)}`) || path === `family ${pathWord(t)}`) {
+      tokenType = type.family;
     } else if (node.value && node.children.length === 0) {
       tokenType = type.enumMember;
     } else {

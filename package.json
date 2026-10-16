@@ -119,6 +119,26 @@
         "editor.semanticHighlighting.enabled": true
       }
     },
+    "semanticTokenTypes": [
+      {
+        "id": "family",
+        "superType": "keyword",
+        "description": "An address family of a Junos configuration (family inet, family inet6, ...)"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "language": "junos",
+        "scopes": {
+          "family": [
+            "keyword.control.family.junos"
+          ],
+          "interface": [
+            "entity.name.type.interface.junos"
+          ]
+        }
+      }
+    ],
     "grammars": [
       {
         "language": "junos",
