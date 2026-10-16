@@ -58,10 +58,16 @@ function isSkipLine(line: string) {
 
 /**
  * Split Junos configuration text into words, quoted strings and the delimiters "{ } ; [ ]".
- * Comments ("/* *\/" and "#" at the start of a token) are dropped. A quoted string keeps its quotes,
- * and \" does not end it.
+ * Comments ("/* *\/" and "#" at the start of a token) are dropped; "/* *\/" comments (annotations) are
+ * collected in `annotations` when given. A quoted string keeps its quotes, and \" does not end it.
  */
-export function lex(text: string, start = 0, end = text.length, skipLines = false): LexResult {
+export function lex(
+  text: string,
+  start = 0,
+  end = text.length,
+  skipLines = false,
+  annotations?: { start: number; end: number; text: string }[],
+): LexResult {
   const tokens: LexToken[] = [];
   let i = start;
 
@@ -88,6 +94,7 @@ export function lex(text: string, start = 0, end = text.length, skipLines = fals
       if (close === -1 || close + 2 > end) {
         return { tokens, openAtEnd: true };
       }
+      annotations?.push({ start: i, end: close + 2, text: text.slice(i + 2, close).trim() });
       i = close + 2;
     } else if (c === '"') {
       let j = i + 1;

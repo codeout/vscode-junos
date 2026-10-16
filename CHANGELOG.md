@@ -12,7 +12,7 @@
 * Go to definition of an interface unit (`interface et-0/0/0.444`) lands on its `unit 444`
 * Error for a unit number used twice in one interface
 * Groups Junos applies by itself (`re0`, `re1`, `node0`, `node1`, `memberN`) are highlighted and explained on hover
-* Command "Junos: Convert to set commands" opens the curly-brace configuration as `set` commands
+* Command "Junos: Convert to set commands" opens the curly-brace configuration as `set` commands, with annotations as `annotate` commands at the end
 * Show Incoming Calls (Shift+Alt+H) lists the uses of a name with the statement they are in (`policy-statement PS1 › term rf`); Show Outgoing Calls lists the names a definition uses
 
 ### Fixed

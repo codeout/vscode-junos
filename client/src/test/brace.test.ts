@@ -199,6 +199,18 @@ suite("Should handle curly-brace format", () => {
     }
     // a block with statements of its own is not a line of its own
     assert.ok(!lines.has("set interfaces ge-0/0/0 unit 0"));
+
+    // annotations last, after a blank line, at the statement's level
+    const all = converted.getText().split("\n");
+    const first = all.findIndex((l) => /^(?:edit|annotate) /.test(l));
+    assert.equal(all[first - 1], "");
+    assert.ok(all.slice(first).every((l) => /^(?:edit |annotate |top$)|^$/.test(l) || !/^(?:set|deactivate) /.test(l)));
+    const edit = all.indexOf("edit routing-options rib-groups");
+    assert.deepEqual(all.slice(edit, edit + 3), [
+      "edit routing-options rib-groups",
+      'annotate RG1 "leak into VRF1"',
+      "top",
+    ]);
     await vscode.commands.executeCommand("workbench.action.revertAndCloseActiveEditor");
   });
 

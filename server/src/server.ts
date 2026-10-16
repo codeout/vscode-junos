@@ -51,7 +51,7 @@ session.connection.onReferences(references(session));
 // "Junos: Convert to set commands"
 session.connection.onRequest("junos/convertToSet", (params: { uri: string }) => {
   const doc = session.documents.get(params.uri);
-  return doc ? toSetCommands(doc.getText(), session.analyze(doc).braces.statements) : null;
+  return doc ? toSetCommands(doc.getText(), session.analyze(doc).braces.statements, session.parser) : null;
 });
 session.connection.onPrepareRename(prepareRename(session));
 session.connection.languages.callHierarchy.onPrepare(prepareCallHierarchy(session));

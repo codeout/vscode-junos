@@ -12,7 +12,8 @@ The language server has the following language features:
 * Syntax highlighting
 * Help texts on hover
 * Command "Junos: Convert to set commands": the curly-brace configuration as `set` commands, as
-  `show configuration | display set` prints them, in a new editor
+  `show configuration | display set` prints them, in a new editor. Annotations (`/* ... */`), which
+  `display set` leaves out, follow after a blank line as `edit` / `annotate` / `top` commands
 
 ### Highlighting
 
