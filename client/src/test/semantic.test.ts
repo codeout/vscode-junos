@@ -52,6 +52,8 @@ suite("Should highlight semantically", () => {
       ["apply-groups [ G-IF", "G-IF", "variable"],
       ["apply-groups [ G1 re0", "re0", "variable.defaultLibrary"],
       ["    re0 {", "re0", "variable.declaration.defaultLibrary"],
+      ["apply-groups [ G1 re0 node1 member3", "node1", "variable.defaultLibrary"],
+      ["apply-groups [ G1 re0 node1 member3", "member3", "variable.defaultLibrary"],
       ["    ge-0/0/1 {", "ge-0/0/1", "interface.declaration"],
       ["interface ge-0/0/0.0 {", "ge-0/0/0.0", "interface"],
       ["family inet6 {", "inet6", "family"],

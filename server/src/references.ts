@@ -51,6 +51,26 @@ export const applyGroupsReference = "apply-groups(?:-except)?";
 export const builtinGroups = ["junos-defaults"];
 
 /**
+ * What a group Junos applies by itself is for, or undefined for other groups
+ */
+export function specialGroup(name: string) {
+  const m = name.match(/^(re|node|member)(\d+)$/);
+  if (!m) {
+    return;
+  }
+  const [, kind, n] = m;
+  if (kind === "re" && (n === "0" || n === "1")) {
+    return `Special configuration group: applied only on Routing Engine ${n} (RE${n}) of a platform with redundant Routing Engines`;
+  }
+  if (kind === "node" && (n === "0" || n === "1")) {
+    return `Special configuration group: applied only on node ${n} of a chassis cluster`;
+  }
+  if (kind === "member") {
+    return `Special configuration group: applied only on member ${n} of a Virtual Chassis`;
+  }
+}
+
+/**
  * Statements that take a routing table name; a table "<instance>.<family>.<n>" refers to a routing-instance.
  * Tables of the master instance ("inet.0", "bgp.l3vpn.0") and internal ones ("__...") refer to nothing.
  */

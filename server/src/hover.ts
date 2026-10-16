@@ -1,9 +1,10 @@
-import type { Hover, HoverParams } from "vscode-languageserver";
+import type { Hover, HoverParams, Range } from "vscode-languageserver";
 import { MarkupKind } from "vscode-languageserver";
 
 import type { Token } from "./config";
 import { pathWord, tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
+import { referenceAt, specialGroup } from "./references";
 import type { Session } from "./session";
 
 /**
@@ -17,6 +18,20 @@ export function hover(session: Session) {
     }
 
     const offset = doc.offsetAt(params.position);
+
+    // a group Junos applies by itself (re0, node0, member0, ...)
+    const ref = referenceAt(session, doc, offset);
+    const def = session.definitions.at(doc.uri, params.position);
+    let group: { name: string; range: Range } | undefined;
+    if (ref?.types.includes("group")) {
+      group = { name: ref.name, range: { start: doc.positionAt(ref.start), end: doc.positionAt(ref.end) } };
+    } else if (def?.type === "group") {
+      group = { name: def.symbol, range: def.range };
+    }
+    const special = group && specialGroup(group.name);
+    if (group && special) {
+      return { contents: { kind: MarkupKind.Markdown, value: `**${group.name}** — ${special}` }, range: group.range };
+    }
     const lineStart = doc.offsetAt({ line: params.position.line, character: 0 });
     const lineText = doc.getText().slice(lineStart).split("\n", 1)[0];
 

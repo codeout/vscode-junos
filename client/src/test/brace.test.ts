@@ -12,6 +12,8 @@ suite("Should handle curly-brace format", () => {
     const expected = [
       ["VRF-GONE", '"VRF-GONE" is not defined'],
       ["G-MTU", '"G-MTU" is not defined'],
+      ["node1", '"node1" is not defined'],
+      ["member3", '"member3" is not defined'],
       ["mtuu 9000", '"mtuu 9000" is invalid'],
       ["unit 5", "unit 5 is defined more than once in ge-0/0/2"],
       ["unit 5", "unit 5 is defined more than once in ge-0/0/2", "last"],
@@ -194,6 +196,12 @@ suite("Should handle curly-brace format", () => {
         await hoverText("route-distinguisher 65000:1", "route-distinguisher"),
         /^\*\*route-distinguisher\*\*/,
       );
+    });
+
+    test("explains groups Junos applies by itself", async () => {
+      for (const needle of ["apply-groups [ G1 re0", "    re0 {"]) {
+        assert.match(await hoverText(needle, "re0"), /^\*\*re0\*\* — .*Routing Engine 0/);
+      }
     });
 
     test("shows nothing in a comment", async () => {

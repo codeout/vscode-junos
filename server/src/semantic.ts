@@ -5,7 +5,7 @@ import type { TextDocument } from "vscode-languageserver-textdocument";
 import type { Token } from "./config";
 import { lex, modifierPattern, pathWord, tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
-import { collectReferences } from "./references";
+import { collectReferences, specialGroup } from "./references";
 import type { Session } from "./session";
 
 /*
@@ -17,7 +17,7 @@ import type { Session } from "./session";
  *   variable    names you define (policies, communities, instances, terms, ...) and their uses;
  *               the definition has the "declaration" modifier
  *   interface   interface names, defined and used (xe-0/0/0, xe-0/0/0.0, ae0, ...)
- *               names of groups Junos applies by itself (re0, re1) also have the "defaultLibrary" modifier
+ *               names of groups Junos applies by itself (re0, node0, member0, ...) also have the "defaultLibrary" modifier
  *   family      "family" and the address family of "family inet", "family inet6", ...
  *   number      numbers, addresses and prefixes
  *   string      other values
@@ -33,10 +33,9 @@ const type = Object.fromEntries(legend.tokenTypes.map((t, i) => [t, i])) as Reco
 const DECLARATION = 1;
 const DEFAULT_LIBRARY = 2;
 
-// Groups Junos applies to the Routing Engine they are named after
-const builtinGroups = new Set(["re0", "re1"]);
+// Groups Junos applies by itself (re0, node0, member0, ...)
 const groupModifier = (types: string[], name: string) =>
-  types.includes("group") && builtinGroups.has(name) ? DEFAULT_LIBRARY : 0;
+  types.includes("group") && specialGroup(name) ? DEFAULT_LIBRARY : 0;
 
 const numberPattern = /^-?\d+(?:\.\d+)?[kmgt]?$/i;
 const ipv4Pattern = /^\d{1,3}(?:\.\d{1,3}){3}(?:\/\d{1,2})?$/;
