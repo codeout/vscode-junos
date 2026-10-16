@@ -44,13 +44,38 @@ const delimiters = new Set(["{", "}", ";", "[", "]"]);
 // Statement prefixes in "load merge/replace" files and in "show configuration" output
 export const modifierPattern = /^(?:inactive|active|protect|unprotect|atomic|replace|delete|update):$/;
 
+/**
+ * Configuration mode commands other than set / delete / activate / deactivate: "edit interfaces",
+ * "annotate et-0/0/0 \"...\"", "top", "up 2", "exit", "protect interfaces", "rename ... to ...", ... A
+ * curly-brace statement ends with ";" or "{", so "up 100;" stays a statement.
+ */
+export const commandPattern =
+  /^[\t ]*(?:(?:edit|annotate)(?=[\t ]|$)|(?:top|exit)(?=[\t ]*$)|up(?=(?:[\t ]+\d+)?[\t ]*$)|(?:protect|unprotect|rename|copy|insert)(?=[\t ]+[^;{}]*$))/;
+
 // Lines which are not configuration statements in a curly-brace file
 const skipLinePatterns = [
   prefixPattern, // "set" style lines are handled separately
+  commandPattern,
   /^\s*\[edit(?:\s[^\]]*)?\]\s*$/, // [edit interfaces]
   /^\s*\{[\w:-]+\}\s*$/, // {master:0}
   /^\s*[\w.-]+@[\w.-]+[#>%]/, // user@host# show configuration
 ];
+
+// The end of the line where a quoted string opened on line [start, eol) closes
+function quotedEnd(text: string, start: number, eol: number) {
+  let open = false;
+  let i = start;
+  for (; i < text.length; i++) {
+    if (text[i] === "\\") {
+      i++;
+    } else if (text[i] === '"') {
+      open = !open;
+    } else if (text[i] === "\n" && !open && i >= eol) {
+      return i;
+    }
+  }
+  return open ? eol : text.length;
+}
 
 function isSkipLine(line: string) {
   return skipLinePatterns.some((p) => p.test(line));
@@ -74,8 +99,10 @@ export function lex(
   while (i < end) {
     if (skipLines && (i === 0 || text[i - 1] === "\n")) {
       const eol = lineEnd(text, i);
-      if (isSkipLine(text.slice(i, eol))) {
-        i = eol;
+      const line = text.slice(i, eol);
+      if (isSkipLine(line)) {
+        // a command's quoted string may go on over several lines ("annotate x \"a\nb\"")
+        i = commandPattern.test(line) ? quotedEnd(text, i, eol) : eol;
         continue;
       }
     }

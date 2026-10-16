@@ -3,7 +3,7 @@ import { SemanticTokensBuilder } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 
 import type { Token } from "./config";
-import { lex, modifierPattern, pathWord, tokenizeLine } from "./config";
+import { commandPattern, lex, modifierPattern, pathWord, tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
 import { collectReferences, specialGroup } from "./references";
 import type { Session } from "./session";
@@ -169,6 +169,25 @@ export function classify(session: Session, doc: TextDocument): Entry[] {
     const commandStart = m.index + m[1].length - command.length;
     entries.push({ start: commandStart, end: commandStart + command.length, type: type.macro, modifiers: 0 });
     statement([], tokenizeLine(m[3], m.index + m[1].length + m[2].length));
+  }
+
+  // other configuration mode commands: "edit <path>" walks the hierarchy like "set"; for the others, only
+  // the command and quoted strings ("annotate et-0/0/0 \"...\"")
+  const commands = new RegExp(`(${commandPattern.source})(.*)`, "gm");
+  while ((m = commands.exec(text))) {
+    const command = m[1].trimStart();
+    const commandStart = m.index + m[1].length - command.length;
+    entries.push({ start: commandStart, end: commandStart + command.length, type: type.macro, modifiers: 0 });
+    const words = tokenizeLine(m[2], m.index + m[1].length);
+    if (command === "edit") {
+      statement([], words);
+      continue;
+    }
+    for (const w of words) {
+      if (w.text.startsWith('"')) {
+        entries.push({ start: w.start, end: w.end, type: type.string, modifiers: 0 });
+      }
+    }
   }
 
   // curly-brace statements
