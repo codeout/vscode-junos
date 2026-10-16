@@ -37,7 +37,17 @@ type Rule = {
   symbol?: (arg: string) => { name: string; offset: number } | undefined;
   // the statement also has sub-statements: an argument that is one of its keywords is no reference
   skipKeywords?: boolean;
+  // the name is defined outside of logical systems
+  global?: boolean;
 };
+
+/**
+ * "apply-groups <name>" and "apply-groups-except <name>"
+ */
+export const applyGroupsReference = "apply-groups(?:-except)?";
+
+// Groups that exist without being configured
+export const builtinGroups = ["junos-defaults"];
 
 /**
  * Statements that take a routing table name; a table "<instance>.<family>.<n>" refers to a routing-instance.
@@ -76,6 +86,7 @@ function rules(session: Session, uri: string): Rule[] {
       allow: (m) => (isIpPrefix(m.groups!.arg) ? [m.groups!.arg] : []),
     },
     { type: "policy-statement", pattern: policyStatementReference },
+    { type: "group", pattern: applyGroupsReference, allow: builtinGroups, global: true },
     { type: "community", pattern: communityReference },
     { type: "as-path", pattern: "from\\s+as-path" },
     { type: "as-path-group", pattern: "from\\s+as-path-group" },
@@ -188,7 +199,7 @@ export function collectReferences(session: Session, doc: TextDocument): Referenc
 function matchRule(session: Session, line: string, rule: Rule): Reference[] {
   // Spaces inside quoted strings do not separate words (same length, so offsets stay valid)
   line = line.replaceAll(/"(?:[^"\\]|\\.)*"/g, (q) => q.replaceAll(/\s/g, "_"));
-  const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+))?.*\\s${rule.pattern}\\s+)(?<arg>\\S+)`);
+  const m = line.match(`^(?<stmt>(?:logical-systems\\s+(?<ls>\\S+)\\s+)?(?:.*\\s)?${rule.pattern}\\s+)(?<arg>\\S+)`);
   if (!m) {
     return [];
   }
@@ -199,7 +210,7 @@ function matchRule(session: Session, line: string, rule: Rule): Reference[] {
   const allowList = typeof rule.allow === "function" ? rule.allow(m) : rule.allow;
   const typeOrTypes = typeof rule.type === "function" ? rule.type(m) : rule.type;
   const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes];
-  const logicalSystem = m.groups!.ls || "global";
+  const logicalSystem = (!rule.global && m.groups!.ls) || "global";
 
   const stmtLength = (m.index || 0) + m.groups!.stmt.length;
   let args = [{ arg: m.groups!.arg, start: stmtLength }];

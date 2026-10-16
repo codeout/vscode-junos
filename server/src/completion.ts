@@ -5,7 +5,7 @@ import type { Token } from "./config";
 import { contextAt, pathWord, tokenizeLine } from "./config";
 import { communityReference, policyStatementReference, prefixListReference } from "./definition";
 import { prefixPattern } from "./parser";
-import { routingInstanceReference, routingTableReference } from "./references";
+import { applyGroupsReference, routingInstanceReference, routingTableReference } from "./references";
 import type { Session } from "./session";
 
 export function completion(session: Session) {
@@ -44,6 +44,7 @@ export function completion(session: Session) {
       ["interface", /\s+interface\s+$/],
       ["prefix-list", new RegExp(`\\s+${prefixListReference}\\s+$`)],
       ["policy-statement", new RegExp(`\\s+${policyStatementReference}\\s+$`)],
+      ["group", new RegExp(`\\s+${applyGroupsReference}\\s+$`)],
       ["community", new RegExp(`\\s+${communityReference}\\s+$`)],
       ["as-path", /\s+from\s+as-path\s+$/],
       ["as-path-group", /\s+from\s+as-path-group\s+$/],
@@ -114,7 +115,10 @@ export function completion(session: Session) {
         // a name may be defined under several of the types
         const names = [
           ...new Set(
-            types.flatMap((type) => Object.keys(session.definitions.getDefinitions(uri, logicalSystem, type))),
+            types.flatMap((type) =>
+              // configuration groups are global
+              Object.keys(session.definitions.getDefinitions(uri, type === "group" ? "global" : logicalSystem, type)),
+            ),
           ),
         ];
         addReferences(expand ? names.flatMap((n) => expand(n)) : names, keywords, keepWord);

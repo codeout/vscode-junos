@@ -411,6 +411,12 @@ export function updateDefinitions(session: Session, textDocument: TextDocument) 
   updateAddressDefinitions(session, textDocument);
   updateApplicationDefinitions(session, textDocument);
   updateRoutingInstanceDefinitions(session, textDocument);
+  updateGroupDefinitions(session, textDocument);
+}
+
+// Configuration groups are global; "apply-groups" in a logical system refers to them too
+function updateGroupDefinitions(session: Session, textDocument: TextDocument) {
+  insertDefinitions(session, textDocument, "group", "groups\\s+)(\\S+)", (m) => m[3]);
 }
 
 function updateRoutingInstanceDefinitions(session: Session, textDocument: TextDocument) {

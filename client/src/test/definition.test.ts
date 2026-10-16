@@ -14,6 +14,8 @@ suite("Should go to definition", () => {
     ["prefix-list-filter", "prefix-list-filter foo-prefix", "prefix-list foo-prefix 10.0.0.0/8"],
     ["source-prefix-list", "source-prefix-list foo-prefix", "prefix-list foo-prefix 10.0.0.0/8"],
     ["destination-prefix-list", "destination-prefix-list foo-prefix", "prefix-list foo-prefix 10.0.0.0/8"],
+    ["apply-groups", "set apply-groups foo-group", "groups foo-group system"],
+    ["apply-groups in a logical system", "ls-1 apply-groups [ foo-group", "groups foo-group system"],
     ["from community", "from community foo-community", "community foo-community members"],
     ["l2circuit community", "xe-0/0/0.0 community foo-community\n", "community foo-community members"],
     ["aggregate-label community", "aggregate-label community foo-community", "community foo-community members"],

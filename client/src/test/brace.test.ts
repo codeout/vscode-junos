@@ -11,6 +11,7 @@ suite("Should handle curly-brace format", () => {
 
     const expected = [
       ["VRF-GONE", '"VRF-GONE" is not defined'],
+      ["G-MTU", '"G-MTU" is not defined'],
       ["mtuu 9000", '"mtuu 9000" is invalid'],
       ["VRF-MISSING", '"VRF-MISSING" is not defined'],
       ["PS-MISSING", '"PS-MISSING" is not defined'],
@@ -46,6 +47,8 @@ suite("Should handle curly-brace format", () => {
       ["policy-statement in a bracket list", "export [ PS1", "policy-statement PS1", "PS1"],
       ["prefix-list", "prefix-list RFC1918;", "prefix-list RFC1918 {", "RFC1918"],
       ["prefix-list-filter", "prefix-list-filter RFC1918", "prefix-list RFC1918 {", "RFC1918"],
+      ["apply-groups", "apply-groups G1", "    G1 {", "G1"],
+      ["apply-groups in a bracket list", "apply-groups [ G-IF", "    G-IF {", "G-IF"],
       ["interface unit", "interface ge-0/0/0.0", "    ge-0/0/0 {", "ge-0/0/0"],
       ["vrf-import in a bracket list", "vrf-import [ PS1", "policy-statement PS1", "PS1"],
       ["vrf-export", "vrf-export PS1", "policy-statement PS1", "PS1"],
@@ -86,6 +89,7 @@ suite("Should handle curly-brace format", () => {
         ["prefix-list RFC1918;", "prefix-list-filter RFC1918"],
       ],
       ["from a prefix-list-filter", "prefix-list-filter RFC1918", "RFC1918", ["prefix-list RFC1918;"]],
+      ["from a group definition", "    G-IF {", "G-IF", ["apply-groups [ G-IF"]],
       ["from a policy-statement definition", "policy-statement PS1 {", "PS1", ["import PS1", "export [ PS1"]],
       ["from a routing-instance definition", "    VRF1 {", "VRF1", ["next-table VRF1", "routing-instance VRF1"]],
     ] as Array<[string, string, string, string[]]>) {
@@ -244,6 +248,11 @@ suite("Should handle curly-brace format", () => {
     test("Completes defined prefix-list", async () => {
       const labels = await completionLabels(docUri, new vscode.Position(14, 29));
       assert.deepEqual(labels, ["apply-groups", "apply-groups-except", "RFC1918"]);
+    });
+
+    test("Completes defined groups in apply-groups", async () => {
+      const labels = await completionLabels(docUri, new vscode.Position(45, 13));
+      assert.ok(labels.includes("G-C"));
     });
 
     test("Completes defined prefix-list in prefix-list-filter", async () => {

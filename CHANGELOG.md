@@ -3,6 +3,7 @@
 ### Added
 
 * Go to definition, find all references, rename, validation and completion for prefix-lists in `prefix-list-filter` and `ipv6-source-prefix-list` / `ipv6-destination-prefix-list`
+* Go to definition, find all references, rename, validation and completion for configuration groups in `apply-groups` and `apply-groups-except`
 
 ### Fixed
 
