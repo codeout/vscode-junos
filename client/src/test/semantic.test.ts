@@ -53,6 +53,7 @@ suite("Should highlight semantically", () => {
       ["    ge-0/0/1 {", "ge-0/0/1", "interface.declaration"],
       ["interface ge-0/0/0.0 {", "ge-0/0/0.0", "interface"],
       ["family inet6 {", "inet6", "family"],
+      ["family inet6 {", "family", "family"],
       ['family "mpls"', '"mpls"', "family"],
     ]) {
       assert.equal(await tokenAt(needle, word), expected, `${word} in "${needle}"`);

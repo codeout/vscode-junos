@@ -17,7 +17,7 @@ import type { Session } from "./session";
  *   variable    names you define (policies, communities, instances, terms, ...) and their uses;
  *               the definition has the "declaration" modifier
  *   interface   interface names, defined and used (xe-0/0/0, xe-0/0/0.0, ae0, ...)
- *   family      the address family of "family inet", "family inet6", ...
+ *   family      "family" and the address family of "family inet", "family inet6", ...
  *   number      numbers, addresses and prefixes
  *   string      other values
  *
@@ -109,7 +109,11 @@ export function classify(session: Session, doc: TextDocument): Entry[] {
       } else {
         tokenType = type.string;
       }
-    } else if (path.endsWith(` family ${pathWord(t)}`) || path === `family ${pathWord(t)}`) {
+    } else if (
+      pathWord(t) === "family" ||
+      path.endsWith(` family ${pathWord(t)}`) ||
+      path === `family ${pathWord(t)}`
+    ) {
       tokenType = type.family;
     } else if (node.value && node.children.length === 0) {
       tokenType = type.enumMember;
