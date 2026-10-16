@@ -1,5 +1,5 @@
 import type { Diagnostic } from "vscode-languageserver";
-import { DiagnosticSeverity } from "vscode-languageserver";
+import { DiagnosticSeverity, DiagnosticTag } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 
 import { findInvalidToken, tokenizeLine } from "./config";
@@ -88,6 +88,7 @@ export async function validateTextDocument(session: Session, textDocument: TextD
     diagnostics.push({
       ...createDiagnostic(session, textDocument, warning.block.start, warning.extent.end, warning.message),
       severity: DiagnosticSeverity.Warning,
+      tags: [DiagnosticTag.Unnecessary],
       message: `Junos: ${warning.message}`,
     });
   }
