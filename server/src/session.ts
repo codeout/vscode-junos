@@ -5,6 +5,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import type { BraceParse } from "./config";
 import { ConfigView, parseBraces } from "./config";
 import { DefinitionStore } from "./definition";
+import { configuredStatements, inheritGroups } from "./groups";
 import type { Parser } from "./parser";
 import { createParser } from "./parser";
 import { ZoneAddressBookStore } from "./zone-address-book";
@@ -15,7 +16,10 @@ export class Session {
   public readonly parser: Parser;
   public readonly definitions: DefinitionStore;
   public readonly zoneAddressBooks: ZoneAddressBookStore;
-  private readonly views = new Map<string, { version: number; braces: BraceParse; view: ConfigView }>();
+  private readonly views = new Map<
+    string,
+    { version: number; braces: BraceParse; view: ConfigView; inherited: ConfigView }
+  >();
 
   constructor() {
     this.connection = createConnection(ProposedFeatures.all);
@@ -26,7 +30,8 @@ export class Session {
   }
 
   /**
-   * Curly-brace statements of the document, and its text with those statements appended as "set" lines
+   * Curly-brace statements of the document, its text with those statements appended as "set" lines, and
+   * the statements it inherits from configuration groups as "set" lines of their own
    */
   analyze(document: { uri: string; version: number; getText(): string }) {
     const cached = this.views.get(document.uri);
@@ -36,7 +41,13 @@ export class Session {
 
     const text = document.getText();
     const braces = parseBraces(text);
-    const entry = { version: document.version, braces, view: new ConfigView(text, braces.statements) };
+    const { statements } = inheritGroups(configuredStatements(text, braces.statements));
+    const entry = {
+      version: document.version,
+      braces,
+      view: new ConfigView(text, braces.statements),
+      inherited: new ConfigView("", statements),
+    };
     this.views.set(document.uri, entry);
     return entry;
   }

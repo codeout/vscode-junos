@@ -200,8 +200,9 @@ function insertDefinitions(
   // where the definition starts in the match; by default after the hierarchy (m[1])
   rangeStart: (arg: RegExpExecArray) => number = (m) => m[1].length,
 ) {
-  const { view } = session.analyze(textDocument);
-  const text = view.text;
+  // the configuration, and what it inherits from groups
+  const { view, inherited } = session.analyze(textDocument);
+  const sourceText = textDocument.getText();
 
   // FIXME: We should have implemented with named captures, but avoid them due to performance consideration
   // A match must not run into the next line: "set routing-instances" (from "routing-instances {") would
@@ -210,17 +211,24 @@ function insertDefinitions(
     "\\s",
     "[^\\S\\n]",
   );
-  const fullPattern = new RegExp(source, "gm");
-  let m: RegExpExecArray | null;
-
-  while ((m = fullPattern.exec(text))) {
-    const type = typeof symbolType === "function" ? symbolType(m) : symbolType;
-    const symbol = modifyFunction(m);
-    const start = m.index + rangeStart(m);
-    session.definitions.set(textDocument.uri, m[2] || "global", type, symbol, {
-      start: textDocument.positionAt(view.toSourceOffset(start)),
-      end: textDocument.positionAt(view.toSourceOffset(m.index + m[0].length)),
-    });
+  for (const v of [view, inherited]) {
+    const fullPattern = new RegExp(source, "gm");
+    let m: RegExpExecArray | null;
+    while ((m = fullPattern.exec(v.text))) {
+      const type = typeof symbolType === "function" ? symbolType(m) : symbolType;
+      const symbol = modifyFunction(m);
+      const end = v.toSourceOffset(m.index + m[0].length);
+      let start = v.toSourceOffset(m.index + rangeStart(m));
+      // inherited words may come from different statements of a group ("unit" and "1" of
+      // "set groups G interfaces <*> unit 1"): then the definition is the last word
+      if (start > end || sourceText.slice(start, end).includes("\n")) {
+        start = end - (m[0].match(/\S+$/)?.[0].length ?? 0);
+      }
+      session.definitions.set(textDocument.uri, m[2] || "global", type, symbol, {
+        start: textDocument.positionAt(start),
+        end: textDocument.positionAt(end),
+      });
+    }
   }
 }
 
