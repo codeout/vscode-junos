@@ -1,3 +1,14 @@
+## [Unreleased]
+
+### Added
+
+* Go to definition, find all references, rename, validation and completion for prefix-lists in `prefix-list-filter` and `ipv6-source-prefix-list` / `ipv6-destination-prefix-list`
+
+### Fixed
+
+* Prefixes in `services peer-selection ... from source-prefix-list` were reported as undefined prefix-lists
+
+
 ## [0.6.0] - 2026-10-15
 
 ### Added

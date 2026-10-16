@@ -45,6 +45,7 @@ suite("Should handle curly-brace format", () => {
       ["policy-statement", "import PS1", "policy-statement PS1", "PS1"],
       ["policy-statement in a bracket list", "export [ PS1", "policy-statement PS1", "PS1"],
       ["prefix-list", "prefix-list RFC1918;", "prefix-list RFC1918 {", "RFC1918"],
+      ["prefix-list-filter", "prefix-list-filter RFC1918", "prefix-list RFC1918 {", "RFC1918"],
       ["interface unit", "interface ge-0/0/0.0", "    ge-0/0/0 {", "ge-0/0/0"],
       ["vrf-import in a bracket list", "vrf-import [ PS1", "policy-statement PS1", "PS1"],
       ["vrf-export", "vrf-export PS1", "policy-statement PS1", "PS1"],
@@ -78,6 +79,13 @@ suite("Should handle curly-brace format", () => {
     for (const [title, from, symbol, uses] of [
       ["from a community definition", "community C1 members", "C1", ["community C1;", "community add C1"]],
       ["from a community reference", "community add C1", "C1", ["community C1;", "community add C1"]],
+      [
+        "from a prefix-list definition",
+        "prefix-list RFC1918 {",
+        "RFC1918",
+        ["prefix-list RFC1918;", "prefix-list-filter RFC1918"],
+      ],
+      ["from a prefix-list-filter", "prefix-list-filter RFC1918", "RFC1918", ["prefix-list RFC1918;"]],
       ["from a policy-statement definition", "policy-statement PS1 {", "PS1", ["import PS1", "export [ PS1"]],
       ["from a routing-instance definition", "    VRF1 {", "VRF1", ["next-table VRF1", "routing-instance VRF1"]],
     ] as Array<[string, string, string, string[]]>) {
@@ -236,6 +244,11 @@ suite("Should handle curly-brace format", () => {
     test("Completes defined prefix-list", async () => {
       const labels = await completionLabels(docUri, new vscode.Position(14, 29));
       assert.deepEqual(labels, ["apply-groups", "apply-groups-except", "RFC1918"]);
+    });
+
+    test("Completes defined prefix-list in prefix-list-filter", async () => {
+      const labels = await completionLabels(docUri, new vscode.Position(35, 32));
+      assert.ok(labels.includes("RFC1918"));
     });
   });
 });

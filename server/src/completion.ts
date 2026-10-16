@@ -3,7 +3,7 @@ import { CompletionItemKind } from "vscode-languageserver";
 
 import type { Token } from "./config";
 import { contextAt, pathWord, tokenizeLine } from "./config";
-import { communityReference, policyStatementReference } from "./definition";
+import { communityReference, policyStatementReference, prefixListReference } from "./definition";
 import { prefixPattern } from "./parser";
 import { routingInstanceReference, routingTableReference } from "./references";
 import type { Session } from "./session";
@@ -42,7 +42,7 @@ export function completion(session: Session) {
     // List defined symbols
     const rules = [
       ["interface", /\s+interface\s+$/],
-      ["prefix-list", /\s+from\s+(?:source-|destination-)?prefix-list\s+$/],
+      ["prefix-list", new RegExp(`\\s+${prefixListReference}\\s+$`)],
       ["policy-statement", new RegExp(`\\s+${policyStatementReference}\\s+$`)],
       ["community", new RegExp(`\\s+${communityReference}\\s+$`)],
       ["as-path", /\s+from\s+as-path\s+$/],

@@ -33,7 +33,7 @@ Completion, validation and go to definition work for both `set` commands and the
 
 * Go To Definition, Find All References and Rename (except `interface`)
   * `interface`
-  * `prefix-list`
+  * `prefix-list` (`prefix-list`, `prefix-list-filter`, `source-prefix-list`, `destination-prefix-list`)
   * `policy-statement`
   * `community`
   * `as-path`

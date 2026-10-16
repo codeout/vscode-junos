@@ -124,6 +124,12 @@ export const policyStatementReference =
   "|(?:keep|inet|inet6|iso|inetcolor|inet6color)-import)";
 
 /**
+ * Statements whose argument is a policy-options prefix-list name: "from prefix-list" (policies and
+ * firewall filters), "from source-prefix-list", "from ipv6-destination-prefix-list", "from prefix-list-filter".
+ */
+export const prefixListReference = "from\\s+(?:prefix-list-filter|(?:ipv6-)?(?:source-|destination-)?prefix-list)";
+
+/**
  * Statements whose argument is a policy-options community name.
  * "route-attributes community" in EVPN ip-prefix-routes is not a reference.
  */
@@ -249,11 +255,7 @@ function getInterfaceDefinition(session: Session, line: string, textDocumentPosi
 }
 
 function getPrefixListDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(
-    line,
-    textDocumentPosition.position.character,
-    "from\\s+(?:source-|destination-)?prefix-list",
-  );
+  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, prefixListReference);
   return session.definitions.get(textDocumentPosition.textDocument.uri, "prefix-list", symbol);
 }
 

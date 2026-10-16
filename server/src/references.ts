@@ -9,7 +9,7 @@ import type {
 import { ErrorCodes, ResponseError } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 
-import { communityReference, policyStatementReference } from "./definition";
+import { communityReference, policyStatementReference, prefixListReference } from "./definition";
 import { isIpPrefix } from "./ip";
 import { prefixPattern } from "./parser";
 import type { Session } from "./session";
@@ -69,7 +69,12 @@ export function routingInstanceOfTable(table: string) {
 function rules(session: Session, uri: string): Rule[] {
   return [
     { type: "interface", pattern: "interface", allow: ["all"], deny: ["interface-range"] },
-    { type: "prefix-list", pattern: "from\\s+(?:source-|destination-)?prefix-list" },
+    // some services take prefixes there ("from source-prefix-list 10.0.0.0/8")
+    {
+      type: "prefix-list",
+      pattern: prefixListReference,
+      allow: (m) => (isIpPrefix(m.groups!.arg) ? [m.groups!.arg] : []),
+    },
     { type: "policy-statement", pattern: policyStatementReference },
     { type: "community", pattern: communityReference },
     { type: "as-path", pattern: "from\\s+as-path" },
