@@ -13,6 +13,8 @@ suite("Should handle curly-brace format", () => {
       ["VRF-GONE", '"VRF-GONE" is not defined'],
       ["G-MTU", '"G-MTU" is not defined'],
       ["mtuu 9000", '"mtuu 9000" is invalid'],
+      ["unit 5", "unit 5 is defined more than once in ge-0/0/2"],
+      ["unit 5", "unit 5 is defined more than once in ge-0/0/2", "last"],
       ["VRF-MISSING", '"VRF-MISSING" is not defined'],
       ["PS-MISSING", '"PS-MISSING" is not defined'],
       ["ge-0/0/9.0", '"ge-0/0/9.0" is not defined'],

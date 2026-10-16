@@ -2,6 +2,7 @@ import type { Diagnostic } from "vscode-languageserver";
 import { DiagnosticSeverity, DiagnosticTag } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 
+import type { Token } from "./config";
 import { findInvalidToken, tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
 import { collectReferences, isDefined } from "./references";
@@ -54,6 +55,28 @@ export async function validateTextDocument(session: Session, textDocument: TextD
 
     const end = words.at(-1)!.end;
     report(invalid.start, end, `"${source.slice(invalid.start, end)}" is invalid`);
+  }
+
+  // A unit number may be used once per interface
+  const units = new Map<string, Token[][]>();
+  for (const { context, words } of braces.statements) {
+    const parent = context.map((t) => t.text);
+    const isInterface =
+      parent.at(-2) === "interfaces" || (parent.at(-3) === "interfaces" && parent.at(-2) === "interface-range");
+    if (!isInterface || words[0]?.text !== "unit" || !words[1]) {
+      continue;
+    }
+    const key = [...parent, "unit", words[1].text].join(" ");
+    units.set(key, [...(units.get(key) ?? []), words.slice(0, 2)]);
+  }
+  for (const [key, occurrences] of units) {
+    if (occurrences.length < 2) {
+      continue;
+    }
+    const name = key.split(" ").at(-3);
+    for (const [unit, id] of occurrences) {
+      report(unit.start, id.end, `unit ${id.text} is defined more than once in ${name}`);
+    }
   }
 
   while ((m = pattern.exec(text)) && problems < maxNumberOfProblems) {
