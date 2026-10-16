@@ -59,7 +59,7 @@ suite("Should handle curly-brace format", () => {
       ["policy-statement in a bracket list", "export [ PS1", "policy-statement PS1", "PS1"],
       ["prefix-list", "prefix-list RFC1918;", "prefix-list RFC1918 {", "RFC1918"],
       ["prefix-list-filter", "prefix-list-filter RFC1918", "prefix-list RFC1918 {", "RFC1918"],
-      ["apply-groups", "apply-groups G1", "    G1 {", "G1"],
+      ["apply-groups", "apply-groups [ G1", "    G1 {", "G1"],
       ["apply-groups in a bracket list", "apply-groups [ G-IF", "    G-IF {", "G-IF"],
       ["interface unit", "interface ge-0/0/0.0", "        unit 0 {", "unit 0"],
       ["vrf-import in a bracket list", "vrf-import [ PS1", "policy-statement PS1", "PS1"],

@@ -17,6 +17,7 @@ import type { Session } from "./session";
  *   variable    names you define (policies, communities, instances, terms, ...) and their uses;
  *               the definition has the "declaration" modifier
  *   interface   interface names, defined and used (xe-0/0/0, xe-0/0/0.0, ae0, ...)
+ *               names of groups Junos applies by itself (re0, re1) also have the "defaultLibrary" modifier
  *   family      "family" and the address family of "family inet", "family inet6", ...
  *   number      numbers, addresses and prefixes
  *   string      other values
@@ -25,11 +26,17 @@ import type { Session } from "./session";
  */
 export const legend: SemanticTokensLegend = {
   tokenTypes: ["macro", "keyword", "enumMember", "variable", "number", "string", "interface", "family"],
-  tokenModifiers: ["declaration"],
+  tokenModifiers: ["declaration", "defaultLibrary"],
 };
 
 const type = Object.fromEntries(legend.tokenTypes.map((t, i) => [t, i])) as Record<string, number>;
 const DECLARATION = 1;
+const DEFAULT_LIBRARY = 2;
+
+// Groups Junos applies to the Routing Engine they are named after
+const builtinGroups = new Set(["re0", "re1"]);
+const groupModifier = (types: string[], name: string) =>
+  types.includes("group") && builtinGroups.has(name) ? DEFAULT_LIBRARY : 0;
 
 const numberPattern = /^-?\d+(?:\.\d+)?[kmgt]?$/i;
 const ipv4Pattern = /^\d{1,3}(?:\.\d{1,3}){3}(?:\/\d{1,2})?$/;
@@ -77,14 +84,20 @@ export function classify(session: Session, doc: TextDocument): Entry[] {
   for (const { type: symbolType, range } of session.definitions.ranges(doc.uri)) {
     const start = doc.offsetAt(range.start);
     const end = doc.offsetAt(range.end);
-    if (!/\s/.test(text.slice(start, end))) {
-      names.set(start, { start, end, type: nameType([symbolType]), modifiers: DECLARATION });
+    const name = text.slice(start, end);
+    if (/\s/.test(name)) {
+      continue;
     }
+    const modifiers = DECLARATION | groupModifier([symbolType], name);
+    names.set(start, { start, end, type: nameType([symbolType]), modifiers });
   }
   for (const ref of collectReferences(session, doc)) {
-    if (!names.has(ref.start) && !ref.allowed) {
-      names.set(ref.start, { start: ref.start, end: ref.end, type: nameType(ref.types), modifiers: 0 });
+    if (names.has(ref.start) || ref.allowed) {
+      continue;
     }
+
+    const modifiers = groupModifier(ref.types, ref.name);
+    names.set(ref.start, { start: ref.start, end: ref.end, type: nameType(ref.types), modifiers });
   }
 
   const word = (t: Token, path: string) => {
@@ -134,7 +147,8 @@ export function classify(session: Session, doc: TextDocument): Entry[] {
       entries.push({ start: words[0].start, end: words[0].end, type: type.keyword, modifiers: 0 });
       const groupNames = words.slice(1).flatMap((w) => w.group ?? [w]);
       for (const n of groupNames) {
-        entries.push({ start: n.start, end: n.end, type: type.variable, modifiers: 0 });
+        const modifiers = groupModifier(["group"], pathWord(n));
+        entries.push({ start: n.start, end: n.end, type: type.variable, modifiers });
       }
       return;
     }

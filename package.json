@@ -134,6 +134,9 @@
           ],
           "interface": [
             "support.class.component.interface.junos"
+          ],
+          "variable.defaultLibrary": [
+            "variable.language.junos"
           ]
         }
       }
