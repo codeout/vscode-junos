@@ -52,6 +52,7 @@ suite("Should handle curly-brace format", () => {
       ["interface unit", "interface ge-0/0/0.0", "    ge-0/0/0 {", "ge-0/0/0"],
       ["vrf-import in a bracket list", "vrf-import [ PS1", "policy-statement PS1", "PS1"],
       ["vrf-export", "vrf-export PS1", "policy-statement PS1", "PS1"],
+      ["rib-groups import-policy", "import-policy PS1", "policy-statement PS1", "PS1"],
       ["community add", "community add C1", "community C1 members", "C1"],
       ["aggregate-label community", "community C1;", "community C1 members", "C1"],
       ["l2circuit community", "community C3;", "community C3 members", "C3"],

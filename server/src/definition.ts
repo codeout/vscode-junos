@@ -115,11 +115,12 @@ export class DefinitionStore {
 /**
  * Statements whose argument is a policy-statement name.
  * Shared by go to definition, validation and completion.
- * "vrf-target import target:..." takes a community value, not a policy.
+ * "vrf-target import target:..." takes a community value, not a policy. "import-policy": rib-groups and
+ * resolution ribs.
  */
 export const policyStatementReference =
   "(?<!vrf-target\\s+)(?:(?:(?:vrf|instance|network-summary|inter-area-prefix|bootstrap)-)?(?:import|export)" +
-  "|(?:keep|inet|inet6|iso|inetcolor|inet6color)-import)";
+  "|(?:keep|inet|inet6|iso|inetcolor|inet6color|vpn-global)-import|import-policy)";
 
 /**
  * Statements whose argument is a policy-options prefix-list name: "from prefix-list" (policies and
