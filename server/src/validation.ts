@@ -7,6 +7,7 @@ import { prefixPattern } from "./parser";
 import { collectReferences, isDefined } from "./references";
 import type { Session } from "./session";
 import { vrfImportProblems } from "./vrf-import";
+import { junosWarnings } from "./warnings";
 
 const maxNumberOfProblems = 1000; // Just a guard
 
@@ -79,6 +80,16 @@ export async function validateTextDocument(session: Session, textDocument: TextD
 
   for (const problem of vrfImportProblems(session, textDocument)) {
     reportSource(problem.start, problem.end, problem.message);
+  }
+
+  // "## Warning: ..." annotations of "show configuration"
+  // from the start of the first "##" line, so every line is marked with its indentation
+  for (const warning of junosWarnings(textDocument)) {
+    diagnostics.push({
+      ...createDiagnostic(session, textDocument, warning.block.start, warning.extent.end, warning.message),
+      severity: DiagnosticSeverity.Warning,
+      message: `Junos: ${warning.message}`,
+    });
   }
 
   return diagnostics.toSorted(

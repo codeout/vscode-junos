@@ -30,6 +30,15 @@ suite("Should handle curly-brace format", () => {
       ["}\n", 'Unexpected "}"', "last"],
     ].map(([needle, message, which]) => ({ range: rangeOf(needle, which === "last"), message }));
 
+    // "## Warning:": from the start of the first "##" line to the end of fxp0 { ... }
+    const doc = state.doc!;
+    const warningLine = doc.positionAt(doc.getText().indexOf("## Warning:")).line;
+    expected.push({
+      range: new vscode.Range(warningLine - 1, 0, warningLine + 4, doc.lineAt(warningLine + 4).text.length),
+      message: "Junos: statement ignored: unsupported platform (srx300)",
+    });
+    expected.sort((a, b) => a.range.start.compareTo(b.range.start));
+
     const actual = vscode.languages.getDiagnostics(docUri);
     const format = (d: { message: string; range: vscode.Range }) =>
       `${d.message} ${d.range.start.line}:${d.range.start.character}-${d.range.end.line}:${d.range.end.character}`;
