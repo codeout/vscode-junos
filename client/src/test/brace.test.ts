@@ -178,6 +178,30 @@ suite("Should handle curly-brace format", () => {
     );
   });
 
+  test("Converts to set commands", async () => {
+    const docUri = getDocUri("junos-brace.conf");
+    await activate(docUri);
+    await vscode.window.showTextDocument(state.doc!);
+
+    await vscode.commands.executeCommand("junos.convertToSet");
+    const converted = vscode.window.activeTextEditor!.document;
+    assert.equal(converted.languageId, "junos");
+    const lines = new Set(converted.getText().split("\n"));
+    for (const line of [
+      "set version 23.2R2-S6.4",
+      "set groups G-IF interfaces <*> mtu 9000",
+      'set interfaces ge-0/0/0 description "say \\"hi\\""',
+      "set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/24",
+      "set system authentication-order [ radius password ]",
+      "deactivate protocols",
+    ]) {
+      assert.ok(lines.has(line), `${line} missing`);
+    }
+    // a block with statements of its own is not a line of its own
+    assert.ok(!lines.has("set interfaces ge-0/0/0 unit 0"));
+    await vscode.commands.executeCommand("workbench.action.revertAndCloseActiveEditor");
+  });
+
   suite("Hover", () => {
     const docUri = getDocUri("junos-brace.conf");
 

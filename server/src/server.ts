@@ -3,6 +3,7 @@ import { DocumentDiagnosticReportKind } from "vscode-languageserver";
 import { TextDocumentSyncKind } from "vscode-languageserver/node";
 
 import { completion, completionResolve } from "./completion";
+import { toSetCommands } from "./convert";
 import { definition, updateDefinitions } from "./definition";
 import { incomingCalls, outgoingCalls, prepareCallHierarchy } from "./hierarchy";
 import { hover } from "./hover";
@@ -46,6 +47,12 @@ session.connection.onDidChangeConfiguration(() => {
   session.connection.languages.semanticTokens.refresh();
 });
 session.connection.onReferences(references(session));
+
+// "Junos: Convert to set commands"
+session.connection.onRequest("junos/convertToSet", (params: { uri: string }) => {
+  const doc = session.documents.get(params.uri);
+  return doc ? toSetCommands(doc.getText(), session.analyze(doc).braces.statements) : null;
+});
 session.connection.onPrepareRename(prepareRename(session));
 session.connection.languages.callHierarchy.onPrepare(prepareCallHierarchy(session));
 session.connection.languages.callHierarchy.onIncomingCalls(incomingCalls(session));

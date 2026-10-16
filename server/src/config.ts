@@ -25,6 +25,7 @@ export type Statement = {
   context: Token[];
   words: Token[];
   block: boolean;
+  modifiers?: string[]; // "inactive:", "protect:", ... in front of the statement
 };
 
 export type StructureError = {
@@ -242,13 +243,15 @@ export function parseBraces(text: string): BraceParse {
   const errors: StructureError[] = [];
   const stack: { head: Token[]; open: Token }[] = [];
   let current: Token[] = [];
+  let modifiers: string[] = [];
 
   const context = () => stack.flatMap((s) => s.head);
   const emit = (block: boolean) => {
     if (current.length > 0) {
-      statements.push({ context: context(), words: current, block });
+      statements.push({ context: context(), words: current, block, ...(modifiers.length > 0 && { modifiers }) });
     }
     current = [];
+    modifiers = [];
   };
 
   const unexpected = (t: LexToken) => {
@@ -258,6 +261,8 @@ export function parseBraces(text: string): BraceParse {
     word: ({ text, start, end, group, unclosed }) => {
       if (current.length > 0 || group || !modifierPattern.test(text)) {
         current.push({ text, start, end, group, unclosed });
+      } else {
+        modifiers.push(text);
       }
     },
     ";": () => emit(false),

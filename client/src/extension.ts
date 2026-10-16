@@ -1,7 +1,7 @@
 import * as path from "node:path";
 
 import type { ExtensionContext } from "vscode";
-import { workspace } from "vscode";
+import { commands, ViewColumn, window, workspace } from "vscode";
 import type { LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
 import { LanguageClient, TransportKind } from "vscode-languageclient/node";
 
@@ -41,6 +41,26 @@ export function activate(context: ExtensionContext) {
 
   // Start the client. This will also launch the server
   state.client.start();
+
+  context.subscriptions.push(commands.registerCommand("junos.convertToSet", convertToSet));
+}
+
+/**
+ * The active Junos editor as "set" commands, in a new editor
+ */
+async function convertToSet() {
+  const editor = window.activeTextEditor;
+  if (!editor || editor.document.languageId !== "junos" || !state.client) {
+    return;
+  }
+  const content = await state.client.sendRequest<string | null>("junos/convertToSet", {
+    uri: editor.document.uri.toString(),
+  });
+  if (content === null) {
+    return;
+  }
+  const doc = await workspace.openTextDocument({ language: "junos", content });
+  await window.showTextDocument(doc, ViewColumn.Beside);
 }
 
 export function deactivate() {

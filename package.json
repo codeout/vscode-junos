@@ -27,6 +27,21 @@
   "icon": "docs/images/logo.png",
   "main": "./dist/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "junos.convertToSet",
+        "title": "Convert to set commands",
+        "category": "Junos"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "junos.convertToSet",
+          "when": "editorLangId == junos"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "junos",
