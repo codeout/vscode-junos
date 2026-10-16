@@ -33,6 +33,9 @@ suite("Should handle curly-brace format", () => {
       ["inactive: protocols {\n    rip;\n}", "Inactive: Junos does not apply it"],
       ["addr-missing", '"addr-missing" is not defined'],
       ["}\n", 'Unexpected "}"', "last"],
+      ['"rack 4;', 'Missing closing "'],
+      // the statement goes on after the unterminated string
+      ["contact noc", '"contact noc" is invalid'],
     ].map(([needle, message, which]) => ({ range: rangeOf(needle, which === "last"), message }));
 
     // "## Warning:": from the start of the first "##" line to the end of fxp0 { ... }

@@ -13,7 +13,7 @@ export type Token = {
   unclosed?: boolean;
 };
 
-type LexToken = Token & { kind: "word" | "{" | "}" | ";" | "[" | "]" };
+type LexToken = Token & { kind: "word" | "{" | "}" | ";" | "[" | "]"; openQuote?: boolean };
 
 type LexResult = {
   tokens: LexToken[];
@@ -124,14 +124,16 @@ export function lex(
       annotations?.push({ start: i, end: close + 2, text: text.slice(i + 2, close).trim() });
       i = close + 2;
     } else if (c === '"') {
+      // a quoted string ends on its line ("\n" inside is written as an escape)
       let j = i + 1;
-      while (j < end && text[j] !== '"') {
+      while (j < end && text[j] !== '"' && text[j] !== "\n") {
         j += text[j] === "\\" ? 2 : 1;
       }
-      if (j >= end) {
+      if (j >= end || text[j] === "\n") {
         // Unterminated: stop at the end of the line so the rest of the file is still parsed
         const eol = Math.min(lineEnd(text, i), end);
-        tokens.push({ kind: "word", text: text.slice(i, eol), start: i, end: eol });
+        const open = text.slice(i, eol).trimEnd();
+        tokens.push({ kind: "word", text: open, start: i, end: i + open.length, openQuote: true });
         if (eol >= end) {
           return { tokens, openAtEnd: true };
         }
@@ -292,7 +294,10 @@ export function parseBraces(text: string): BraceParse {
     errors.push({ start: t.start, end: t.end, message: `Unexpected "${t.text}"` });
   };
   const handlers: Record<LexToken["kind"], (t: LexToken) => void> = {
-    word: ({ text, start, end, group, unclosed }) => {
+    word: ({ text, start, end, group, unclosed, openQuote }) => {
+      if (openQuote) {
+        errors.push({ start, end, message: 'Missing closing "' });
+      }
       if (current.length > 0 || group || !modifierPattern.test(text)) {
         current.push({ text, start, end, group, unclosed });
       } else {
