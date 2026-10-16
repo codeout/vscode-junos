@@ -6,7 +6,13 @@
 * Go to definition, find all references, rename, validation and completion for configuration groups in `apply-groups` and `apply-groups-except`
 * Go to definition, find all references and validation for security NAT pools, applications and application sets, zone address sets and `import-policy` (rib-groups)
 * Semantic highlighting: interface names and address families (`family inet`, ...) get their own colours
-* Statements annotated with `## Warning:` (unsupported platform, license) are reported as warnings covering the `##` block and the statement
+* Statements annotated with `## Warning:` (unsupported platform, license) are reported as warnings covering the `##` block and the statement, and faded
+* Inactive configuration (`inactive:`, and `set` lines below a `deactivate` line) is faded
+* Configuration groups: statements inherited through `apply-groups` (with `<*>` style wildcards and `apply-groups-except`) count as definitions, e.g. `unit 0` from a group defines `et-0/0/8.0`
+* Go to definition of an interface unit (`interface et-0/0/0.444`) lands on its `unit 444`
+* Error for a unit number used twice in one interface
+* Groups Junos applies by itself (`re0`, `re1`, `node0`, `node1`, `memberN`) are highlighted and explained on hover
+* Command "Junos: Convert to set commands" opens the curly-brace configuration as `set` commands
 * Show Incoming Calls (Shift+Alt+H) lists the uses of a name with the statement they are in (`policy-statement PS1 › term rf`); Show Outgoing Calls lists the names a definition uses
 
 ### Fixed
