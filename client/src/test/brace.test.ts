@@ -28,6 +28,7 @@ suite("Should handle curly-brace format", () => {
         'Policy "PS-RE" matches extended communities by regular expression (RT-RE), which vrf-import does not support',
         "last",
       ],
+      ["inactive: protocols {\n    rip;\n}", "Inactive: Junos does not apply it"],
       ["addr-missing", '"addr-missing" is not defined'],
       ["}\n", 'Unexpected "}"', "last"],
     ].map(([needle, message, which]) => ({ range: rangeOf(needle, which === "last"), message }));

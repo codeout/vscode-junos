@@ -4,6 +4,7 @@ import type { TextDocument } from "vscode-languageserver-textdocument";
 
 import type { Token } from "./config";
 import { findInvalidToken, tokenizeLine } from "./config";
+import { inactiveRanges } from "./inactive";
 import { prefixPattern } from "./parser";
 import { collectReferences, isDefined } from "./references";
 import type { Session } from "./session";
@@ -113,6 +114,15 @@ export async function validateTextDocument(session: Session, textDocument: TextD
       severity: DiagnosticSeverity.Warning,
       tags: [DiagnosticTag.Unnecessary],
       message: `Junos: ${warning.message}`,
+    });
+  }
+
+  // inactive configuration: faded, not a problem
+  for (const range of inactiveRanges(source)) {
+    diagnostics.push({
+      ...createDiagnostic(session, textDocument, range.start, range.end, "Inactive: Junos does not apply it"),
+      severity: DiagnosticSeverity.Hint,
+      tags: [DiagnosticTag.Unnecessary],
     });
   }
 

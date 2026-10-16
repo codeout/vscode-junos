@@ -180,6 +180,18 @@ suite("Should get diagnostics", () => {
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       })),
+      // deactivated configuration
+      ...(
+        [
+          [179, 39],
+          [180, 30],
+        ] as const
+      ).map(([line, eChar]) => ({
+        message: "Inactive: Junos does not apply it",
+        range: toRange(line, 0, eChar),
+        severity: vscode.DiagnosticSeverity.Hint,
+        source: "ex",
+      })),
     ]);
   });
 });
