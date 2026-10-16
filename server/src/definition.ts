@@ -2,8 +2,6 @@ import type { Position, Range, TextDocumentPositionParams } from "vscode-languag
 import { Location } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 
-import type { Token } from "./config";
-import { tokenizeLine } from "./config";
 import { prefixPattern } from "./parser";
 import { definitionsOfReferenceAt } from "./references";
 import type { Session } from "./session";
@@ -149,251 +147,15 @@ export function definition(session: Session) {
       return [];
     }
 
-    const pointed = pointedLine(session, doc, textDocumentPosition);
-    if (!pointed) {
-      return [];
-    }
-    const { line } = pointed;
     const offset = doc.offsetAt(textDocumentPosition.position);
-    textDocumentPosition = {
-      ...textDocumentPosition,
-      position: { line: textDocumentPosition.position.line, character: pointed.character },
-    };
 
     const definition =
-      getInterfaceDefinition(session, line, textDocumentPosition) ||
-      getPrefixListDefinition(session, line, textDocumentPosition) ||
-      getPolicyStatementDefinition(session, line, textDocumentPosition) ||
-      getCommunityDefinition(session, line, textDocumentPosition) ||
-      getAsPathDefinition(session, line, textDocumentPosition) ||
-      getAsPathGroupDefinition(session, line, textDocumentPosition) ||
-      getFirewallFilterDefinition(session, line, textDocumentPosition) ||
-      getServiceNatPoolDefinition(session, line, textDocumentPosition) ||
-      getSecurityNatPoolDefinition(session, line, textDocumentPosition) ||
-      getNatAddressDefinition(session, line, textDocumentPosition) ||
-      getPoolAddressDefinition(session, line, textDocumentPosition) ||
-      getGlobalAddressSetAddressDefinition(session, line, textDocumentPosition) ||
-      getZoneSpecificAddressSetAddressDefinition(session, line, textDocumentPosition) ||
-      getPoliciesAddressDefinition(session, line, textDocumentPosition) ||
-      getApplicationDefinition(session, line, textDocumentPosition) ||
       definitionsOfReferenceAt(session, doc, offset) ||
       // On a definition itself: VS Code then shows its references (editor.gotoLocation.alternativeDefinitionCommand)
       [session.definitions.at(doc.uri, doc.positionAt(offset))?.range].filter((r) => r !== undefined);
 
     return definition.map((d) => Location.create(textDocumentPosition.textDocument.uri, d));
   };
-}
-
-/**
- * The cursor's statement as a "set" line, and the cursor position in it.
- * A curly-brace statement is prefixed with its hierarchy, and a bracket list is replaced with the pointed element.
- */
-function pointedLine(session: Session, doc: TextDocument, textDocumentPosition: TextDocumentPositionParams) {
-  const { line: lineNumber, character } = textDocumentPosition.position;
-  const text = doc.getText().split("\n")[lineNumber];
-
-  let tokens: Token[];
-  let cursor: number;
-  if (prefixPattern.test(text)) {
-    if (!text.includes("[")) {
-      return { line: text, character };
-    }
-
-    const prefix = text.match(prefixPattern)![0];
-    tokens = tokenizeLine(text.slice(prefix.length), prefix.length);
-    cursor = character;
-  } else {
-    cursor = doc.offsetAt(textDocumentPosition.position);
-    const contains = (t: Token) => t.start <= cursor && cursor <= t.end;
-    const statement = session.analyze(doc).braces.statements.find((s) => s.words.some((t) => contains(t)));
-    if (!statement) {
-      return;
-    }
-    tokens = [...statement.context, ...statement.words];
-  }
-
-  let line = "set";
-  let pointed = -1;
-  for (const token of tokens) {
-    const word = token.group ? token.group.find((g) => g.start <= cursor && cursor <= g.end) || token.group[0] : token;
-    if (!word) {
-      continue;
-    }
-
-    line += " ";
-    if (word.start <= cursor && cursor <= word.end) {
-      pointed = line.length + cursor - word.start;
-    }
-    line += word.text;
-  }
-
-  return { line, character: pointed };
-}
-
-/**
- * Return if the cursor is pointing the symbol which matches a given pattern, or undefined.
- *
- * @param line
- * @param position
- * @param pattern
- */
-function getPointedSymbol(line: string, position: number, pattern: string) {
-  const m = line.match(
-    `(${prefixPattern.source}(?:\\s+logical-systems\\s+(\\S+))?(?:\\s+.*)?\\s+${pattern}\\s+)(\\S+)`,
-  );
-
-  // Return nothing when the cursor doesn't point at the keyword
-  if (!m || m[0].length < position || m[1].length > position) {
-    return { logicalSystem: "global" };
-  }
-  return { logicalSystem: m[2] || "global", symbol: m[3] };
-}
-
-function getInterfaceDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "interface");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "interface", symbol);
-}
-
-function getPrefixListDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, prefixListReference);
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "prefix-list", symbol);
-}
-
-function getPolicyStatementDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, policyStatementReference);
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "policy-statement", symbol);
-}
-
-function getCommunityDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, communityReference);
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "community", symbol);
-}
-
-function getAsPathDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "from\\s+as-path");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "as-path", symbol);
-}
-
-function getAsPathGroupDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "from\\s+as-path-group");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "as-path-group", symbol);
-}
-
-function getFirewallFilterDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(
-    line,
-    textDocumentPosition.position.character,
-    "filter\\s+(?:input|output|input-list|output-list)",
-  );
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "firewall-filter", symbol);
-}
-
-function getServiceNatPoolDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(
-    line,
-    textDocumentPosition.position.character,
-    "then\\s+translated\\s+(?:source-pool|destination-pool|dns-alg-pool|overload-pool)",
-  );
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "service-nat-pool", symbol);
-}
-
-function getSecurityNatPoolDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-) {
-  const m = line.match(/security\s+nat\s+(?:source|destination)\s+.*\s+then\s+(source|destination)-nat\s+pool/);
-  if (!m) {
-    return;
-  }
-
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "pool");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, `security-nat-pool:${m[1]}`, symbol);
-}
-
-function getNatAddressDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(
-    line,
-    textDocumentPosition.position.character,
-    "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
-  );
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global:global", symbol);
-}
-
-function getPoolAddressDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "pool\\s+\\S+\\s+address-name");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "address:global:global", symbol);
-}
-
-function getGlobalAddressSetAddressDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-) {
-  const m = line.match(/security\s+address-book\s+(\S+)\s+address-set\s+\S+\s+(address(?:-set)?)/);
-  if (!m) {
-    return;
-  }
-
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
-  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:global:${m[1]}`, symbol);
-}
-
-function getZoneSpecificAddressSetAddressDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-) {
-  const m = line.match(
-    /security\s+zones\s+security-zone\s+(\S+)\s+address-book\s+address-set\s+\S+\s+(address(?:-set)?)/,
-  );
-  if (!m) {
-    return;
-  }
-
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, `address-set\\s+\\S+\\s+${m[2]}`);
-  return session.definitions.get(textDocumentPosition.textDocument.uri, `${m[2]}:${m[1]}:global`, symbol);
-}
-
-function getPoliciesAddressDefinition(
-  session: Session,
-  line: string,
-  textDocumentPosition: TextDocumentPositionParams,
-) {
-  const m = line.match(
-    /(?:logical-systems\s+(\S+))?.*\s+policies\s+from-zone\s+(\S+)\s+to-zone\s+(\S+)\s+.*\s+match\s+(source|destination)-address/,
-  );
-  if (!m) {
-    return;
-  }
-
-  const zone = m[4] === "source" ? m[2] : m[3];
-  const symbol = getPointedSymbol(
-    line,
-    textDocumentPosition.position.character,
-    "policies\\s+.*\\s+match\\s+(?:source|destination)-address",
-  );
-
-  const addressBooks = session.zoneAddressBooks.get(textDocumentPosition.textDocument.uri, m[1] || "global", zone);
-  return [
-    ...[...addressBooks].flatMap((a) => [`address:global:${a}`, `address-set:global:${a}`]),
-    "address:global:global",
-    `address:${zone}:global`,
-    "address-set:global:global",
-    `address-set:${zone}:global`,
-  ]
-    .map((a) => session.definitions.get(textDocumentPosition.textDocument.uri, a, symbol))
-    .filter<Range[]>((i) => !!i)
-    .flat();
-}
-
-function getApplicationDefinition(session: Session, line: string, textDocumentPosition: TextDocumentPositionParams) {
-  const symbol = getPointedSymbol(line, textDocumentPosition.position.character, "match\\s+application");
-  return session.definitions.get(textDocumentPosition.textDocument.uri, "application", symbol);
 }
 
 export function updateDefinitions(session: Session, textDocument: TextDocument) {
@@ -555,5 +317,5 @@ function updateZoneSpecificAddressDefinitions(session: Session, textDocument: Te
 
 function updateApplicationDefinitions(session: Session, textDocument: TextDocument) {
   const type = "application";
-  insertDefinitions(session, textDocument, type, "applications\\s+application\\s+)(\\S+)", (m) => m[3]);
+  insertDefinitions(session, textDocument, type, "applications\\s+application(?:-set)?\\s+)(\\S+)", (m) => m[3]);
 }

@@ -31,7 +31,7 @@ type SymbolType = string | ((m: RegExpMatchArray) => string | string[]);
 type Rule = {
   type: SymbolType;
   pattern: string;
-  allow?: string[] | ((m: RegExpMatchArray) => string[]);
+  allow?: string[] | ((arg: string) => boolean); // names that are no reference
   deny?: string[];
   // the referenced name inside the argument, or undefined when the argument refers to nothing
   symbol?: (arg: string) => { name: string; offset: number } | undefined;
@@ -83,7 +83,7 @@ function rules(session: Session, uri: string): Rule[] {
     {
       type: "prefix-list",
       pattern: prefixListReference,
-      allow: (m) => (isIpPrefix(m.groups!.arg) ? [m.groups!.arg] : []),
+      allow: isIpPrefix,
     },
     { type: "policy-statement", pattern: policyStatementReference },
     { type: "group", pattern: applyGroupsReference, allow: builtinGroups, global: true },
@@ -106,9 +106,19 @@ function rules(session: Session, uri: string): Rule[] {
     {
       type: "address:global:global",
       pattern: "nat\\s+.*\\s+match\\s+(?:source|destination)-address(?:-name)?",
-      allow: (m) => (isIpPrefix(m[3]) ? [m[3]] : []),
+      allow: isIpPrefix,
     },
     { type: "address:global:global", pattern: "pool\\s+\\S+\\s+address-name" },
+    {
+      type: (m) => `security-nat-pool:${m[3]}`,
+      pattern: "(?<=security\\s+nat\\s+(?:source|destination)\\s+.*)then\\s+(source|destination)-nat\\s+pool",
+    },
+    // predefined applications ("junos-http", ...) and application sets ("junos-cifs") need no definition
+    {
+      type: "application",
+      pattern: "(?<=policies\\s+.*)match\\s+application",
+      allow: (arg) => arg === "any" || arg.startsWith("junos-"),
+    },
 
     // global address books
     {
@@ -123,11 +133,12 @@ function rules(session: Session, uri: string): Rule[] {
     // zone-specific address books
     {
       type: (m) => `address:${m[3]}:global`,
-      pattern: "(?<=security\\s+)zones\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address",
+      pattern: "(?<=security\\s+)zones\\s+security-zone\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address",
     },
     {
       type: (m) => `address-set:${m[3]}:global`,
-      pattern: "(?<=security\\s+)zones\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address-set",
+      pattern:
+        "(?<=security\\s+)zones\\s+security-zone\\s+(\\S+)\\s+address-book\\s+address-set\\s+\\S+\\s+address-set",
     },
 
     {
@@ -207,7 +218,7 @@ function matchRule(session: Session, line: string, rule: Rule): Reference[] {
     return [];
   }
 
-  const allowList = typeof rule.allow === "function" ? rule.allow(m) : rule.allow;
+  const { allow } = rule;
   const typeOrTypes = typeof rule.type === "function" ? rule.type(m) : rule.type;
   const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes];
   const logicalSystem = (!rule.global && m.groups!.ls) || "global";
@@ -247,7 +258,7 @@ function matchRule(session: Session, line: string, rule: Rule): Reference[] {
       name: symbol.name,
       logicalSystem,
       types,
-      allowed: allowList?.includes(arg) ?? false,
+      allowed: (typeof allow === "function" ? allow(arg) : allow?.includes(arg)) ?? false,
       denied: rule.deny?.includes(arg) ?? false,
     });
   }
