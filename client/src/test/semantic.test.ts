@@ -48,6 +48,11 @@ suite("Should highlight semantically", () => {
       ["instance-type vrf", "vrf", "enumMember"],
       ["address 10.0.0.1/24", "10.0.0.1/24", "number"],
       ["description rr2", "rr2", "string"],
+      [
+        'ssh-ed25519 "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEArc admin@host"',
+        '"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEArc admin@host"',
+        "string",
+      ],
       ["inactive: protocols", "inactive:", "macro"],
       ["edit interfaces ge-0/0/1", "edit", "macro"],
       ["edit interfaces ge-0/0/1", "interfaces", "keyword"],

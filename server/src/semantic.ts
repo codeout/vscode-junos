@@ -114,8 +114,9 @@ export function classify(session: Session, doc: TextDocument): Entry[] {
     if (node.type === "arg") {
       if (isNumeric(pathWord(t))) {
         tokenType = type.number;
-      } else if (node.children.length > 0) {
-        // the name of a list entry with statements of its own (term, group, file, ...)
+      } else if (node.children.length > 0 && !t.text.startsWith('"')) {
+        // the name of a list entry with statements of its own (term, group, file, ...); a quoted one is a
+        // value such as a key (ssh-rsa "ssh-rsa AAAA...")
         tokenType = type.variable;
         modifiers = DECLARATION;
       } else {
