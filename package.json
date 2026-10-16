@@ -122,7 +122,6 @@
     "semanticTokenTypes": [
       {
         "id": "family",
-        "superType": "keyword",
         "description": "An address family of a Junos configuration (family inet, family inet6, ...)"
       }
     ],
@@ -131,10 +130,10 @@
         "language": "junos",
         "scopes": {
           "family": [
-            "keyword.control.family.junos"
+            "entity.name.function.family.junos"
           ],
           "interface": [
-            "entity.name.type.interface.junos"
+            "support.class.component.interface.junos"
           ]
         }
       }
