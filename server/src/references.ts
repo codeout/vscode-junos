@@ -353,7 +353,7 @@ export function references(session: Session) {
   };
 }
 
-// An interface definition covers "xe-0/0/0 unit 0" while references say "xe-0/0/0.0": not renamed here
+// The definition of interface unit "xe-0/0/0.0" is "unit 0": not renamed here
 const notRenamed = new Set(["interface"]);
 
 // A name Junos would print without quotes (see needs_quotes in report 09): only those can replace a name as-is

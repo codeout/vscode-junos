@@ -70,8 +70,7 @@ export class DefinitionStore {
   }
 
   /**
-   * The definition whose range contains `position`; the innermost one when ranges nest
-   * (an interface name inside the "xe-0/0/0 unit 0" range of "xe-0/0/0.0").
+   * The definition whose range contains `position`; the innermost one when ranges nest.
    */
   at(uri: string, position: Position) {
     const inside = (r: Range) =>
@@ -198,6 +197,8 @@ function insertDefinitions(
   symbolType: string | ((arg: RegExpExecArray) => string),
   pattern: string,
   modifyFunction: (arg: RegExpExecArray) => string,
+  // where the definition starts in the match; by default after the hierarchy (m[1])
+  rangeStart: (arg: RegExpExecArray) => number = (m) => m[1].length,
 ) {
   const { view } = session.analyze(textDocument);
   const text = view.text;
@@ -215,8 +216,9 @@ function insertDefinitions(
   while ((m = fullPattern.exec(text))) {
     const type = typeof symbolType === "function" ? symbolType(m) : symbolType;
     const symbol = modifyFunction(m);
+    const start = m.index + rangeStart(m);
     session.definitions.set(textDocument.uri, m[2] || "global", type, symbol, {
-      start: textDocument.positionAt(view.toSourceOffset(m.index + m[1].length)),
+      start: textDocument.positionAt(view.toSourceOffset(start)),
       end: textDocument.positionAt(view.toSourceOffset(m.index + m[0].length)),
     });
   }
@@ -230,8 +232,9 @@ function updateInterfaceDefinitions(session: Session, textDocument: TextDocument
     session,
     textDocument,
     type,
-    "interfaces\\s+)(\\S+)\\s+unit\\s+([0-9]+)",
-    (m) => `${m[3]}.${m[4]}`, // "xe-0/0/0 unit 0" is referred as "xe-0/0/0.0"
+    "interfaces\\s+)(\\S+)\\s+(unit\\s+([0-9]+))",
+    (m) => `${m[3]}.${m[5]}`, // "xe-0/0/0 unit 0" is referred as "xe-0/0/0.0"
+    (m) => m[0].length - m[4].length, // the definition is "unit 0"
   );
 }
 
