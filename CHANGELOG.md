@@ -1,3 +1,25 @@
+## [0.6.0] - 2026-10-17
+
+### Added
+
+* Recreate parser based on MX 23.4R2-S7.4 xsd
+
+### Fixed
+
+* Statements taking two or more consecutive arguments were unexpectedly marked as invalid
+  * `chassis fpc <slot> pic <slot> [xe|xle|fte|fibre-channel] port-range <low> <high>`
+  * `event-options policy <name> attributes-match <attribute> (equals|starts-with|matches) <value>`
+  * `policy-options satellite-policies extended-ports-template <name> pic <slot> port-range <low> <high>`
+  * OpenConfig list statements, such as `fdb mac-table entries entry`, `mpls signaling-protocols ldp neighbors neighbor`, `ospfv2 global inter-area-propagation-policies inter-area-propagation-policy`, `isis ... segment-routing adjacency-sids adjacency-sid`, `evpn sg-db`, `routing-policy defined-sets prefix-sets prefix-set <name> prefixes prefix`, `telemetry-system destination-groups destination-group <name> destinations destination` and `sampling sflow collectors collector`
+* An arbitrary value listed as a choice along with keywords was not recognized, which stopped completion after it
+  * `class-of-service interfaces <name> unit <unit> classifiers exp (default|<name>)`
+  * `security nat source rule-set <name> from routing-instance <name>`
+* `arguments` was mistaken for an arbitrary value and dropped from completion
+  * `system scripts op file <name> arguments <name> description <description>`, which was marked invalid as well
+  * `event-options policy <name> then event-script <name> arguments <name>`
+  * `system extensions extension-service application file <name> arguments <arguments>`
+
+
 ## [0.5.3] - 2026-10-03
 
 ### Fixed
