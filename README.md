@@ -10,11 +10,6 @@ The language server has the following language features:
 * Completion
 * Syntax validation
 * Syntax highlighting
-
-### Experimental Features
-
-⚠️ These features may work, but still under development. The behavior might be changed ⚠️
-
 * Go To Definition
   * `interface`
   * `prefix-list`
@@ -23,7 +18,9 @@ The language server has the following language features:
   * `as-path`
   * `as-path-group`
   * `firewall-filter`
-  * NAT pool (`source-pool`, `destination-pool`, `dns-alg-pool`, `overload-pool`)
+  * NAT pool (`source-pool`, `destination-pool`, `dns-alg-pool`, `overload-pool`, `security nat ... then (source|destination)-nat pool`)
+  * `address` and `address-set` in global and zone-specific address books, including `security nat ... match (source|destination)-address` and `security policies ... match (source|destination)-address`
+  * `application` in `security policies ... match application`
 
 
 ## Screen Shot
