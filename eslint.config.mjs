@@ -11,6 +11,7 @@ import tsEslint from "typescript-eslint";
 
 const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects -- ESLint rejects a config exported as a function
 export default defineConfig(
   includeIgnoreFile(gitignorePath, "Imported .gitignore patterns"),
   {
@@ -41,7 +42,7 @@ export default defineConfig(
 
   prettierRecommended,
 
-  unicorn.configs["flat/recommended"],
+  unicorn.configs.recommended,
   {
     rules: {
       "unicorn/consistent-boolean-name": "off",
@@ -49,8 +50,10 @@ export default defineConfig(
       "unicorn/filename-case": "off", // runTest.ts follows the lsp-sample
       "unicorn/import-style": "off",
       "unicorn/name-replacements": "off",
+      "unicorn/no-asterisk-prefix-in-documentation-comments": "off",
       "unicorn/no-computed-property-existence-check": "off", // the stores intentionally use `if (!this.store[uri])` truthiness checks
       "unicorn/prefer-await": "off",
+      "unicorn/prefer-default-parameters": "off",
       "unicorn/prefer-early-return": "off",
       "unicorn/prefer-simple-condition-first": "off",
       "unicorn/prefer-ternary": "off",
