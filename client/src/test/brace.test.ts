@@ -76,6 +76,7 @@ suite("Should handle curly-brace format", () => {
       ["vrf-import in a bracket list", "vrf-import [ PS1", "policy-statement PS1", "PS1"],
       ["vrf-export", "vrf-export PS1", "policy-statement PS1", "PS1"],
       ["rib-groups import-policy", "import-policy PS1", "policy-statement PS1", "PS1"],
+      ["rib-group", "rib-group inet RG1", "    RG1 {", "RG1"],
       [
         "routing-interface",
         "routing-interface lo0.0",

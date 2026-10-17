@@ -8,6 +8,7 @@ import { prefixPattern } from "./parser";
 import {
   applyGroupsReference,
   interfaceReference,
+  ribGroupReference,
   routingInstanceReference,
   routingTableReference,
 } from "./references";
@@ -51,6 +52,7 @@ export function completion(session: Session) {
       ["prefix-list", new RegExp(`\\s+${prefixListReference}\\s+$`)],
       ["policy-statement", new RegExp(`\\s+${policyStatementReference}\\s+$`)],
       ["group", new RegExp(`\\s+${applyGroupsReference}\\s+$`)],
+      ["rib-group", new RegExp(`\\s+${ribGroupReference}\\s+$`), true],
       ["community", new RegExp(`\\s+${communityReference}\\s+$`)],
       ["as-path", /\s+from\s+as-path\s+$/],
       ["as-path-group", /\s+from\s+as-path-group\s+$/],

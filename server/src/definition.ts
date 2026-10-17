@@ -179,6 +179,7 @@ export function updateDefinitions(session: Session, textDocument: TextDocument) 
   updateAddressDefinitions(session, textDocument);
   updateApplicationDefinitions(session, textDocument);
   updateRoutingInstanceDefinitions(session, textDocument);
+  insertDefinitions(session, textDocument, "rib-group", "routing-options\\s+rib-groups\\s+)(\\S+)", (m) => m[3]);
   updateGroupDefinitions(session, textDocument);
 }
 

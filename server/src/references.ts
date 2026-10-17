@@ -49,6 +49,8 @@ type Rule = {
 export const interfaceReference =
   "(?:routing|l3|vtep-source|source|local|next|protect|underlying|destination|l2|service|map-to|upstream|output)-interface";
 
+export const ribGroupReference = "rib-group(?:\\s+(?:inet|inet6))?";
+
 /**
  * "apply-groups <name>" and "apply-groups-except <name>"
  */
@@ -116,6 +118,8 @@ function rules(session: Session, uri: string): Rule[] {
     },
     { type: "policy-statement", pattern: policyStatementReference },
     { type: "group", pattern: applyGroupsReference, allow: builtinGroups, global: true },
+    // "rib-group RG", "interface-routes rib-group inet RG"; SR-TE's "rib-group ipv4 ..." is no reference
+    { type: "rib-group", pattern: ribGroupReference, skipKeywords: true },
     { type: "community", pattern: communityReference },
     { type: "as-path", pattern: "from\\s+as-path" },
     { type: "as-path-group", pattern: "from\\s+as-path-group" },
