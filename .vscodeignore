@@ -19,6 +19,8 @@ docs/images/
 **/tsconfig.tsbuildinfo
 *.conf
 *.js
+.claude/
+.github/
 .gitmodules
 .idea/**
 .ignore
