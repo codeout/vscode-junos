@@ -431,6 +431,28 @@ suite("Should do completion", () => {
     });
   });
 
+  // "arguments" is a keyword, even though its schema key begins with "arg"
+  test('Completes a keyword beginning with "arg"', async () => {
+    await testCompletion(docUri, new vscode.Position(35, 36), {
+      items: [
+        { label: "allow-commands", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "arguments", kind: vscode.CompletionItemKind.Text },
+        { label: "cert-file", kind: vscode.CompletionItemKind.Text },
+        { label: "checksum", kind: vscode.CompletionItemKind.Text },
+        { label: "command", kind: vscode.CompletionItemKind.Text },
+        { label: "dampen", kind: vscode.CompletionItemKind.Text },
+        { label: "description", kind: vscode.CompletionItemKind.Text },
+        { label: "refresh", kind: vscode.CompletionItemKind.Text },
+        { label: "refresh-from", kind: vscode.CompletionItemKind.Text },
+        { label: "routing-instance", kind: vscode.CompletionItemKind.Text },
+        { label: "source", kind: vscode.CompletionItemKind.Text },
+        { label: "start", kind: vscode.CompletionItemKind.Text },
+      ],
+    });
+  });
+
   suite("Completes groups section", async () => {
     test("name", async () => {
       await testCompletion(docUri, new vscode.Position(32, 11), {

@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 
 import { activate, getDocUri } from "./helper";
 
-const offset = 38; // lines for completion tests
+const offset = 39; // lines for completion tests
 
 suite("Should get diagnostics", () => {
   const docUri = getDocUri("junos.conf");
@@ -13,7 +13,7 @@ suite("Should get diagnostics", () => {
     await testDiagnostics(docUri, [
       {
         message: '"groups " is invalid',
-        range: toRange(-6, 4, 11),
+        range: toRange(-7, 4, 11),
         severity: vscode.DiagnosticSeverity.Error,
         source: "ex",
       },
