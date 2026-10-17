@@ -277,6 +277,10 @@ suite("Should handle curly-brace format", () => {
       assert.match(ribGroup, /import-rib: `inet\.0` `VRF1\.inet\.0`/);
     });
 
+    test("shows nothing for a word without a help text", async () => {
+      assert.equal(await hoverText("instance-type vrf", "vrf"), "");
+    });
+
     test("shows nothing in a comment", async () => {
       assert.equal(await hoverText("/* annotation */", "annotation"), "");
     });

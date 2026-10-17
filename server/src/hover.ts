@@ -60,15 +60,16 @@ export function hover(session: Session) {
       return null;
     }
 
+    // without a help text there is nothing to say
+    if (!node.description) {
+      return null;
+    }
     let value: string;
     if (node.type === "arg") {
-      // a value: say what it stands for, if the schema does
-      if (!node.description) {
-        return null;
-      }
+      // a value: what it stands for
       value = node.description;
     } else {
-      value = `**${node.name}**` + (node.description ? ` — ${node.description}` : "");
+      value = `**${node.name}** — ${node.description}`;
       if (node.hidden) {
         value += "\n\n_Hidden in the Junos CLI (internal, unsupported or deprecated)_";
       }
