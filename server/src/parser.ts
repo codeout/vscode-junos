@@ -3,6 +3,9 @@ import { Enumeration, JunosSchema, Repeatable, Sequence } from "../src/junos"; /
 
 export const prefixPattern = /^[\t ]*(?:set|delete|activate|deactivate)/;
 
+// Not a prefix match: "arguments" is a keyword, not an arbitrary value
+const argPattern = /^arg(?:_\d+)?$/;
+
 // explicit comparator reproducing the default sort order (UTF-16 code units)
 function compareStrings(a: string, b: string) {
   if (a < b) {
@@ -79,8 +82,6 @@ export class Node {
         // Only the "set groups" has the value false, like:
         // "groups(arg) | Configuration groups": opts?.groups !== false && { ... }
         // Just skip it.
-      } else if (key.startsWith("arg")) {
-        this.add(this.argNode(key, val));
       } else if (key.startsWith("null_") && val) {
         this.addNullNode(val);
       } else if (typeof key === "string") {
@@ -119,7 +120,7 @@ export class Node {
   private loadString(string: string) {
     switch (string) {
       case "arg": {
-        this.add(new Node("arg", this, null, undefined, "arg"));
+        this.addStringNode("arg", null);
         break;
       }
       default: {
@@ -157,7 +158,10 @@ export class Node {
     const [name, description] = this.extractKey(key);
     const m = name.match(/(\S*)\((.*)\)/);
 
-    if (!m) {
+    if (argPattern.test(name)) {
+      // eg: "arg_28329" as a key, or ["all", "arg"] as a choice member
+      this.add(new Node("arg", this, rawChildren, description, "arg"));
+    } else if (!m) {
       this.add(new Node(name, this, rawChildren, description));
     } else if (m[1]) {
       // eg: unit($junos-underlying-interface-unit|$junos-interface-unit|arg)
@@ -166,12 +170,6 @@ export class Node {
       // eg: (any-unicast|any-ipv4|any-ipv6|arg)
       this.addArrayString(m[2], description, rawChildren);
     }
-  }
-
-  private argNode(key: string, rawChildren: SchemaObject | null) {
-    const [, description] = this.extractKey(key);
-    // name may be "arg_1"
-    return new Node("arg", this, rawChildren, description, "arg");
   }
 
   private argumentStringNode(name: string, args: string, description: string, rawChildren: SchemaObject | null) {

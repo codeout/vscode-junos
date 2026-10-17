@@ -25,9 +25,9 @@ suite("Should do completion", () => {
     { label: "firewall", kind: vscode.CompletionItemKind.Text },
     { label: "forwarding-options", kind: vscode.CompletionItemKind.Text },
     { label: "ietf-interfaces:interfaces", kind: vscode.CompletionItemKind.Text },
+    { label: "ietf-netconf-acm:nacm", kind: vscode.CompletionItemKind.Text },
     { label: "interfaces", kind: vscode.CompletionItemKind.Text },
     { label: "jnx-aug-openconfig-gribi-statistics:gribi-statistics", kind: vscode.CompletionItemKind.Text },
-    { label: "jnx-tel-RE-local-interfaces-stats:interfaces", kind: vscode.CompletionItemKind.Text },
     { label: "jsrc", kind: vscode.CompletionItemKind.Text },
     { label: "jsrc-partition", kind: vscode.CompletionItemKind.Text },
     { label: "logical-systems", kind: vscode.CompletionItemKind.Text },
@@ -35,12 +35,10 @@ suite("Should do completion", () => {
     { label: "multicast-snooping-options", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-acl:acl", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-bfd:bfd", kind: vscode.CompletionItemKind.Text },
-    { label: "openconfig-bgp:bgp", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-interfaces:interfaces", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-keychain:keychains", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-lacp:lacp", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-lldp:lldp", kind: vscode.CompletionItemKind.Text },
-    { label: "openconfig-local-routing:local-routes", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-macsec:macsec", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-messages:messages", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-network-instance:network-instances", kind: vscode.CompletionItemKind.Text },
@@ -48,7 +46,8 @@ suite("Should do completion", () => {
     { label: "openconfig-probes:probes", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-qos:qos", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-routing-policy:routing-policy", kind: vscode.CompletionItemKind.Text },
-    { label: "openconfig-sampling-sflow:sampling", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-sampling:sampling", kind: vscode.CompletionItemKind.Text },
+    { label: "openconfig-spanning-tree:stp", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-system:system", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-telemetry:telemetry-system", kind: vscode.CompletionItemKind.Text },
     { label: "openconfig-terminal-device:terminal-device", kind: vscode.CompletionItemKind.Text },
@@ -142,6 +141,7 @@ suite("Should do completion", () => {
         { label: "logical-tunnel-options", kind: vscode.CompletionItemKind.Text },
         { label: "lsq-failure-options", kind: vscode.CompletionItemKind.Text },
         { label: "mac", kind: vscode.CompletionItemKind.Text },
+        { label: "management-ethernet-redundancy", kind: vscode.CompletionItemKind.Text },
         { label: "media-type", kind: vscode.CompletionItemKind.Text },
         { label: "metadata", kind: vscode.CompletionItemKind.Text },
         { label: "mlfr-uni-nni-bundle-options", kind: vscode.CompletionItemKind.Text },
@@ -150,6 +150,7 @@ suite("Should do completion", () => {
         { label: "multicast-statistics", kind: vscode.CompletionItemKind.Text },
         { label: "multiservice-options", kind: vscode.CompletionItemKind.Text },
         { label: "native-vlan-id", kind: vscode.CompletionItemKind.Text },
+        { label: "network-isolation-profile", kind: vscode.CompletionItemKind.Text },
         { label: "no-bypass-queueing-chip", kind: vscode.CompletionItemKind.Text },
         { label: "no-forwarding-viable", kind: vscode.CompletionItemKind.Text },
         { label: "no-gratuitous-arp-reply", kind: vscode.CompletionItemKind.Text },
@@ -426,6 +427,28 @@ suite("Should do completion", () => {
         { label: "junos-defaults", kind: vscode.CompletionItemKind.Text },
         { label: "tcp-app", kind: vscode.CompletionItemKind.Text },
         { label: "word", kind: vscode.CompletionItemKind.Value },
+      ],
+    });
+  });
+
+  // "arguments" is a keyword, even though its schema key begins with "arg"
+  test('Completes a keyword beginning with "arg"', async () => {
+    await testCompletion(docUri, new vscode.Position(35, 36), {
+      items: [
+        { label: "allow-commands", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups", kind: vscode.CompletionItemKind.Text },
+        { label: "apply-groups-except", kind: vscode.CompletionItemKind.Text },
+        { label: "arguments", kind: vscode.CompletionItemKind.Text },
+        { label: "cert-file", kind: vscode.CompletionItemKind.Text },
+        { label: "checksum", kind: vscode.CompletionItemKind.Text },
+        { label: "command", kind: vscode.CompletionItemKind.Text },
+        { label: "dampen", kind: vscode.CompletionItemKind.Text },
+        { label: "description", kind: vscode.CompletionItemKind.Text },
+        { label: "refresh", kind: vscode.CompletionItemKind.Text },
+        { label: "refresh-from", kind: vscode.CompletionItemKind.Text },
+        { label: "routing-instance", kind: vscode.CompletionItemKind.Text },
+        { label: "source", kind: vscode.CompletionItemKind.Text },
+        { label: "start", kind: vscode.CompletionItemKind.Text },
       ],
     });
   });
