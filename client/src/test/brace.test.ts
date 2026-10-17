@@ -76,6 +76,12 @@ suite("Should handle curly-brace format", () => {
       ["vrf-import in a bracket list", "vrf-import [ PS1", "policy-statement PS1", "PS1"],
       ["vrf-export", "vrf-export PS1", "policy-statement PS1", "PS1"],
       ["rib-groups import-policy", "import-policy PS1", "policy-statement PS1", "PS1"],
+      [
+        "routing-interface",
+        "routing-interface lo0.0",
+        "unit 0 {\n            family inet {\n                address 192.0.2.1",
+        "unit 0",
+      ],
       ["community add", "community add C1", "community C1 members", "C1"],
       ["aggregate-label community", "community C1;", "community C1 members", "C1"],
       ["l2circuit community", "community C3;", "community C3 members", "C3"],

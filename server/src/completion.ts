@@ -5,7 +5,12 @@ import type { Token } from "./config";
 import { contextAt, pathWord, tokenizeLine } from "./config";
 import { communityReference, policyStatementReference, prefixListReference } from "./definition";
 import { prefixPattern } from "./parser";
-import { applyGroupsReference, routingInstanceReference, routingTableReference } from "./references";
+import {
+  applyGroupsReference,
+  interfaceReference,
+  routingInstanceReference,
+  routingTableReference,
+} from "./references";
 import type { Session } from "./session";
 
 export function completion(session: Session) {
@@ -42,6 +47,7 @@ export function completion(session: Session) {
     // List defined symbols
     const rules = [
       ["interface", /\s+interface\s+$/],
+      ["interface", new RegExp(`\\s+${interfaceReference}\\s+$`), true],
       ["prefix-list", new RegExp(`\\s+${prefixListReference}\\s+$`)],
       ["policy-statement", new RegExp(`\\s+${policyStatementReference}\\s+$`)],
       ["group", new RegExp(`\\s+${applyGroupsReference}\\s+$`)],

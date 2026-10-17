@@ -43,6 +43,13 @@ type Rule = {
 };
 
 /**
+ * Statements other than "interface" whose argument is an interface name: "routing-interface irb.102"
+ * (bridge-domains), "l3-interface" (vlans), "source-interface lo0.0", ...
+ */
+export const interfaceReference =
+  "(?:routing|l3|vtep-source|source|local|next|protect|underlying|destination|l2|service|map-to|upstream|output)-interface";
+
+/**
  * "apply-groups <name>" and "apply-groups-except <name>"
  */
 export const applyGroupsReference = "apply-groups(?:-except)?";
@@ -100,6 +107,7 @@ export function routingInstanceOfTable(table: string) {
 function rules(session: Session, uri: string): Rule[] {
   return [
     { type: "interface", pattern: "interface", allow: ["all"], deny: ["interface-range"] },
+    { type: "interface", pattern: interfaceReference, skipKeywords: true },
     // some services take prefixes there ("from source-prefix-list 10.0.0.0/8")
     {
       type: "prefix-list",
