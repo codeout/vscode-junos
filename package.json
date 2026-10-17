@@ -112,7 +112,7 @@
     "update": "npm update && cd client && npm update && cd ../server && npm update && cd ..",
     "ncu": "ncu -u && cd client && ncu -u && cd ../server && ncu -u && cd ..",
     "test": "npm run compile:tests && sh ./scripts/e2e.sh",
-    "clean": "rm -rf dist node_modules */node_modules */out"
+    "clean": "rm -rf dist node_modules */node_modules out */out */*.tsbuildinfo"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
