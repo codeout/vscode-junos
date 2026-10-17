@@ -23,6 +23,22 @@ The language server has the following language features:
   * `application` in `security policies ... match application`
 
 
+## Requirements
+
+* Visual Studio Code 1.100.0 or later
+
+
+## Supported Junos
+
+Completion and validation are driven by the NETCONF schema (xsd) of Junos 23.4, converted into a parser with [junoser](https://github.com/codeout/junoser). Syntax of other platforms is merged into the schema:
+
+* `security`, `chassis cluster` and `chassis high-availability` of vSRX 22.4
+* `poe` of EX 18.1
+* `ethernet-switching-options` of 12.1
+
+Platform differences are not modeled; a statement unsupported on the target device may still be reported as valid. Syntax introduced after the releases above is reported as invalid.
+
+
 ## Screen Shot
 
 ![Screen Shot](https://raw.githubusercontent.com/codeout/vscode-junos/refs/heads/main/docs/images/screen_shot01.gif)
