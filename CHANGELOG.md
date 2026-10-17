@@ -1,4 +1,4 @@
-## [Unreleased]
+## [0.7.0] - 2026-10-18
 
 ### Added
 
@@ -14,10 +14,18 @@
 * Groups Junos applies by itself (`re0`, `re1`, `node0`, `node1`, `memberN`) are highlighted and explained on hover
 * Command "Junos: Convert to set commands" opens the curly-brace configuration as `set` commands, with annotations as `annotate` commands at the end
 * Show Incoming Calls (Shift+Alt+H) lists the uses of a name with the statement they are in (`policy-statement PS1 › term rf`); Show Outgoing Calls lists the names a definition uses
+* Hover over a defined name (policy-statement, interface, unit, community, prefix-list, routing-instance, firewall filter, group, as-path, rib-group) shows its annotation, description and a summary of what it configures
+* In an interface unit such as `irb.102`, hover and go to definition tell the interface (`irb`) from the unit (`.102`); find all references of an interface includes its units
+* Go to definition, find all references, rename, validation and completion for rib-groups (`rib-group RG`, `rib-group inet RG`)
+* Interface names in `routing-interface`, `l3-interface`, `source-interface` and similar statements are references to interfaces
+* Highlight the configuration commands `edit`, `annotate`, `top`, `up`, `exit`, `protect`, `unprotect`, `rename`, `copy` and `insert`
 
 ### Fixed
 
 * Prefixes in `services peer-selection ... from source-prefix-list` were reported as undefined prefix-lists
+* A quoted string ends on its line; an unclosed `"` is reported as `Missing closing "` instead of a missing `}` further down
+* Quoted list keys such as `ssh-rsa "..."` are coloured as strings
+* No empty hover for a word the schema has no help text for
 
 
 ## [0.6.0] - 2026-10-15
