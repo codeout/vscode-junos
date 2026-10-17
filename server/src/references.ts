@@ -302,8 +302,32 @@ export function isDefined(session: Session, uri: string, ref: Reference) {
   return ref.types.some((type) => ref.name in session.definitions.getDefinitions(uri, ref.logicalSystem, type));
 }
 
+// "irb.102" split at the dot: "irb" and ".102"
+function unitOf(doc: TextDocument, ref: Reference) {
+  const m = ref.name.match(/^(.+)\.\d+$/);
+  if (!m || !ref.types.includes("interface") || doc.getText().slice(ref.start, ref.end) !== ref.name) {
+    return;
+  }
+  return { physical: m[1], dot: ref.start + m[1].length };
+}
+
+/**
+ * The reference at `offset`. In an interface unit ("irb.102") the interface part refers to the interface
+ * ("irb"), the rest to the unit, when the interface is defined.
+ */
 export function referenceAt(session: Session, doc: TextDocument, offset: number) {
-  return collectReferences(session, doc).find((r) => r.start <= offset && offset <= r.end);
+  const ref = collectReferences(session, doc).find((r) => r.start <= offset && offset <= r.end);
+  const unit = ref && unitOf(doc, ref);
+  if (
+    !ref ||
+    !unit ||
+    !(unit.physical in session.definitions.getDefinitions(doc.uri, ref.logicalSystem, "interface"))
+  ) {
+    return ref;
+  }
+  return offset < unit.dot
+    ? { ...ref, name: unit.physical, types: ["interface"], end: unit.dot }
+    : { ...ref, start: unit.dot };
 }
 
 /**
@@ -350,13 +374,25 @@ export function targetAt(session: Session, doc: TextDocument, offset: number): T
   }
 }
 
+/**
+ * The uses of the target. An interface is also used by the interface part of its units ("irb" of "irb.102").
+ */
 export function referencesOf(session: Session, doc: TextDocument, target: Target) {
-  return collectReferences(session, doc).filter(
-    (r) =>
-      r.name === target.name &&
-      r.logicalSystem === target.logicalSystem &&
-      r.types.some((t) => target.types.includes(t)),
-  );
+  const found: Reference[] = [];
+  for (const r of collectReferences(session, doc)) {
+    if (r.logicalSystem !== target.logicalSystem) {
+      continue;
+    }
+    if (r.name === target.name && r.types.some((t) => target.types.includes(t))) {
+      found.push(r);
+      continue;
+    }
+    const unit = target.types.includes("interface") ? unitOf(doc, r) : undefined;
+    if (unit?.physical === target.name) {
+      found.push({ ...r, name: unit.physical, types: ["interface"], end: unit.dot });
+    }
+  }
+  return found;
 }
 
 function definitionsOf(session: Session, doc: TextDocument, target: Target) {

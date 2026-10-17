@@ -160,7 +160,8 @@ export function outgoingCalls(session: Session) {
         continue;
       }
 
-      const used = targetAt(session, doc, ref.start);
+      // the end of the name: the unit of "irb.102", not its interface
+      const used = targetAt(session, doc, ref.end);
       if (!used) {
         continue;
       }

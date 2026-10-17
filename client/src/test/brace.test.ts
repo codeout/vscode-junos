@@ -59,7 +59,8 @@ suite("Should handle curly-brace format", () => {
   suite("Go to definition", () => {
     const docUri = getDocUri("junos-brace.conf");
 
-    for (const [title, reference, definition, symbol] of [
+    // the cursor is on the last character of the reference, or on `at`
+    for (const [title, reference, definition, symbol, at] of [
       ["policy-statement", "import PS1", "policy-statement PS1", "PS1"],
       ["policy-statement in a bracket list", "export [ PS1", "policy-statement PS1", "PS1"],
       ["prefix-list", "prefix-list RFC1918;", "prefix-list RFC1918 {", "RFC1918"],
@@ -83,6 +84,7 @@ suite("Should handle curly-brace format", () => {
         "unit 0 {\n            family inet {\n                address 192.0.2.1",
         "unit 0",
       ],
+      ["interface of a unit", "routing-interface lo0.0", "    lo0 {", "lo0", "lo0"],
       ["community add", "community add C1", "community C1 members", "C1"],
       ["aggregate-label community", "community C1;", "community C1 members", "C1"],
       ["l2circuit community", "community C3;", "community C3 members", "C3"],
@@ -92,7 +94,8 @@ suite("Should handle curly-brace format", () => {
       test(title, async () => {
         await activate(docUri);
         const text = state.doc!.getText();
-        const position = state.doc!.positionAt(text.indexOf(reference) + reference.lastIndexOf(" ") + 2);
+        const offset = at ? reference.indexOf(at) + 1 : reference.replace(/;$/, "").length - 1;
+        const position = state.doc!.positionAt(text.indexOf(reference) + offset);
 
         const locations = await vscode.commands.executeCommand<vscode.Location[]>(
           "vscode.executeDefinitionProvider",
@@ -122,6 +125,7 @@ suite("Should handle curly-brace format", () => {
       ["from a prefix-list-filter", "prefix-list-filter RFC1918", "RFC1918", ["prefix-list RFC1918;"]],
       ["from a group definition", "    G-IF {", "G-IF", ["apply-groups [ G-IF"]],
       ["from a policy-statement definition", "policy-statement PS1 {", "PS1", ["import PS1", "export [ PS1"]],
+      ["from an interface, with its units", "    lo0 {", "lo0", ["routing-interface lo0.0", "interface lo0.0"]],
       ["from a routing-instance definition", "    VRF1 {", "VRF1", ["next-table VRF1", "routing-instance VRF1"]],
     ] as Array<[string, string, string, string[]]>) {
       test(title, async () => {
@@ -263,11 +267,11 @@ suite("Should handle curly-brace format", () => {
       assert.match(await hoverText("next-table VRF1", "VRF1"), /instance-type: `vrf`/);
       assert.match(await hoverText("community add C1", "C1"), /members: `65000:100`/);
       assert.match(await hoverText("prefix-list RFC1918;", "RFC1918"), /`172\.16\.0\.0\/12`/);
-      assert.match(await hoverText("interface ge-0/0/0.0", "ge-0/0/0.0"), /family inet: `10\.0\.0\.1\/24`/);
+      assert.match(await hoverText("interface ge-0/0/0.0", ".0"), /family inet: `10\.0\.0\.1\/24`/);
     });
 
     test("shows what a group gives, and the annotation", async () => {
-      const unit = await hoverText("interface ge-0/0/4.0", "ge-0/0/4.0");
+      const unit = await hoverText("interface ge-0/0/4.0", ".0");
       assert.match(unit, /Configured only through a group/);
       assert.match(unit, /family inet/);
       assert.match(await hoverText("import-policy PS1", "PS1"), /policy-statement/);
@@ -275,6 +279,11 @@ suite("Should handle curly-brace format", () => {
       const ribGroup = await hoverText("rib-group inet RG1", "RG1");
       assert.match(ribGroup, /_leak into VRF1_/);
       assert.match(ribGroup, /import-rib: `inet\.0` `VRF1\.inet\.0`/);
+    });
+
+    test("tells the interface from its unit", async () => {
+      assert.match(await hoverText("routing-interface lo0.0", "lo0"), /^\*\*interface\*\* `lo0`\n\n- unit 0/);
+      assert.match(await hoverText("routing-interface lo0.0", ".0"), /^\*\*unit\*\* `lo0\.0`\n\n- family inet/);
     });
 
     test("shows nothing for a word without a help text", async () => {

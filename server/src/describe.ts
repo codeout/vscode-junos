@@ -235,7 +235,8 @@ export function describe(session: Session, doc: TextDocument, target: Target): s
       continue;
     }
 
-    const parts = [`**${type.split(":", 1)[0]}** ${code(target.name)}`];
+    const kind = type === "interface" && /\.\d+$/.test(target.name) ? "unit" : type.split(":", 1)[0];
+    const parts = [`**${kind}** ${code(target.name)}`];
     if (special) {
       parts.push(special);
     }
