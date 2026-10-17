@@ -2,7 +2,7 @@ import type { _Connection } from "vscode-languageserver/lib/common/server"; // T
 import { createConnection, ProposedFeatures, TextDocuments } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
-import type { BraceParse } from "./config";
+import type { BraceParse, Statement, Token } from "./config";
 import { ConfigView, parseBraces } from "./config";
 import { DefinitionStore } from "./definition";
 import { configuredStatements, inheritGroups } from "./groups";
@@ -18,7 +18,14 @@ export class Session {
   public readonly zoneAddressBooks: ZoneAddressBookStore;
   private readonly views = new Map<
     string,
-    { version: number; braces: BraceParse; view: ConfigView; inherited: ConfigView }
+    {
+      version: number;
+      braces: BraceParse;
+      view: ConfigView;
+      inherited: ConfigView;
+      configured: Token[][];
+      inheritedStatements: Statement[];
+    }
   >();
 
   constructor() {
@@ -41,12 +48,15 @@ export class Session {
 
     const text = document.getText();
     const braces = parseBraces(text);
-    const { statements } = inheritGroups(configuredStatements(text, braces.statements));
+    const configured = configuredStatements(text, braces.statements);
+    const { statements } = inheritGroups(configured);
     const entry = {
       version: document.version,
       braces,
       view: new ConfigView(text, braces.statements),
       inherited: new ConfigView("", statements),
+      configured,
+      inheritedStatements: statements,
     };
     this.views.set(document.uri, entry);
     return entry;

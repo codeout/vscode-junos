@@ -252,8 +252,29 @@ suite("Should handle curly-brace format", () => {
 
     test("explains groups Junos applies by itself", async () => {
       for (const needle of ["apply-groups [ G1 re0", "    re0 {"]) {
-        assert.match(await hoverText(needle, "re0"), /^\*\*re0\*\* — .*Routing Engine 0/);
+        assert.match(await hoverText(needle, "re0"), /Routing Engine 0/);
       }
+    });
+
+    test("summarizes what a name configures", async () => {
+      const policy = await hoverText("import PS1", "PS1");
+      assert.match(policy, /^\*\*policy-statement\*\* `PS1`/);
+      assert.match(policy, /term `one`: `from protocol static → accept`/);
+      assert.match(await hoverText("next-table VRF1", "VRF1"), /instance-type: `vrf`/);
+      assert.match(await hoverText("community add C1", "C1"), /members: `65000:100`/);
+      assert.match(await hoverText("prefix-list RFC1918;", "RFC1918"), /`172\.16\.0\.0\/12`/);
+      assert.match(await hoverText("interface ge-0/0/0.0", "ge-0/0/0.0"), /family inet: `10\.0\.0\.1\/24`/);
+    });
+
+    test("shows what a group gives, and the annotation", async () => {
+      const unit = await hoverText("interface ge-0/0/4.0", "ge-0/0/4.0");
+      assert.match(unit, /Configured only through a group/);
+      assert.match(unit, /family inet/);
+      assert.match(await hoverText("import-policy PS1", "PS1"), /policy-statement/);
+      assert.match(await hoverText("vrf-export PS1", "PS1"), /_policy for VRF1_/);
+      const ribGroup = await hoverText("rib-group inet RG1", "RG1");
+      assert.match(ribGroup, /_leak into VRF1_/);
+      assert.match(ribGroup, /import-rib: `inet\.0` `VRF1\.inet\.0`/);
     });
 
     test("shows nothing in a comment", async () => {

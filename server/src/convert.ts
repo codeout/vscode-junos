@@ -25,7 +25,7 @@ type Annotation = { start: number; end: number; text: string };
  * Annotations by the offset of the statement they are in front of (after "inactive:" and the like).
  * Annotations with only white space between them belong to the same statement.
  */
-function annotationsByStatement(text: string) {
+export function annotationsByStatement(text: string) {
   const annotations: Annotation[] = [];
   lex(text, 0, text.length, true, annotations);
 

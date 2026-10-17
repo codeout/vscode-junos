@@ -10,6 +10,7 @@ import { hover } from "./hover";
 import { forgetReferences, prepareRename, references, rename } from "./references";
 import { legend, semanticTokens } from "./semantic";
 import { Session } from "./session";
+import { forgetTree } from "./tree";
 import { validateTextDocument } from "./validation";
 
 const session = new Session();
@@ -83,6 +84,7 @@ session.documents.onDidChangeContent((change) => {
 session.documents.onDidClose((event) => {
   session.forget(event.document.uri);
   forgetReferences(event.document.uri);
+  forgetTree(event.document.uri);
 });
 
 session.listen();
